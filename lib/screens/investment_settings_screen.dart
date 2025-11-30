@@ -30,15 +30,27 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
     super.dispose();
   }
 
-  void _calculateAndNavigate() {
+  Future<void> _calculateAndNavigate() async {
     final provider = context.read<AppStateProvider>();
     double? amount = double.tryParse(_amountController.text);
     if (amount != null) {
       provider.updateConfig(amount: amount);
-      provider.calculate();
-      Navigator.of(
-        context,
-      ).push(MaterialPageRoute(builder: (context) => ResultScreen()));
+      await provider.calculate();
+
+      if (!mounted) return;
+
+      if (provider.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('계산 실패: ${provider.error}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      } else {
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (context) => ResultScreen()));
+      }
     }
   }
 

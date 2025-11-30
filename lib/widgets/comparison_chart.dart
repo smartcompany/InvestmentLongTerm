@@ -27,7 +27,20 @@ class ComparisonChart extends StatelessWidget {
             color: AppColors.gold,
             barWidth: 3,
             isStrokeCapRound: true,
-            dotData: FlDotData(show: false),
+            dotData: FlDotData(
+              show: true,
+              checkToShowDot: (spot, barData) {
+                return spot.x == 0;
+              },
+              getDotPainter: (spot, percent, barData, index) {
+                return FlDotCirclePainter(
+                  radius: 6,
+                  color: AppColors.gold,
+                  strokeWidth: 2,
+                  strokeColor: Colors.white,
+                );
+              },
+            ),
             belowBarData: BarAreaData(show: false),
           ),
           // Recurring Investment Line

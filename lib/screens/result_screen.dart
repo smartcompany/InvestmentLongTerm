@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/investment_config.dart';
 import '../providers/app_state_provider.dart';
-import '../utils/calculator.dart';
 import '../utils/colors.dart';
 import '../widgets/summary_card.dart';
 import '../widgets/investment_chart.dart';
@@ -15,6 +14,74 @@ class ResultScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<AppStateProvider>();
     final result = provider.result;
+
+    if (provider.isLoading) {
+      return Scaffold(
+        backgroundColor: AppColors.navyDark,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(color: AppColors.gold),
+              SizedBox(height: 20),
+              Text(
+                '실제 가격 데이터를 가져오는 중...',
+                style: TextStyle(color: AppColors.slate300),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (provider.error != null) {
+      return Scaffold(
+        backgroundColor: AppColors.navyDark,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        body: Center(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline, color: Colors.red, size: 64),
+                SizedBox(height: 20),
+                Text(
+                  '오류가 발생했습니다',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 10),
+                Text(
+                  provider.error!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: AppColors.slate400),
+                ),
+                SizedBox(height: 30),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.gold,
+                    foregroundColor: AppColors.navyDark,
+                  ),
+                  child: Text('돌아가기'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     if (result == null) {
       return Scaffold(
@@ -200,18 +267,12 @@ class ResultScreen extends StatelessWidget {
   }
 
   Widget _buildComparisonChart(AppStateProvider provider) {
-    // Calculate single investment result
-    final singleConfig = InvestmentConfig(
-      asset: provider.config.asset,
-      yearsAgo: provider.config.yearsAgo,
-      amount: provider.config.amount,
-      type: InvestmentType.single,
-      frequency: Frequency.monthly,
-    );
-    final singleResult = InvestmentCalculator.calculate(singleConfig);
-
-    // Use the current recurring result
+    final singleResult = provider.comparisonResult;
     final recurringResult = provider.result!;
+
+    if (singleResult == null) {
+      return Center(child: CircularProgressIndicator(color: AppColors.gold));
+    }
 
     return ComparisonChart(
       singleSpots: singleResult.valueSpots,

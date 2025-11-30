@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import '../models/investment_config.dart';
 import '../models/calculation_result.dart';
-import '../utils/calculator.dart';
+import '../services/api_service.dart';
 
 class AppStateProvider with ChangeNotifier {
   InvestmentConfig _config = InvestmentConfig();
   CalculationResult? _result;
+  CalculationResult? _comparisonResult;
+  bool _isLoading = false;
+  String? _error;
 
   InvestmentConfig get config => _config;
   CalculationResult? get result => _result;
+  CalculationResult? get comparisonResult => _comparisonResult;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
 
   void updateConfig({
     String? asset,
@@ -26,14 +32,43 @@ class AppStateProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void calculate() {
-    _result = InvestmentCalculator.calculate(_config);
+  Future<void> calculate() async {
+    _isLoading = true;
+    _error = null;
+    _comparisonResult = null;
     notifyListeners();
+
+    try {
+      _result = await ApiService.calculate(_config);
+
+      if (_config.type == InvestmentType.recurring) {
+        final singleConfig = InvestmentConfig(
+          asset: _config.asset,
+          yearsAgo: _config.yearsAgo,
+          amount: _config.amount,
+          type: InvestmentType.single,
+          frequency: Frequency.monthly,
+        );
+        _comparisonResult = await ApiService.calculate(singleConfig);
+      }
+
+      _error = null;
+    } catch (e) {
+      _error = e.toString();
+      _result = null;
+      _comparisonResult = null;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   void reset() {
     _config = InvestmentConfig();
     _result = null;
+    _comparisonResult = null;
+    _error = null;
+    _isLoading = false;
     notifyListeners();
   }
 }
