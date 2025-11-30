@@ -40,6 +40,19 @@ class ComparisonScreen extends StatelessWidget {
       symbol: '\$',
       decimalDigits: 0,
     );
+    final chartSeries = [
+      ComparisonSeries(
+        label: "단일 투자",
+        spots: singleResult.valueSpots,
+        color: AppColors.gold,
+        highlightStart: true,
+      ),
+      ComparisonSeries(
+        label: "정기 투자 (매월)",
+        spots: recurringResult.valueSpots,
+        color: AppColors.success,
+      ),
+    ];
 
     return Scaffold(
       backgroundColor: AppColors.navyDark,
@@ -78,10 +91,7 @@ class ComparisonScreen extends StatelessWidget {
                 color: AppColors.navyMedium,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: ComparisonChart(
-                singleSpots: singleResult.valueSpots,
-                recurringSpots: recurringResult.valueSpots,
-              ),
+              child: ComparisonChart(series: chartSeries),
             ),
             SizedBox(height: 20),
             Row(

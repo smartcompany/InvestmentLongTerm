@@ -2,15 +2,24 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import '../utils/colors.dart';
 
-class ComparisonChart extends StatelessWidget {
-  final List<FlSpot> singleSpots;
-  final List<FlSpot> recurringSpots;
+class ComparisonSeries {
+  final String label;
+  final List<FlSpot> spots;
+  final Color color;
+  final bool highlightStart;
 
-  const ComparisonChart({
-    super.key,
-    required this.singleSpots,
-    required this.recurringSpots,
+  const ComparisonSeries({
+    required this.label,
+    required this.spots,
+    required this.color,
+    this.highlightStart = false,
   });
+}
+
+class ComparisonChart extends StatelessWidget {
+  final List<ComparisonSeries> series;
+
+  const ComparisonChart({super.key, required this.series});
 
   @override
   Widget build(BuildContext context) {
@@ -19,41 +28,7 @@ class ComparisonChart extends StatelessWidget {
         gridData: FlGridData(show: false),
         titlesData: FlTitlesData(show: false),
         borderData: FlBorderData(show: false),
-        lineBarsData: [
-          // Single Investment Line
-          LineChartBarData(
-            spots: singleSpots,
-            isCurved: true,
-            color: AppColors.gold,
-            barWidth: 3,
-            isStrokeCapRound: true,
-            dotData: FlDotData(
-              show: true,
-              checkToShowDot: (spot, barData) {
-                return spot.x == 0;
-              },
-              getDotPainter: (spot, percent, barData, index) {
-                return FlDotCirclePainter(
-                  radius: 6,
-                  color: AppColors.gold,
-                  strokeWidth: 2,
-                  strokeColor: Colors.white,
-                );
-              },
-            ),
-            belowBarData: BarAreaData(show: false),
-          ),
-          // Recurring Investment Line
-          LineChartBarData(
-            spots: recurringSpots,
-            isCurved: true,
-            color: AppColors.success,
-            barWidth: 3,
-            isStrokeCapRound: true,
-            dotData: FlDotData(show: false),
-            belowBarData: BarAreaData(show: false),
-          ),
-        ],
+        lineBarsData: [for (final entry in series) _buildLine(entry)],
         lineTouchData: LineTouchData(
           touchTooltipData: LineTouchTooltipData(
             getTooltipColor: (touchedSpot) => AppColors.navyMedium,
@@ -62,11 +37,11 @@ class ComparisonChart extends StatelessWidget {
             getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
               return touchedBarSpots.map((barSpot) {
                 final flSpot = barSpot;
-                final isSingle = barSpot.barIndex == 0;
+                final seriesData = series[barSpot.barIndex];
                 return LineTooltipItem(
-                  '${isSingle ? "단일" : "정기"}: \$${flSpot.y.toStringAsFixed(0)}',
+                  '${seriesData.label}: \$${flSpot.y.toStringAsFixed(0)}',
                   TextStyle(
-                    color: isSingle ? AppColors.gold : AppColors.success,
+                    color: seriesData.color,
                     fontWeight: FontWeight.bold,
                   ),
                 );
@@ -75,6 +50,34 @@ class ComparisonChart extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  LineChartBarData _buildLine(ComparisonSeries entry) {
+    final double? startX = entry.spots.isNotEmpty ? entry.spots.first.x : null;
+
+    return LineChartBarData(
+      spots: entry.spots,
+      isCurved: true,
+      color: entry.color,
+      barWidth: 3,
+      isStrokeCapRound: true,
+      dotData: FlDotData(
+        show: entry.highlightStart && startX != null,
+        checkToShowDot: (spot, barData) {
+          if (startX == null) return false;
+          return (spot.x - startX).abs() < 0.0001;
+        },
+        getDotPainter: (spot, percent, barData, index) {
+          return FlDotCirclePainter(
+            radius: 6,
+            color: entry.color,
+            strokeWidth: 2,
+            strokeColor: Colors.white,
+          );
+        },
+      ),
+      belowBarData: BarAreaData(show: false),
     );
   }
 }

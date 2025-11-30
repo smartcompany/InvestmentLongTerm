@@ -8,6 +8,7 @@ class InvestmentConfig {
   double amount;
   InvestmentType type;
   Frequency frequency;
+  Set<Frequency> selectedFrequencies;
 
   InvestmentConfig({
     this.asset = 'bitcoin',
@@ -15,5 +16,9 @@ class InvestmentConfig {
     this.amount = 1000,
     this.type = InvestmentType.single,
     this.frequency = Frequency.monthly,
-  });
+    Set<Frequency>? selectedFrequencies,
+  }) : selectedFrequencies =
+           (selectedFrequencies != null && selectedFrequencies.isNotEmpty)
+           ? Set<Frequency>.from(selectedFrequencies)
+           : {frequency};
 }

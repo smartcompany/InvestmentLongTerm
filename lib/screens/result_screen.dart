@@ -95,6 +95,10 @@ class ResultScreen extends StatelessWidget {
       decimalDigits: 0,
     );
     final percentFormat = NumberFormat.decimalPercentPattern(decimalDigits: 1);
+    final List<ComparisonSeries> comparisonSeries =
+        provider.config.type == InvestmentType.recurring
+        ? _buildComparisonSeries(provider)
+        : [];
 
     return Scaffold(
       backgroundColor: AppColors.navyDark,
@@ -166,24 +170,22 @@ class ResultScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: provider.config.type == InvestmentType.recurring
-                  ? _buildComparisonChart(provider)
+                  ? _buildComparisonChart(comparisonSeries)
                   : InvestmentChart(
                       investedSpots: result.investedSpots,
                       valueSpots: result.valueSpots,
                     ),
             ),
-            if (provider.config.type == InvestmentType.recurring) ...[
+            if (provider.config.type == InvestmentType.recurring &&
+                comparisonSeries.isNotEmpty) ...[
               SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildLegendItem("단일 투자", AppColors.gold),
-                  SizedBox(width: 20),
-                  _buildLegendItem(
-                    "정기 투자 (${provider.config.frequency == Frequency.monthly ? '매월' : '매주'})",
-                    AppColors.success,
-                  ),
-                ],
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 20,
+                runSpacing: 12,
+                children: comparisonSeries
+                    .map((line) => _buildLegendItem(line.label, line.color))
+                    .toList(),
               ),
             ],
 
@@ -266,18 +268,42 @@ class ResultScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildComparisonChart(AppStateProvider provider) {
-    final singleResult = provider.comparisonResult;
-    final recurringResult = provider.result!;
-
-    if (singleResult == null) {
+  Widget _buildComparisonChart(List<ComparisonSeries> series) {
+    if (series.length < 2) {
       return Center(child: CircularProgressIndicator(color: AppColors.gold));
     }
 
-    return ComparisonChart(
-      singleSpots: singleResult.valueSpots,
-      recurringSpots: recurringResult.valueSpots,
-    );
+    return ComparisonChart(series: series);
+  }
+
+  List<ComparisonSeries> _buildComparisonSeries(AppStateProvider provider) {
+    final singleResult = provider.singleResult;
+    if (singleResult == null) return [];
+
+    final List<ComparisonSeries> series = [
+      ComparisonSeries(
+        label: "단일 투자",
+        color: AppColors.gold,
+        spots: singleResult.valueSpots,
+        highlightStart: true,
+      ),
+    ];
+
+    provider.config.selectedFrequencies.forEach((frequency) {
+      final result = provider.recurringResults[frequency];
+      if (result == null) return;
+
+      final label = "정기 투자 (${frequency == Frequency.monthly ? '매월' : '매주'})";
+      final color = frequency == Frequency.monthly
+          ? AppColors.success
+          : AppColors.info;
+
+      series.add(
+        ComparisonSeries(label: label, color: color, spots: result.valueSpots),
+      );
+    });
+
+    return series;
   }
 
   Widget _buildLegendItem(String label, Color color) {

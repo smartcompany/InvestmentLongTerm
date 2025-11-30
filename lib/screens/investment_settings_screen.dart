@@ -190,30 +190,49 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
             ),
 
             // Frequency (Animated)
-            AnimatedContainer(
+            AnimatedSwitcher(
               duration: Duration(milliseconds: 300),
-              height: config.type == InvestmentType.recurring ? 100 : 0,
-              child: SingleChildScrollView(
-                physics: NeverScrollableScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 20),
-                    Text(
-                      "투자 주기",
-                      style: TextStyle(color: AppColors.slate300, fontSize: 16),
-                    ),
-                    SizedBox(height: 10),
-                    Row(
-                      children: [
-                        _buildRadio(Frequency.monthly, "매월", config, provider),
-                        SizedBox(width: 20),
-                        _buildRadio(Frequency.weekly, "매주", config, provider),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+              child: config.type == InvestmentType.recurring
+                  ? Padding(
+                      key: ValueKey("frequency-options"),
+                      padding: EdgeInsets.only(top: 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "투자 주기 (중복 선택 가능)",
+                            style:
+                                TextStyle(color: AppColors.slate300, fontSize: 16),
+                          ),
+                          SizedBox(height: 12),
+                          Wrap(
+                            spacing: 16,
+                            runSpacing: 12,
+                            children: [
+                              _buildFrequencyOption(
+                                Frequency.monthly,
+                                "매월",
+                                provider,
+                              ),
+                              _buildFrequencyOption(
+                                Frequency.weekly,
+                                "매주",
+                                provider,
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            "둘 다 선택하면 단일 투자와 함께 그래프로 비교해볼 수 있어요.",
+                            style: TextStyle(
+                              color: AppColors.slate400,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : SizedBox.shrink(key: ValueKey("frequency-empty")),
             ),
 
             SizedBox(height: 40),
@@ -268,70 +287,83 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
     );
   }
 
-  Widget _buildRadio(
+  Widget _buildFrequencyOption(
     Frequency value,
     String label,
-    InvestmentConfig config,
     AppStateProvider provider,
   ) {
-    bool isSelected = config.frequency == value;
+    final isSelected = provider.config.selectedFrequencies.contains(value);
+
     return GestureDetector(
-      onTap: () => provider.updateConfig(frequency: value),
-      child: Row(
-        children: [
-          Container(
-            width: 20,
-            height: 20,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: isSelected ? AppColors.gold : AppColors.slate400,
-                width: 2,
+      onTap: () => provider.toggleFrequencySelection(value),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppColors.gold : AppColors.slate700,
+          ),
+          color: isSelected
+              ? AppColors.gold.withValues(alpha: 0.08)
+              : AppColors.navyMedium,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(
+                  color: isSelected ? AppColors.gold : AppColors.slate400,
+                  width: 2,
+                ),
+                color: isSelected ? AppColors.gold : Colors.transparent,
+              ),
+              child: isSelected
+                  ? Icon(
+                      Icons.check,
+                      size: 14,
+                      color: AppColors.navyDark,
+                    )
+                  : null,
+            ),
+            SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
-            child: isSelected
-                ? Center(
-                    child: Container(
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: AppColors.gold,
-                      ),
-                    ),
-                  )
-                : null,
-          ),
-          SizedBox(width: 8),
-          Text(
-            label,
-            style: TextStyle(
-              color: isSelected ? Colors.white : AppColors.slate400,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   String _getSummaryText(InvestmentConfig config) {
     String asset = config.asset == 'bitcoin' ? '비트코인' : '테슬라';
-    String amount = _amountController.text;
+    String amount = _amountController.text.isEmpty ? '0' : _amountController.text;
     String period = "${config.yearsAgo}년 전부터";
 
     if (config.type == InvestmentType.single) {
       return "$period $asset에 \$$amount를 한 번 투자했다면...";
     } else {
-      String freq = config.frequency == Frequency.monthly ? "매월" : "매주";
-      int totalPeriods = config.frequency == Frequency.monthly
-          ? config.yearsAgo * 12
-          : config.yearsAgo * 52;
-      double totalAmount = double.tryParse(amount) ?? 0;
-      double perPeriodAmount = totalAmount / totalPeriods;
-      String periodUnit = config.frequency == Frequency.monthly ? "개월" : "주";
+      final hasMonthly = config.selectedFrequencies.contains(Frequency.monthly);
+      final hasWeekly = config.selectedFrequencies.contains(Frequency.weekly);
 
-      return "$period $asset에 $freq \$${perPeriodAmount.toStringAsFixed(2)}씩 투자 (총 $totalPeriods$periodUnit)";
+      String freqLabel;
+      if (hasMonthly && hasWeekly) {
+        freqLabel = "매월과 매주";
+      } else if (hasMonthly) {
+        freqLabel = "매월";
+      } else {
+        freqLabel = "매주";
+      }
+
+      return "$period $asset에 $freqLabel 각각 동일한 총 투자금 \$$amount을 투자하면 어떻게 될까요?";
     }
   }
 }
