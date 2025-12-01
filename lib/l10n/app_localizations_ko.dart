@@ -129,12 +129,17 @@ class AppLocalizationsKo extends AppLocalizations {
   String get close => '닫기';
 
   @override
-  String shareTextTitle(Object assetName, Object yearsAgo) {
-    return '만약 $yearsAgo년 전에 $assetName에 투자했다면 지금 얼마일까?';
+  String shareTextTitle(Object amount, Object assetName, Object yearsAgo) {
+    return '만약 $yearsAgo년 전에 $assetName에 $amount를 투자했다면 지금 얼마일까?';
   }
 
   @override
-  String get shareTextFooter => 'InvestLongTerm 계산 결과';
+  String get shareTextFooter => '장기 투자 매매 계산 결과';
+
+  @override
+  String downloadLink(Object url) {
+    return '다운로드: $url';
+  }
 
   @override
   String homeQuestionPart1(Object yearsAgo) {

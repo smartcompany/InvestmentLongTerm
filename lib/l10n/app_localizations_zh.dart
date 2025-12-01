@@ -129,12 +129,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get close => '关闭';
 
   @override
-  String shareTextTitle(Object assetName, Object yearsAgo) {
-    return '如果您在$yearsAgo年前投资$assetName，现在会有多少钱？';
+  String shareTextTitle(Object amount, Object assetName, Object yearsAgo) {
+    return '如果您在$yearsAgo年前投资$amount到$assetName，现在会有多少钱？';
   }
 
   @override
-  String get shareTextFooter => 'InvestLongTerm 计算结果';
+  String get shareTextFooter => '长期投资交易计算结果';
+
+  @override
+  String downloadLink(Object url) {
+    return '下载: $url';
+  }
 
   @override
   String homeQuestionPart1(Object yearsAgo) {

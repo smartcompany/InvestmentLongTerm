@@ -10,6 +10,7 @@ import '../utils/text_styles.dart';
 import '../widgets/common_share_ui.dart';
 import '../widgets/investment_chart.dart';
 import '../widgets/comparison_chart.dart';
+import '../services/ad_service.dart';
 
 class ResultScreen extends StatelessWidget {
   const ResultScreen({super.key});
@@ -559,17 +560,49 @@ class ResultScreen extends StatelessWidget {
   ) {
     final buffer = StringBuffer();
     final assetName = provider.assetNameForLocale(localeCode);
-    buffer.writeln(l10n.shareTextTitle(provider.config.yearsAgo, assetName));
-    for (final summary in summaries) {
-      final result = summary.result;
-      buffer.writeln(
-        "${summary.label}: ${currencyFormat.format(result.finalValue)} (${percentFormat.format(result.yieldRate / 100)})",
-      );
-    }
+    final formattedAmount = currencyFormat.format(provider.config.amount);
+
+    // Header with emoji
     buffer.writeln(
-      l10n.totalInvested(currencyFormat.format(provider.config.amount)),
+      '📊 ${l10n.shareTextTitle(formattedAmount, assetName, provider.config.yearsAgo)}',
     );
-    buffer.writeln(l10n.shareTextFooter);
+    buffer.writeln('');
+
+    // Results section
+    buffer.writeln('━━━━━━━━━━━━━━━━━━━━');
+    for (int i = 0; i < summaries.length; i++) {
+      final summary = summaries[i];
+      final result = summary.result;
+      final emoji = summary.highlight ? '🏆' : (i == 0 ? '💎' : '📈');
+      final yieldEmoji = result.yieldRate >= 0 ? '📈' : '📉';
+
+      buffer.writeln('$emoji ${summary.label}');
+      buffer.writeln(
+        '   ${currencyFormat.format(result.finalValue)} $yieldEmoji ${percentFormat.format(result.yieldRate / 100)}',
+      );
+      if (i < summaries.length - 1) {
+        buffer.writeln('');
+      }
+    }
+    buffer.writeln('━━━━━━━━━━━━━━━━━━━━');
+    buffer.writeln('');
+
+    // Total invested
+    buffer.writeln(
+      '💵 ${l10n.totalInvested(currencyFormat.format(provider.config.amount))}',
+    );
+    buffer.writeln('');
+
+    // Footer
+    buffer.writeln('✨ ${l10n.shareTextFooter}');
+
+    // Add download URL if available
+    final downloadUrl = AdService.shared.downloadUrl;
+    if (downloadUrl != null && downloadUrl.isNotEmpty) {
+      buffer.writeln('');
+      buffer.writeln('🔗 ${l10n.downloadLink(downloadUrl)}');
+    }
+
     return buffer.toString();
   }
 

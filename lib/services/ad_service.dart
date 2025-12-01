@@ -8,13 +8,16 @@ class AdService {
   AdService._();
   static final AdService shared = AdService._();
 
-  static const String _baseUrl = 'https://investment-long-term-server.vercel.app';
+  static const String _baseUrl =
+      'https://investment-long-term-server.vercel.app';
   String get _settingsEndpoint => '$_baseUrl/api/settings';
 
   String? _adsType;
-  String? _interstitialAdId;
+  String? _rewardedAdId;
+  String? _downloadUrl;
 
-  String? get interstitialAdId => _interstitialAdId;
+  String? get rewardedAdId => _rewardedAdId;
+  String? get downloadUrl => _downloadUrl;
 
   Future<bool> loadSettings() async {
     try {
@@ -35,7 +38,7 @@ class AdService {
         return null;
       }();
 
-      _interstitialAdId = () {
+      _rewardedAdId = () {
         if (io.Platform.isIOS) {
           return data['ref']?['ios']?[_adsType] as String?;
         } else if (io.Platform.isAndroid) {
@@ -44,7 +47,9 @@ class AdService {
         return null;
       }();
 
-      return _interstitialAdId != null && _interstitialAdId!.isNotEmpty;
+      _downloadUrl = data['down_load_url'] as String?;
+
+      return _rewardedAdId != null && _rewardedAdId!.isNotEmpty;
     } catch (_) {
       return false;
     }
@@ -54,16 +59,16 @@ class AdService {
     required VoidCallback onAdDismissed,
     VoidCallback? onAdFailedToShow,
   }) async {
-    if (_interstitialAdId == null || _interstitialAdId!.isEmpty) {
+    if (_rewardedAdId == null || _rewardedAdId!.isEmpty) {
       // If no ad ID, just proceed
       onAdDismissed();
       return;
     }
 
-    await InterstitialAd.load(
-      adUnitId: _interstitialAdId!,
+    await RewardedAd.load(
+      adUnitId: _rewardedAdId!,
       request: const AdRequest(),
-      adLoadCallback: InterstitialAdLoadCallback(
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
         onAdLoaded: (ad) {
           ad.fullScreenContentCallback = FullScreenContentCallback(
             onAdDismissedFullScreenContent: (ad) {
@@ -75,7 +80,11 @@ class AdService {
               onAdFailedToShow?.call();
             },
           );
-          ad.show();
+          ad.show(
+            onUserEarnedReward: (ad, reward) {
+              // Reward user if needed
+            },
+          );
         },
         onAdFailedToLoad: (error) {
           // If ad fails to load, proceed anyway
@@ -85,4 +94,3 @@ class AdService {
     );
   }
 }
-

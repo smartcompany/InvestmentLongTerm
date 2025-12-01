@@ -321,14 +321,20 @@ abstract class AppLocalizations {
   /// No description provided for @shareTextTitle.
   ///
   /// In ko, this message translates to:
-  /// **'만약 {yearsAgo}년 전에 {assetName}에 투자했다면 지금 얼마일까?'**
-  String shareTextTitle(Object assetName, Object yearsAgo);
+  /// **'만약 {yearsAgo}년 전에 {assetName}에 {amount}를 투자했다면 지금 얼마일까?'**
+  String shareTextTitle(Object amount, Object assetName, Object yearsAgo);
 
   /// No description provided for @shareTextFooter.
   ///
   /// In ko, this message translates to:
-  /// **'InvestLongTerm 계산 결과'**
+  /// **'장기 투자 매매 계산 결과'**
   String get shareTextFooter;
+
+  /// No description provided for @downloadLink.
+  ///
+  /// In ko, this message translates to:
+  /// **'다운로드: {url}'**
+  String downloadLink(Object url);
 
   /// No description provided for @homeQuestionPart1.
   ///

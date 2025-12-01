@@ -129,12 +129,17 @@ class AppLocalizationsJa extends AppLocalizations {
   String get close => '閉じる';
 
   @override
-  String shareTextTitle(Object assetName, Object yearsAgo) {
-    return 'もし$yearsAgo年前に$assetNameに投資していたら、今はいくら？';
+  String shareTextTitle(Object amount, Object assetName, Object yearsAgo) {
+    return 'もし$yearsAgo年前に$assetNameに$amountを投資していたら、今はいくら？';
   }
 
   @override
-  String get shareTextFooter => 'InvestLongTerm 計算結果';
+  String get shareTextFooter => '長期投資取引計算結果';
+
+  @override
+  String downloadLink(Object url) {
+    return 'ダウンロード: $url';
+  }
 
   @override
   String homeQuestionPart1(Object yearsAgo) {

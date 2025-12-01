@@ -21,7 +21,7 @@
 		<key>CFBundleSignature</key>
 		<string>????</string>
 		<key>CFBundleVersion</key>
-		<string>$(FLUTTER_BUILD_NUMBER)</string>
+		<string>3</string>
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
 		<key>UILaunchStoryboardName</key>
@@ -47,5 +47,7 @@
 		<true/>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<key>GADApplicationIdentifier</key>
+		<string>ca-app-pub-3940256099942544~1458002511</string>
 	</dict>
 </plist>
