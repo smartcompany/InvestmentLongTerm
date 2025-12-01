@@ -43,3 +43,18 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Android signing
+/android/key.properties
+/android/*.jks
+/android/*.keystore
+
+# iOS build artifacts
+*.dSYM
+*.dSYM.zip
+*.ipa
+**/*.dSYM
+**/*.ipa
+/ios/*.dSYM
+/ios/*.dSYM.zip
+/ios/*.ipa
