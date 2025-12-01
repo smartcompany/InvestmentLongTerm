@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="long_term_investment_sim"
+        android:label="Long-term Investment"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity

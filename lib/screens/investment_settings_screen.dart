@@ -68,17 +68,25 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) =>
-            Center(child: CircularProgressIndicator(color: AppColors.gold)),
+        barrierColor: Colors.black.withValues(alpha: 0.7), // 반투명 배경으로 터치 차단
+        builder: (context) => WillPopScope(
+          onWillPop: () async => false, // 뒤로가기 버튼도 차단
+          child: Center(
+            child: CircularProgressIndicator(
+              color: AppColors.gold,
+              strokeWidth: 3,
+            ),
+          ),
+        ),
       );
 
       // Calculate results
       await provider.calculate();
 
       if (!mounted) return;
-      Navigator.of(context).pop(); // Close loading dialog
 
       if (provider.error != null) {
+        Navigator.of(context).pop(); // Close loading dialog
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.calculationError(provider.error!)),
@@ -88,21 +96,24 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
         return;
       }
 
-      // Load ad settings and show ad
+      // Load ad settings (keep loading dialog open)
       await AdService.shared.loadSettings();
 
       if (!mounted) return;
 
+      // Show ad (keep loading dialog open until ad is shown or failed)
       await AdService.shared.showInterstitialAd(
         onAdDismissed: () {
           if (!mounted) return;
+          Navigator.of(context).pop(); // Close loading dialog
           Navigator.of(
             context,
           ).push(MaterialPageRoute(builder: (context) => ResultScreen()));
         },
         onAdFailedToShow: () {
-          // If ad fails, proceed anyway
+          // If ad fails, close loading dialog and proceed
           if (!mounted) return;
+          Navigator.of(context).pop(); // Close loading dialog
           Navigator.of(
             context,
           ).push(MaterialPageRoute(builder: (context) => ResultScreen()));

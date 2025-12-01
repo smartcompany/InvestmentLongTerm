@@ -1,4 +1,4 @@
-app_identifier("com.smartcompany.longTermInvestment") # The bundle identifier of your app
+app_identifier("com.smartcompany.longterminvestment") # The bundle identifier of your app
 apple_id("gunnylove@gmail.com") # Your Apple Developer Portal username
 
 itc_team_id("117828562") # App Store Connect Team ID

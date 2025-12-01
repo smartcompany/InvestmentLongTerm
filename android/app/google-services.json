@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "628704115024",
+    "project_id": "longterminvestment-c1985",
+    "storage_bucket": "longterminvestment-c1985.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:628704115024:android:0322fc7317ee3372885455",
+        "android_client_info": {
+          "package_name": "com.smartcompany.longterminvestment"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAKISqYnKppHQbUPb5IzBdXD8g6oKg9r1s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

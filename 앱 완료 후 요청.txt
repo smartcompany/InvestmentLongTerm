@@ -1,0 +1,34 @@
+다음 작업을 이 앱 프로젝트에 자동으로 적용해줘:
+
+1. **Firebase 설정**
+   - Crashlytics (crash 로그 수집)
+   - Firebase Cloud Messaging (푸시 알림)
+   - 기존 프로젝트 구조에 맞춰 GoogleService-Info.plist 및 google-services.json 추가
+
+2. **AdMob 설정**
+   - 광고 ID, 테스트 ID 기본 구성
+   - 앱 초기화 시 AdMob.initialize() 자동 호출
+   - 공통 배너/전면 광고 유틸 클래스 생성
+   - 서버에 설정 json을 넣고 받아서 처리하는 것
+
+3. **빌드 시스템 자동화**
+   - /Users/smart/Projects/TeslaMapBridge/apps 의 build_with_version.sh, ios_build_with_version.sh 를 그대로 복붙하고 앱 아이디만 맞춰서 변경 ios의 fastlane 폴더도 참고해서 가져와 적용  
+
+4. **공통 라이브러리 구성**
+   - 공통 UI 컴포넌트, FirebaseHelper, AdHelper 등 공용 라이브러리 생성
+   - /Users/smart/Projects/Root/CommonLib 경로에 구성
+   - 다른 앱에서도 import 하여 재사용 가능하도록 구조화
+
+5. **개인정보처리방침 및 개발자 URL**
+   - /Users/smart/Projects/Root 하위에 현재 앱 이름으로 폴더 생성
+   - 기존 다른 앱 폴더 참고해서 동일한 privacy.html / eula.html 자동 복사 생성
+   - App Store Connect에 연결될 URL 자동 출력 (예: https://smartcompany.github.io/{appName}/privacy.html)
+
+6. **수출규정(Export Compliance) 문서 누락 해결**
+   - Export Compliance 자동 생성 스크립트 추가
+   - App Store Connect 업로드 시 자동 포함되도록 Fastlane 설정
+
+7. **앱스토어 미리보기용 스크린샷**
+   - iPhone 13 mini simulator에서 주요한 화면 캡처 후 현재 루터 폴더 아래 /Screenshots 폴더에 저장 해줘 
+
+모든 항목은 기존 다른 앱 /Users/smart/Projects/TeslaMapBridge/ 에서 쓰던 구조 및 스크립트를 참고해서 동일한 패턴으로 설정해줘.
