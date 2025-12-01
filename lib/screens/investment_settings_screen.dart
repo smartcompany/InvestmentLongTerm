@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../l10n/app_localizations.dart';
 import '../models/investment_config.dart';
 import '../providers/app_state_provider.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
+import '../services/ad_service.dart';
 import 'result_screen.dart';
 
 class InvestmentSettingsScreen extends StatefulWidget {
@@ -22,8 +24,29 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
   @override
   void initState() {
     super.initState();
-    final config = context.read<AppStateProvider>().config;
-    _amountController.text = config.amount.toStringAsFixed(0);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final config = context.read<AppStateProvider>().config;
+      // If amount is default (1000), adjust based on locale
+      if (config.amount == 1000) {
+        final localeCode = Localizations.localeOf(context).languageCode;
+        double newAmount = 1000;
+        if (localeCode == 'ko') {
+          newAmount = 1000000;
+        } else if (localeCode == 'ja' || localeCode == 'zh') {
+          newAmount =
+              100000; // 100,000 for Yen/Yuan (approx $1000 scale, starting with 1)
+        }
+
+        if (newAmount != 1000) {
+          context.read<AppStateProvider>().updateConfig(amount: newAmount);
+          _amountController.text = NumberFormat('#,###').format(newAmount);
+        } else {
+          _amountController.text = NumberFormat('#,###').format(config.amount);
+        }
+      } else {
+        _amountController.text = NumberFormat('#,###').format(config.amount);
+      }
+    });
   }
 
   @override
@@ -35,12 +58,25 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
   Future<void> _calculateAndNavigate() async {
     final provider = context.read<AppStateProvider>();
     final l10n = AppLocalizations.of(context)!;
-    double? amount = double.tryParse(_amountController.text);
+    String cleanAmount = _amountController.text.replaceAll(',', '');
+    double? amount = double.tryParse(cleanAmount);
     if (amount != null) {
       provider.updateConfig(amount: amount);
+
+      // Show loading
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) =>
+            Center(child: CircularProgressIndicator(color: AppColors.gold)),
+      );
+
+      // Calculate results
       await provider.calculate();
 
       if (!mounted) return;
+      Navigator.of(context).pop(); // Close loading dialog
 
       if (provider.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -49,11 +85,43 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
             backgroundColor: Colors.red,
           ),
         );
-      } else {
-        Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (context) => ResultScreen()));
+        return;
       }
+
+      // Load ad settings and show ad
+      await AdService.shared.loadSettings();
+
+      if (!mounted) return;
+
+      await AdService.shared.showInterstitialAd(
+        onAdDismissed: () {
+          if (!mounted) return;
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (context) => ResultScreen()));
+        },
+        onAdFailedToShow: () {
+          // If ad fails, proceed anyway
+          if (!mounted) return;
+          Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (context) => ResultScreen()));
+        },
+      );
+    }
+  }
+
+  String _getCurrencySymbol(String localeCode) {
+    switch (localeCode) {
+      case 'ko':
+        return '₩';
+      case 'ja':
+        return '¥';
+      case 'zh':
+        return 'CN¥';
+      case 'en':
+      default:
+        return '\$';
     }
   }
 
@@ -64,6 +132,7 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
     final localeCode = Localizations.localeOf(context).languageCode;
     final assetName = provider.assetNameForLocale(localeCode);
     final l10n = AppLocalizations.of(context)!;
+    final currencySymbol = _getCurrencySymbol(localeCode);
 
     return Scaffold(
       backgroundColor: AppColors.navyDark,
@@ -88,7 +157,10 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
 
             // Years Slider
             Text(
-              l10n.investmentStartDate(config.yearsAgo),
+              l10n.investmentStartDate(
+                DateTime.now().year - config.yearsAgo,
+                config.yearsAgo,
+              ),
               style: AppTextStyles.settingsSectionLabel,
             ),
             SizedBox(height: 10),
@@ -122,11 +194,33 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
             SizedBox(height: 10),
             TextField(
               controller: _amountController,
+              onChanged: (value) {
+                if (value.isNotEmpty) {
+                  String cleanText = value.replaceAll(',', '');
+                  if (cleanText.isNotEmpty) {
+                    final number = int.tryParse(cleanText);
+                    if (number != null) {
+                      final formatted = NumberFormat('#,###').format(number);
+                      if (formatted != value) {
+                        _amountController.value = TextEditingValue(
+                          text: formatted,
+                          selection: TextSelection.collapsed(
+                            offset: formatted.length,
+                          ),
+                        );
+                      }
+                    }
+                  }
+                }
+                setState(() {});
+              },
+              onTapOutside: (event) =>
+                  FocusManager.instance.primaryFocus?.unfocus(),
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               style: AppTextStyles.settingsAmountInput,
               decoration: InputDecoration(
-                prefixText: "\$ ",
+                prefixText: "$currencySymbol ",
                 prefixStyle: AppTextStyles.settingsAmountPrefix,
                 enabledBorder: UnderlineInputBorder(
                   borderSide: BorderSide(color: AppColors.slate700),
@@ -244,7 +338,7 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
                   SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      _getSummaryText(config, assetName, l10n),
+                      _getSummaryText(config, assetName, l10n, currencySymbol),
                       style: TextStyle(color: AppColors.slate300),
                     ),
                   ),
@@ -336,32 +430,62 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
     InvestmentConfig config,
     String assetName,
     AppLocalizations l10n,
+    String currencySymbol,
   ) {
     String amount = _amountController.text.isEmpty
         ? '0'
         : _amountController.text;
+    String formattedAmount = "$currencySymbol$amount";
 
     if (config.type == InvestmentType.single) {
-      return l10n.summarySingle(config.yearsAgo, assetName, amount);
+      return l10n.summarySingle(formattedAmount, assetName, config.yearsAgo);
     } else {
-      final hasMonthly = config.selectedFrequencies.contains(Frequency.monthly);
-      final hasWeekly = config.selectedFrequencies.contains(Frequency.weekly);
+      // Calculate per-period investment amount
+      String cleanAmount = amount.replaceAll(',', '');
+      double? totalAmount = double.tryParse(cleanAmount);
 
-      String freqLabel;
-      if (hasMonthly && hasWeekly) {
-        freqLabel = l10n.monthlyAndWeekly;
-      } else if (hasMonthly) {
-        freqLabel = l10n.monthly;
-      } else {
-        freqLabel = l10n.weekly;
+      if (totalAmount == null || totalAmount == 0) {
+        // Default to monthly if no amount
+        return l10n.summaryRecurringMonthly(
+          assetName,
+          "$currencySymbol 0",
+          config.yearsAgo,
+        );
       }
 
-      return l10n.summaryRecurring(
-        config.yearsAgo,
-        assetName,
-        freqLabel,
-        amount,
-      );
+      // Calculate per-period amount based on last clicked frequency
+      // Use config.frequency which stores the last clicked frequency
+      final lastClickedFrequency = config.frequency;
+
+      double perPeriodAmount;
+      bool useWeekly;
+
+      if (lastClickedFrequency == Frequency.weekly) {
+        // Weekly: total / (years * 52)
+        perPeriodAmount = totalAmount / (config.yearsAgo * 52);
+        useWeekly = true;
+      } else {
+        // Monthly: total / (years * 12)
+        perPeriodAmount = totalAmount / (config.yearsAgo * 12);
+        useWeekly = false;
+      }
+
+      String formattedPerPeriodAmount =
+          "$currencySymbol${NumberFormat('#,###').format(perPeriodAmount.round())}";
+
+      if (useWeekly) {
+        return l10n.summaryRecurringWeekly(
+          assetName,
+          formattedPerPeriodAmount,
+          config.yearsAgo,
+        );
+      } else {
+        return l10n.summaryRecurringMonthly(
+          assetName,
+          formattedPerPeriodAmount,
+          config.yearsAgo,
+        );
+      }
     }
   }
 }

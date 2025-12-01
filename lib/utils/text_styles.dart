@@ -67,14 +67,14 @@ class AppTextStyles {
 
   /// 결과 카드 메인 금액 값 (큰 숫자)
   static const TextStyle resultCardValueBig = TextStyle(
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: FontWeight.w900,
   );
 
   /// 결과 카드 수익률 (퍼센트)
   static const TextStyle resultCardYield = TextStyle(
     fontWeight: FontWeight.w700,
-    fontSize: 32, // 기본 크기, 상황에 따라 조정 가능
+    fontSize: 28, // 기본 크기, 상황에 따라 조정 가능
   );
 
   /// 결과 카드 수익 금액 (투자 대비 수익 +$123)
@@ -89,7 +89,7 @@ class AppTextStyles {
   /// 결과 카드 하단 작은 스탯 값
   static const TextStyle resultStatValue = TextStyle(
     fontWeight: FontWeight.bold,
-    fontSize: 20,
+    fontSize: 16,
   );
 
   /// "최고 수익" 뱃지 텍스트

@@ -387,8 +387,8 @@ abstract class AppLocalizations {
   /// No description provided for @investmentStartDate.
   ///
   /// In ko, this message translates to:
-  /// **'투자 시작 시점: {yearsAgo}년 전'**
-  String investmentStartDate(Object yearsAgo);
+  /// **'투자 시작 시점: {yearsAgo}년 전 ({year})'**
+  String investmentStartDate(Object year, Object yearsAgo);
 
   /// No description provided for @monthlyAndWeekly.
   ///
@@ -399,17 +399,26 @@ abstract class AppLocalizations {
   /// No description provided for @summarySingle.
   ///
   /// In ko, this message translates to:
-  /// **'{yearsAgo}년 전부터 {assetName}에 \${amount}를 한 번 투자했다면...'**
+  /// **'{yearsAgo}년 전부터 {assetName}에 {amount}를 한 번 투자했다면...'**
   String summarySingle(Object amount, Object assetName, Object yearsAgo);
 
-  /// No description provided for @summaryRecurring.
+  /// No description provided for @summaryRecurringMonthly.
   ///
   /// In ko, this message translates to:
-  /// **'{yearsAgo}년 전부터 {assetName}에 {freqLabel} 각각 동일한 총 투자금 \${amount}을 투자하면 어떻게 될까요?'**
-  String summaryRecurring(
-    Object amount,
+  /// **'{yearsAgo}년 전부터 {assetName}에 매월 {investMoney}를 투자하면 어떻게 될까요?'**
+  String summaryRecurringMonthly(
     Object assetName,
-    Object freqLabel,
+    Object investMoney,
+    Object yearsAgo,
+  );
+
+  /// No description provided for @summaryRecurringWeekly.
+  ///
+  /// In ko, this message translates to:
+  /// **'{yearsAgo}년 전부터 {assetName}에 매주 {investMoney}를 투자하면 어떻게 될까요?'**
+  String summaryRecurringWeekly(
+    Object assetName,
+    Object investMoney,
     Object yearsAgo,
   );
 

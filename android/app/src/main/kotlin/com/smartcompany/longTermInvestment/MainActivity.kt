@@ -1,5 +1,6 @@
-package com.example.long_term_investment_sim
+package com.smartcompany.longTermInvestment
 
 import io.flutter.embedding.android.FlutterActivity
 
 class MainActivity : FlutterActivity()
+

@@ -170,8 +170,8 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String investmentStartDate(Object yearsAgo) {
-    return '投資開始時点: $yearsAgo年前';
+  String investmentStartDate(Object year, Object yearsAgo) {
+    return '投資開始時点: $yearsAgo年前 ($year年)';
   }
 
   @override
@@ -179,17 +179,25 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String summarySingle(Object amount, Object assetName, Object yearsAgo) {
-    return '$yearsAgo年前から$assetNameに\$$amountを一括投資していたら...';
+    return '$yearsAgo年前から$assetNameに$amountを一括投資していたら...';
   }
 
   @override
-  String summaryRecurring(
-    Object amount,
+  String summaryRecurringMonthly(
     Object assetName,
-    Object freqLabel,
+    Object investMoney,
     Object yearsAgo,
   ) {
-    return '$yearsAgo年前から$assetNameに$freqLabel、総額\$$amountを投資していたらどうなる？';
+    return '$yearsAgo年前から$assetNameに毎月$investMoneyを投資していたらどうなる？';
+  }
+
+  @override
+  String summaryRecurringWeekly(
+    Object assetName,
+    Object investMoney,
+    Object yearsAgo,
+  ) {
+    return '$yearsAgo年前から$assetNameに毎週$investMoneyを投資していたらどうなる？';
   }
 
   @override

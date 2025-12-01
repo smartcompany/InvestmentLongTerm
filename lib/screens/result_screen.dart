@@ -13,11 +13,27 @@ import '../widgets/comparison_chart.dart';
 
 class ResultScreen extends StatelessWidget {
   const ResultScreen({super.key});
+  String _getCurrencySymbol(String localeCode) {
+    switch (localeCode) {
+      case 'ko':
+        return '₩';
+      case 'ja':
+        return '¥';
+      case 'zh':
+        return 'CN¥';
+      case 'en':
+      default:
+        return '\$';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AppStateProvider>();
     final result = provider.result;
     final l10n = AppLocalizations.of(context)!;
+    final localeCode = Localizations.localeOf(context).languageCode;
+    final currencySymbol = _getCurrencySymbol(localeCode);
 
     if (provider.isLoading) {
       return Scaffold(
@@ -95,12 +111,11 @@ class ResultScreen extends StatelessWidget {
     }
 
     final currencyFormat = NumberFormat.currency(
-      symbol: '\$',
+      symbol: currencySymbol,
       decimalDigits: 0,
     );
     final percentFormat = NumberFormat.decimalPercentPattern(decimalDigits: 1);
     final strategySummaries = _buildStrategySummaries(provider, l10n);
-    final localeCode = Localizations.localeOf(context).languageCode;
     final List<ComparisonSeries> comparisonSeries =
         provider.config.type == InvestmentType.recurring
         ? _buildComparisonSeries(provider, l10n)
@@ -315,15 +330,18 @@ class ResultScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    summary.label,
-                    style: AppTextStyles.resultCardTitle.copyWith(
-                      color: textColor,
+                  Expanded(
+                    child: Text(
+                      summary.label,
+                      style: AppTextStyles.resultCardTitle.copyWith(
+                        color: textColor,
+                      ),
                     ),
                   ),
-                  Spacer(),
-                  if (summary.highlight)
+                  if (summary.highlight) ...[
+                    SizedBox(width: 8),
                     Container(
                       padding: EdgeInsets.symmetric(
                         horizontal: 10,
@@ -338,11 +356,14 @@ class ResultScreen extends StatelessWidget {
                         style: AppTextStyles.badgeText,
                       ),
                     ),
+                  ],
                 ],
               ),
               SizedBox(height: 18),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
+              Wrap(
+                crossAxisAlignment: WrapCrossAlignment.end,
+                spacing: 12,
+                runSpacing: 4,
                 children: [
                   Text(
                     currencyFormat.format(result.finalValue),
@@ -350,9 +371,8 @@ class ResultScreen extends StatelessWidget {
                       color: textColor,
                     ),
                   ),
-                  SizedBox(width: 12),
                   Text(
-                    percentFormat.format(result.yieldRate / 100),
+                    "${result.yieldRate >= 0 ? '+' : ''}${percentFormat.format(result.yieldRate / 100)}",
                     style: AppTextStyles.resultCardYield.copyWith(
                       color: result.yieldRate >= 0
                           ? AppColors.success
@@ -361,14 +381,7 @@ class ResultScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(height: 6),
-              Text(
-                gainText,
-                style: AppTextStyles.resultCardGain.copyWith(
-                  color: gainPositive ? AppColors.success : Colors.redAccent,
-                ),
-              ),
-              SizedBox(height: 18),
+
               Divider(
                 color: summary.highlight
                     ? AppColors.navyDark.withValues(alpha: 0.1)
@@ -393,7 +406,8 @@ class ResultScreen extends StatelessWidget {
                     Expanded(
                       child: _buildStatTile(
                         label: l10n.cagr,
-                        value: "${result.cagr.toStringAsFixed(1)}%",
+                        value:
+                            "${result.cagr >= 0 ? '+' : ''}${result.cagr.toStringAsFixed(1)}%",
                         textColor: textColor,
                         secondaryTextColor: secondaryTextColor,
                         highlight: summary.highlight,
@@ -406,6 +420,7 @@ class ResultScreen extends StatelessWidget {
               if (showTotalInvestment) ...[
                 SizedBox(height: 12),
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Icon(
                       Icons.savings_outlined,
@@ -415,11 +430,13 @@ class ResultScreen extends StatelessWidget {
                       size: 16,
                     ),
                     SizedBox(width: 8),
-                    Text(
-                      l10n.totalInvested(totalInvestment),
-                      style: AppTextStyles.resultStatValue.copyWith(
-                        color: secondaryTextColor,
-                        fontWeight: FontWeight.w600,
+                    Expanded(
+                      child: Text(
+                        l10n.totalInvested(totalInvestment),
+                        style: AppTextStyles.resultStatValue.copyWith(
+                          color: secondaryTextColor,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],

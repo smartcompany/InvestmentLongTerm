@@ -42,6 +42,7 @@ dependencies:
   google_fonts: ^6.3.2
   http: ^1.2.0
   share_plus: ^7.2.2
+  google_mobile_ads: ^5.1.0
 
 dev_dependencies:
   flutter_test:

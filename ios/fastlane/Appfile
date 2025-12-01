@@ -1,0 +1,9 @@
+app_identifier("com.smartcompany.longTermInvestment") # The bundle identifier of your app
+apple_id("gunnylove@gmail.com") # Your Apple Developer Portal username
+
+itc_team_id("117828562") # App Store Connect Team ID
+team_id("NTCK5U8AWD") # Developer Portal Team ID
+
+
+# For more information about the Appfile, see:
+#     https://docs.fastlane.tools/advanced/#appfile

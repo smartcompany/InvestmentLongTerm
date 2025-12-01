@@ -173,8 +173,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String investmentStartDate(Object yearsAgo) {
-    return 'Start Date: $yearsAgo years ago';
+  String investmentStartDate(Object year, Object yearsAgo) {
+    return 'Start Date: $yearsAgo years ago ($year)';
   }
 
   @override
@@ -182,17 +182,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String summarySingle(Object amount, Object assetName, Object yearsAgo) {
-    return 'If you invested \$$amount in $assetName once $yearsAgo years ago...';
+    return 'If you invested $amount in $assetName once $yearsAgo years ago...';
   }
 
   @override
-  String summaryRecurring(
-    Object amount,
+  String summaryRecurringMonthly(
     Object assetName,
-    Object freqLabel,
+    Object investMoney,
     Object yearsAgo,
   ) {
-    return 'What if you invested a total of \$$amount in $assetName $freqLabel starting $yearsAgo years ago?';
+    return 'What if you invested $investMoney monthly in $assetName starting $yearsAgo years ago?';
+  }
+
+  @override
+  String summaryRecurringWeekly(
+    Object assetName,
+    Object investMoney,
+    Object yearsAgo,
+  ) {
+    return 'What if you invested $investMoney weekly in $assetName starting $yearsAgo years ago?';
   }
 
   @override

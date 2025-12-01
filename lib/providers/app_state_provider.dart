@@ -100,10 +100,15 @@ class AppStateProvider with ChangeNotifier {
         return;
       }
       _config.selectedFrequencies.remove(frequency);
+      // If removed, set frequency to the remaining one
+      if (_config.selectedFrequencies.isNotEmpty) {
+        _config.frequency = _config.selectedFrequencies.first;
+      }
     } else {
       _config.selectedFrequencies.add(frequency);
+      // Store the last clicked frequency
+      _config.frequency = frequency;
     }
-    _config.frequency = _config.selectedFrequencies.first;
     notifyListeners();
   }
 

@@ -170,8 +170,8 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String investmentStartDate(Object yearsAgo) {
-    return '投资开始时间：$yearsAgo年前';
+  String investmentStartDate(Object year, Object yearsAgo) {
+    return '投资开始时间：$yearsAgo年前 ($year年)';
   }
 
   @override
@@ -179,17 +179,25 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String summarySingle(Object amount, Object assetName, Object yearsAgo) {
-    return '如果$yearsAgo年前一次性投资\$$amount于$assetName...';
+    return '如果$yearsAgo年前一次性投资$amount于$assetName...';
   }
 
   @override
-  String summaryRecurring(
-    Object amount,
+  String summaryRecurringMonthly(
     Object assetName,
-    Object freqLabel,
+    Object investMoney,
     Object yearsAgo,
   ) {
-    return '如果$yearsAgo年前开始，$freqLabel在$assetName定投总额\$$amount会怎样？';
+    return '如果$yearsAgo年前开始，每月在$assetName定投$investMoney会怎样？';
+  }
+
+  @override
+  String summaryRecurringWeekly(
+    Object assetName,
+    Object investMoney,
+    Object yearsAgo,
+  ) {
+    return '如果$yearsAgo年前开始，每周在$assetName定投$investMoney会怎样？';
   }
 
   @override
