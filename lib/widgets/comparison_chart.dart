@@ -7,12 +7,18 @@ class ComparisonSeries {
   final List<FlSpot> spots;
   final Color color;
   final bool highlightStart;
+  final int renderPriority;
+  final List<int>? dashArray;
+  final double? barWidth;
 
   const ComparisonSeries({
     required this.label,
     required this.spots,
     required this.color,
     this.highlightStart = false,
+    this.renderPriority = 0,
+    this.dashArray,
+    this.barWidth,
   });
 }
 
@@ -23,12 +29,15 @@ class ComparisonChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sortedSeries = [...series]
+      ..sort((a, b) => a.renderPriority.compareTo(b.renderPriority));
+
     return LineChart(
       LineChartData(
         gridData: FlGridData(show: false),
         titlesData: FlTitlesData(show: false),
         borderData: FlBorderData(show: false),
-        lineBarsData: [for (final entry in series) _buildLine(entry)],
+        lineBarsData: [for (final entry in sortedSeries) _buildLine(entry)],
         lineTouchData: LineTouchData(
           touchTooltipData: LineTouchTooltipData(
             getTooltipColor: (touchedSpot) => AppColors.navyMedium,
@@ -37,7 +46,7 @@ class ComparisonChart extends StatelessWidget {
             getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
               return touchedBarSpots.map((barSpot) {
                 final flSpot = barSpot;
-                final seriesData = series[barSpot.barIndex];
+                final seriesData = sortedSeries[barSpot.barIndex];
                 return LineTooltipItem(
                   '${seriesData.label}: \$${flSpot.y.toStringAsFixed(0)}',
                   TextStyle(
@@ -60,8 +69,9 @@ class ComparisonChart extends StatelessWidget {
       spots: entry.spots,
       isCurved: true,
       color: entry.color,
-      barWidth: 3,
+      barWidth: entry.barWidth ?? 3,
       isStrokeCapRound: true,
+      dashArray: entry.dashArray,
       dotData: FlDotData(
         show: entry.highlightStart && startX != null,
         checkToShowDot: (spot, barData) {

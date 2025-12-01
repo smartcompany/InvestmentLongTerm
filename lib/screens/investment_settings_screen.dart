@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../models/investment_config.dart';
 import '../providers/app_state_provider.dart';
 import '../utils/colors.dart';
+import '../utils/text_styles.dart';
 import 'result_screen.dart';
 
 class InvestmentSettingsScreen extends StatefulWidget {
@@ -32,6 +34,7 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
 
   Future<void> _calculateAndNavigate() async {
     final provider = context.read<AppStateProvider>();
+    final l10n = AppLocalizations.of(context)!;
     double? amount = double.tryParse(_amountController.text);
     if (amount != null) {
       provider.updateConfig(amount: amount);
@@ -42,7 +45,7 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
       if (provider.error != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('계산 실패: ${provider.error}'),
+            content: Text(l10n.calculationError(provider.error!)),
             backgroundColor: Colors.red,
           ),
         );
@@ -58,6 +61,9 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<AppStateProvider>();
     final config = provider.config;
+    final localeCode = Localizations.localeOf(context).languageCode;
+    final assetName = provider.assetNameForLocale(localeCode);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: AppColors.navyDark,
@@ -75,19 +81,15 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              config.asset == 'bitcoin' ? "비트코인 투자 설정" : "테슬라 투자 설정",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-              ),
+              l10n.investmentSettingsTitle(assetName),
+              style: AppTextStyles.settingsAssetTitle,
             ),
             SizedBox(height: 40),
 
             // Years Slider
             Text(
-              "투자 시작 시점: ${config.yearsAgo}년 전",
-              style: TextStyle(color: AppColors.slate300, fontSize: 16),
+              l10n.investmentStartDate(config.yearsAgo),
+              style: AppTextStyles.settingsSectionLabel,
             ),
             SizedBox(height: 10),
             SliderTheme(
@@ -114,26 +116,18 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
 
             // Amount Input
             Text(
-              "투자 금액",
-              style: TextStyle(color: AppColors.slate300, fontSize: 16),
+              l10n.investmentAmountLabel,
+              style: AppTextStyles.settingsSectionLabel,
             ),
             SizedBox(height: 10),
             TextField(
               controller: _amountController,
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: AppTextStyles.settingsAmountInput,
               decoration: InputDecoration(
                 prefixText: "\$ ",
-                prefixStyle: TextStyle(
-                  color: AppColors.gold,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+                prefixStyle: AppTextStyles.settingsAmountPrefix,
                 enabledBorder: UnderlineInputBorder(
                   borderSide: BorderSide(color: AppColors.slate700),
                 ),
@@ -147,8 +141,8 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
 
             // Investment Type
             Text(
-              "투자 방식",
-              style: TextStyle(color: AppColors.slate300, fontSize: 16),
+              l10n.investmentTypeLabel,
+              style: AppTextStyles.settingsSectionLabel,
             ),
             SizedBox(height: 10),
             SizedBox(
@@ -157,11 +151,11 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
                 segments: [
                   ButtonSegment(
                     value: InvestmentType.single,
-                    label: Text("단일 투자"),
+                    label: Text(l10n.singleInvestment),
                   ),
                   ButtonSegment(
                     value: InvestmentType.recurring,
-                    label: Text("정기 투자"),
+                    label: Text(l10n.recurringInvestment),
                   ),
                 ],
                 selected: {config.type},
@@ -200,9 +194,8 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "투자 주기 (중복 선택 가능)",
-                            style:
-                                TextStyle(color: AppColors.slate300, fontSize: 16),
+                            l10n.investmentFrequencyLabel,
+                            style: AppTextStyles.settingsSectionLabel,
                           ),
                           SizedBox(height: 12),
                           Wrap(
@@ -211,19 +204,19 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
                             children: [
                               _buildFrequencyOption(
                                 Frequency.monthly,
-                                "매월",
+                                l10n.monthly,
                                 provider,
                               ),
                               _buildFrequencyOption(
                                 Frequency.weekly,
-                                "매주",
+                                l10n.weekly,
                                 provider,
                               ),
                             ],
                           ),
                           SizedBox(height: 8),
                           Text(
-                            "둘 다 선택하면 단일 투자와 함께 그래프로 비교해볼 수 있어요.",
+                            l10n.frequencySelectionHint,
                             style: TextStyle(
                               color: AppColors.slate400,
                               fontSize: 13,
@@ -251,7 +244,7 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
                   SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      _getSummaryText(config),
+                      _getSummaryText(config, assetName, l10n),
                       style: TextStyle(color: AppColors.slate300),
                     ),
                   ),
@@ -276,8 +269,8 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
                   elevation: 0,
                 ),
                 child: Text(
-                  "결과 보기",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  l10n.viewResults,
+                  style: AppTextStyles.buttonTextPrimary,
                 ),
               ),
             ),
@@ -322,11 +315,7 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
                 color: isSelected ? AppColors.gold : Colors.transparent,
               ),
               child: isSelected
-                  ? Icon(
-                      Icons.check,
-                      size: 14,
-                      color: AppColors.navyDark,
-                    )
+                  ? Icon(Icons.check, size: 14, color: AppColors.navyDark)
                   : null,
             ),
             SizedBox(width: 8),
@@ -343,27 +332,36 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
     );
   }
 
-  String _getSummaryText(InvestmentConfig config) {
-    String asset = config.asset == 'bitcoin' ? '비트코인' : '테슬라';
-    String amount = _amountController.text.isEmpty ? '0' : _amountController.text;
-    String period = "${config.yearsAgo}년 전부터";
+  String _getSummaryText(
+    InvestmentConfig config,
+    String assetName,
+    AppLocalizations l10n,
+  ) {
+    String amount = _amountController.text.isEmpty
+        ? '0'
+        : _amountController.text;
 
     if (config.type == InvestmentType.single) {
-      return "$period $asset에 \$$amount를 한 번 투자했다면...";
+      return l10n.summarySingle(config.yearsAgo, assetName, amount);
     } else {
       final hasMonthly = config.selectedFrequencies.contains(Frequency.monthly);
       final hasWeekly = config.selectedFrequencies.contains(Frequency.weekly);
 
       String freqLabel;
       if (hasMonthly && hasWeekly) {
-        freqLabel = "매월과 매주";
+        freqLabel = l10n.monthlyAndWeekly;
       } else if (hasMonthly) {
-        freqLabel = "매월";
+        freqLabel = l10n.monthly;
       } else {
-        freqLabel = "매주";
+        freqLabel = l10n.weekly;
       }
 
-      return "$period $asset에 $freqLabel 각각 동일한 총 투자금 \$$amount을 투자하면 어떻게 될까요?";
+      return l10n.summaryRecurring(
+        config.yearsAgo,
+        assetName,
+        freqLabel,
+        amount,
+      );
     }
   }
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/app_state_provider.dart';
 import '../utils/colors.dart';
+import '../utils/text_styles.dart';
 import '../widgets/asset_button.dart';
 import 'investment_settings_screen.dart';
 
@@ -23,6 +25,9 @@ class _HomeScreenState extends State<HomeScreen>
       duration: Duration(seconds: 2),
       vsync: this,
     )..repeat(reverse: true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AppStateProvider>().loadAssets();
+    });
   }
 
   @override
@@ -73,6 +78,14 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<AppStateProvider>();
+    final localeCode = Localizations.localeOf(context).languageCode;
+    final selectedAssetName = provider.assetNameForLocale(
+      localeCode,
+      assetId: provider.config.asset,
+    );
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -83,61 +96,142 @@ class _HomeScreenState extends State<HomeScreen>
           ),
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _buildAnimatedIcon(Icons.trending_up, 0.0),
-                    SizedBox(width: 20),
-                    _buildAnimatedIcon(Icons.calendar_today, 0.3),
-                    SizedBox(width: 20),
-                    _buildAnimatedIcon(Icons.bar_chart, 0.6),
-                  ],
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 30,
                 ),
-                SizedBox(height: 60),
-                Text(
-                  "만약 5년 전에\n비트코인을 샀다면\n지금 얼마일까?",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    height: 1.3,
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight - 60,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _buildAnimatedIcon(Icons.trending_up, 0.0),
+                          SizedBox(width: 16),
+                          _buildAnimatedIcon(Icons.calendar_today, 0.3),
+                          SizedBox(width: 16),
+                          _buildAnimatedIcon(Icons.bar_chart, 0.6),
+                        ],
+                      ),
+                      SizedBox(height: 32),
+                      Text(
+                        l10n.homeQuestionPart1(provider.config.yearsAgo),
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.homeMainQuestion.copyWith(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        l10n.homeQuestionPart2(selectedAssetName),
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.homeMainQuestion.copyWith(
+                          color: AppColors.gold,
+                          fontSize: 30,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        l10n.homeDescription,
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.homeSubDescription,
+                      ),
+                      SizedBox(height: 36),
+                      if (provider.isAssetsLoading && provider.assets.isEmpty)
+                        Center(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 40),
+                            child: CircularProgressIndicator(
+                              color: AppColors.gold,
+                            ),
+                          ),
+                        )
+                      else if (provider.assetsError != null &&
+                          provider.assets.isEmpty)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Column(
+                            children: [
+                              Text(
+                                l10n.failedToLoadAssetList,
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              SizedBox(height: 12),
+                              OutlinedButton(
+                                onPressed: () => provider.loadAssets(),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(color: AppColors.gold),
+                                ),
+                                child: Text(
+                                  l10n.retry,
+                                  style: TextStyle(color: AppColors.gold),
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      else
+                        _buildAssetButtons(provider, localeCode, l10n),
+                    ],
                   ),
                 ),
-                SizedBox(height: 20),
-                Text(
-                  "시간을 믿는 투자,\n그 결과를 직접 확인해보세요.",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: AppColors.slate400,
-                    fontSize: 16,
-                    height: 1.5,
-                  ),
-                ),
-                SizedBox(height: 60),
-                AssetButton(
-                  assetName: "비트코인 보기",
-                  icon: "🪙",
-                  isSelected: true,
-                  onTap: () => _navigateToSettings(context, 'bitcoin'),
-                ),
-                SizedBox(height: 16),
-                AssetButton(
-                  assetName: "테슬라 보기",
-                  icon: "⚡",
-                  isSelected: false,
-                  onTap: () => _navigateToSettings(context, 'tesla'),
-                ),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildAssetButtons(
+    AppStateProvider provider,
+    String localeCode,
+    AppLocalizations l10n,
+  ) {
+    final widgets = <Widget>[];
+    String? currentType;
+
+    for (final asset in provider.assets) {
+      if (currentType != asset.type) {
+        currentType = asset.type;
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(top: 12, bottom: 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                currentType == 'crypto' ? l10n.crypto : l10n.stock,
+                style: AppTextStyles.chartSectionTitle,
+              ),
+            ),
+          ),
+        );
+      }
+
+      widgets.add(
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: AssetButton(
+            assetName: asset.displayName(localeCode),
+            icon: asset.icon,
+            isSelected: provider.config.asset == asset.id,
+            onTap: () {
+              provider.selectAsset(asset);
+              _navigateToSettings(context, asset.id);
+            },
+          ),
+        ),
+      );
+    }
+
+    return Column(children: widgets);
   }
 }

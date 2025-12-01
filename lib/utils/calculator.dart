@@ -6,7 +6,9 @@ import '../models/calculation_result.dart';
 class InvestmentCalculator {
   static const Map<String, double> growthRates = {
     'bitcoin': 0.85, // 85% annual growth
-    'tesla': 0.45, // 45% annual growth
+    'ethereum': 0.95,
+    'tesla': 0.45,
+    'google': 0.18,
   };
 
   static CalculationResult calculate(InvestmentConfig config) {

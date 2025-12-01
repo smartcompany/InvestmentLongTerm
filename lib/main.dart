@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import 'l10n/app_localizations.dart';
 import 'providers/app_state_provider.dart';
 import 'screens/home_screen.dart';
 import 'utils/colors.dart';
@@ -15,7 +17,19 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '장기투자 시뮬레이터',
+      title: 'Invest Long Term',
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'), // English
+        Locale('ko'), // Korean
+        Locale('zh'), // Chinese
+        Locale('ja'), // Japanese
+      ],
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: AppColors.navyDark,
         primaryColor: AppColors.gold,

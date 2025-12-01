@@ -3,7 +3,7 @@ enum InvestmentType { single, recurring }
 enum Frequency { monthly, weekly }
 
 class InvestmentConfig {
-  String asset; // 'bitcoin' or 'tesla'
+  String asset; // asset id provided by server
   int yearsAgo;
   double amount;
   InvestmentType type;
