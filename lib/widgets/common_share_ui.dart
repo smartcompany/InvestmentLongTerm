@@ -1,8 +1,11 @@
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:path_provider/path_provider.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
@@ -87,6 +90,7 @@ class CommonShareUI {
   static Future<void> showShareOptionsDialog({
     required BuildContext context,
     required String shareText,
+    Uint8List? chartImageBytes,
   }) {
     final l10n = AppLocalizations.of(context)!;
     return showModalBottomSheet(
@@ -119,7 +123,11 @@ class CommonShareUI {
                 subtitle: l10n.shareWithKakaoTalk,
                 onTap: () async {
                   final navigator = Navigator.of(context);
-                  await _shareToKakao(context, shareText);
+                  await _shareToKakao(
+                    context,
+                    shareText,
+                    chartImageBytes: chartImageBytes,
+                  );
                   if (context.mounted) navigator.pop();
                 },
               ),
@@ -138,9 +146,15 @@ class CommonShareUI {
               _ShareOptionTile(
                 icon: Icons.share_outlined,
                 title: l10n.basicShare,
-                subtitle: l10n.basicShareDesc,
+                subtitle: chartImageBytes != null
+                    ? '텍스트와 차트 이미지 함께 공유'
+                    : l10n.basicShareDesc,
                 onTap: () async {
-                  await Share.share(shareText);
+                  if (chartImageBytes != null) {
+                    await _shareWithImage(context, shareText, chartImageBytes);
+                  } else {
+                    await Share.share(shareText);
+                  }
                   if (context.mounted) Navigator.pop(context);
                 },
               ),
@@ -159,8 +173,9 @@ class CommonShareUI {
   /// 카카오톡 공유 (SDK 사용)
   static Future<void> _shareToKakao(
     BuildContext context,
-    String shareText,
-  ) async {
+    String shareText, {
+    Uint8List? chartImageBytes,
+  }) async {
     // context를 async gap 전에 미리 저장
     final messenger = ScaffoldMessenger.of(context);
     final l10n = AppLocalizations.of(context)!;
@@ -180,8 +195,9 @@ class CommonShareUI {
     }
 
     try {
-      // SDK 방식으로 카카오톡에 바로 공유 - TextTemplate 사용
-      debugPrint('🔍 [카카오톡 공유] TextTemplate 생성 중...');
+      // 카카오톡 공유는 텍스트만 공유 (이미지는 기본 공유에서만 사용)
+      // 카카오톡 SDK는 이미지 URL이 필요하므로 서버 업로드 없이는 이미지 공유 불가
+      debugPrint('🔍 [카카오톡 공유] 텍스트만 공유 - TextTemplate 사용');
 
       final template = TextTemplate(
         text: shareText,
@@ -215,6 +231,51 @@ class CommonShareUI {
           duration: Duration(seconds: 3),
         ),
       );
+    }
+  }
+
+  /// 이미지와 함께 기본 공유
+  static Future<void> _shareWithImage(
+    BuildContext context,
+    String shareText,
+    Uint8List imageBytes,
+  ) async {
+    try {
+      debugPrint('🔍 [기본 공유] 이미지 포함 공유 시작');
+      // Get temporary directory
+      final tempDir = await getTemporaryDirectory();
+      final file = File(
+        '${tempDir.path}/chart_${DateTime.now().millisecondsSinceEpoch}.png',
+      );
+
+      // Write image bytes to file
+      await file.writeAsBytes(imageBytes);
+      debugPrint('✅ [기본 공유] 이미지 파일 생성: ${file.path}');
+
+      // Share with image and text
+      final xFile = XFile(file.path);
+      await Share.shareXFiles(
+        [xFile],
+        text: shareText,
+        subject: 'Time Capital 계산 결과',
+      );
+      debugPrint('✅ [기본 공유] 공유 완료');
+
+      // Clean up: delete temporary file after a delay
+      Future.delayed(Duration(seconds: 5), () async {
+        try {
+          if (await file.exists()) {
+            await file.delete();
+            debugPrint('✅ [기본 공유] 임시 파일 삭제 완료');
+          }
+        } catch (e) {
+          debugPrint('⚠️ [기본 공유] 파일 삭제 실패: $e');
+        }
+      });
+    } catch (e) {
+      debugPrint('❌ [기본 공유] 에러: $e');
+      // Fallback to text-only share if image sharing fails
+      await Share.share(shareText);
     }
   }
 }

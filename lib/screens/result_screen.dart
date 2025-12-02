@@ -240,6 +240,7 @@ class _ResultScreenState extends State<ResultScreen> {
                       await CommonShareUI.showShareOptionsDialog(
                         context: context,
                         shareText: shareText,
+                        chartImageBytes: chartImageBytes,
                       );
                     },
                     icon: Icon(Icons.share, color: Colors.white),
@@ -600,6 +601,26 @@ class _ResultScreenState extends State<ResultScreen> {
 
       buffer.writeln('$emoji ${summary.label}');
       buffer.writeln('');
+
+      // 정기 투자인 경우 투자 금액 정보 추가 (기간으로 나눈 금액)
+      if (summary.label.contains(l10n.recurringInvestment)) {
+        final isMonthly = summary.label.contains(l10n.monthly);
+        final frequencyText = isMonthly ? l10n.monthly : l10n.weekly;
+
+        // 총 투자 금액을 기간으로 나눠서 주기별 금액 계산
+        final yearsAgo = provider.config.yearsAgo;
+        final totalInvested = result.totalInvested;
+        final periodAmount = isMonthly
+            ? totalInvested /
+                  (yearsAgo * 12) // 매월 금액
+            : totalInvested / (yearsAgo * 52); // 매주 금액
+
+        buffer.writeln(
+          '   ${l10n.investmentAmountLabel}: ${currencyFormat.format(periodAmount)} / $frequencyText',
+        );
+        buffer.writeln('');
+      }
+
       buffer.writeln(
         '   ${l10n.finalValue}: ${currencyFormat.format(result.finalValue)}',
       );
