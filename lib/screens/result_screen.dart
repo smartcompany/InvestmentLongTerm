@@ -579,10 +579,8 @@ class _ResultScreenState extends State<ResultScreen> {
     final assetName = provider.assetNameForLocale(localeCode);
     final formattedAmount = currencyFormat.format(provider.config.amount);
 
-    // Beautiful header with emoji
-    buffer.writeln('╔═══════════════════════════════════╗');
-    buffer.writeln('║   📊 ${l10n.shareTextHeader}      ║');
-    buffer.writeln('╚═══════════════════════════════════╝');
+    // Header with emoji
+    buffer.writeln('📊 ${l10n.shareTextHeader}');
     buffer.writeln('');
 
     // Title
@@ -591,8 +589,7 @@ class _ResultScreenState extends State<ResultScreen> {
     );
     buffer.writeln('');
 
-    // Results section with better formatting
-    buffer.writeln('┌───────────────────────────────────┐');
+    // Results section with clean formatting
     for (int i = 0; i < summaries.length; i++) {
       final summary = summaries[i];
       final result = summary.result;
@@ -601,23 +598,23 @@ class _ResultScreenState extends State<ResultScreen> {
       final gain = result.finalValue - result.totalInvested;
       final gainEmoji = gain >= 0 ? '💰' : '📉';
 
-      buffer.writeln('│ $emoji ${summary.label}');
-      buffer.writeln('│');
+      buffer.writeln('$emoji ${summary.label}');
+      buffer.writeln('');
       buffer.writeln(
-        '│   ${l10n.finalValue}: ${currencyFormat.format(result.finalValue)}',
+        '   ${l10n.finalValue}: ${currencyFormat.format(result.finalValue)}',
       );
       buffer.writeln(
-        '│   ${l10n.yieldRateLabel}: $yieldEmoji ${percentFormat.format(result.yieldRate / 100)}',
+        '   ${l10n.yieldRateLabel}: $yieldEmoji ${percentFormat.format(result.yieldRate / 100)}',
       );
       buffer.writeln(
-        '│   ${l10n.gain}: $gainEmoji ${currencyFormat.format(gain.abs())}',
+        '   ${l10n.gain}: $gainEmoji ${currencyFormat.format(gain.abs())}',
       );
       if (i < summaries.length - 1) {
-        buffer.writeln('│');
-        buffer.writeln('├───────────────────────────────────┤');
+        buffer.writeln('');
+        buffer.writeln('─────────────────────────────');
+        buffer.writeln('');
       }
     }
-    buffer.writeln('└───────────────────────────────────┘');
     buffer.writeln('');
 
     // Total invested
