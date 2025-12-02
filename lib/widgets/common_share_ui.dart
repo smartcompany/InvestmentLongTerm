@@ -1,9 +1,9 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:share_lib/share_lib.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
-import '../services/share_service.dart';
 
 class CommonShareUI {
   static Widget buildShareSection({
