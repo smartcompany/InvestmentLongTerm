@@ -220,4 +220,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get copyToClipboard => 'Copy result to clipboard';
+
+  @override
+  String get shareTextHeader => 'Time Capital Calculation Result';
+
+  @override
+  String get finalValue => 'Final Value';
+
+  @override
+  String get yieldRateLabel => 'Yield Rate';
+
+  @override
+  String get gain => 'Gain';
+
+  @override
+  String get totalInvestmentAmount => 'Total Investment Amount';
+
+  @override
+  String get kakaoTalk => 'KakaoTalk';
+
+  @override
+  String get shareWithKakaoTalk => 'Share with KakaoTalk';
+
+  @override
+  String get sharedToKakaoTalk => 'Shared to KakaoTalk!';
 }

@@ -451,6 +451,54 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'클립보드에 결과 복사'**
   String get copyToClipboard;
+
+  /// No description provided for @shareTextHeader.
+  ///
+  /// In ko, this message translates to:
+  /// **'Time Capital 계산 결과'**
+  String get shareTextHeader;
+
+  /// No description provided for @finalValue.
+  ///
+  /// In ko, this message translates to:
+  /// **'최종 가치'**
+  String get finalValue;
+
+  /// No description provided for @yieldRateLabel.
+  ///
+  /// In ko, this message translates to:
+  /// **'수익률'**
+  String get yieldRateLabel;
+
+  /// No description provided for @gain.
+  ///
+  /// In ko, this message translates to:
+  /// **'수익'**
+  String get gain;
+
+  /// No description provided for @totalInvestmentAmount.
+  ///
+  /// In ko, this message translates to:
+  /// **'총 투자금액'**
+  String get totalInvestmentAmount;
+
+  /// No description provided for @kakaoTalk.
+  ///
+  /// In ko, this message translates to:
+  /// **'카카오톡'**
+  String get kakaoTalk;
+
+  /// No description provided for @shareWithKakaoTalk.
+  ///
+  /// In ko, this message translates to:
+  /// **'카카오톡으로 공유'**
+  String get shareWithKakaoTalk;
+
+  /// No description provided for @sharedToKakaoTalk.
+  ///
+  /// In ko, this message translates to:
+  /// **'카카오톡으로 공유되었습니다!'**
+  String get sharedToKakaoTalk;
 }
 
 class _AppLocalizationsDelegate

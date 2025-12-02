@@ -55,6 +55,14 @@
   "saveAndShare": "保存 & 共有",
   "basicShare": "共有",
   "basicShareDesc": "メッセンジャーやメールで共有",
-  "copyToClipboard": "結果をクリップボードにコピー"
+  "copyToClipboard": "結果をクリップボードにコピー",
+  "shareTextHeader": "Time Capital 計算結果",
+  "finalValue": "最終価値",
+  "yieldRateLabel": "収益率",
+  "gain": "収益",
+  "totalInvestmentAmount": "総投資額",
+  "kakaoTalk": "KakaoTalk",
+  "shareWithKakaoTalk": "KakaoTalkで共有",
+  "sharedToKakaoTalk": "KakaoTalkで共有されました！"
 }
 

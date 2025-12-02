@@ -216,4 +216,28 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get copyToClipboard => '클립보드에 결과 복사';
+
+  @override
+  String get shareTextHeader => 'Time Capital 계산 결과';
+
+  @override
+  String get finalValue => '최종 가치';
+
+  @override
+  String get yieldRateLabel => '수익률';
+
+  @override
+  String get gain => '수익';
+
+  @override
+  String get totalInvestmentAmount => '총 투자금액';
+
+  @override
+  String get kakaoTalk => '카카오톡';
+
+  @override
+  String get shareWithKakaoTalk => '카카오톡으로 공유';
+
+  @override
+  String get sharedToKakaoTalk => '카카오톡으로 공유되었습니다!';
 }

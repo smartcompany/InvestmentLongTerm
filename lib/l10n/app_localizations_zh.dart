@@ -216,4 +216,28 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get copyToClipboard => '复制结果到剪贴板';
+
+  @override
+  String get shareTextHeader => 'Time Capital 计算结果';
+
+  @override
+  String get finalValue => '最终价值';
+
+  @override
+  String get yieldRateLabel => '收益率';
+
+  @override
+  String get gain => '收益';
+
+  @override
+  String get totalInvestmentAmount => '总投资额';
+
+  @override
+  String get kakaoTalk => 'KakaoTalk';
+
+  @override
+  String get shareWithKakaoTalk => '通过KakaoTalk分享';
+
+  @override
+  String get sharedToKakaoTalk => '已分享到KakaoTalk！';
 }

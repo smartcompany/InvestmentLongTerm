@@ -55,6 +55,14 @@
   "saveAndShare": "保存并分享",
   "basicShare": "分享",
   "basicShareDesc": "通过通讯软件、邮件等分享",
-  "copyToClipboard": "复制结果到剪贴板"
+  "copyToClipboard": "复制结果到剪贴板",
+  "shareTextHeader": "Time Capital 计算结果",
+  "finalValue": "最终价值",
+  "yieldRateLabel": "收益率",
+  "gain": "收益",
+  "totalInvestmentAmount": "总投资额",
+  "kakaoTalk": "KakaoTalk",
+  "shareWithKakaoTalk": "通过KakaoTalk分享",
+  "sharedToKakaoTalk": "已分享到KakaoTalk！"
 }
 

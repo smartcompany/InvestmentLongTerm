@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/app_state_provider.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
 import '../widgets/asset_button.dart';
+import '../widgets/common_share_ui.dart';
 import 'investment_settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -180,6 +182,11 @@ class _HomeScreenState extends State<HomeScreen>
                         )
                       else
                         _buildAssetButtons(provider, localeCode, l10n),
+                      // 디버그 모드일 때 공유하기 테스트 버튼
+                      if (kDebugMode) ...[
+                        SizedBox(height: 40),
+                        _buildDebugShareTestButton(context, l10n),
+                      ],
                     ],
                   ),
                 ),
@@ -187,6 +194,89 @@ class _HomeScreenState extends State<HomeScreen>
             },
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildDebugShareTestButton(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.red.withOpacity(0.5), width: 2),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Icon(Icons.bug_report, color: Colors.red, size: 20),
+              SizedBox(width: 8),
+              Text(
+                'DEBUG MODE',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                // 더미 공유 텍스트 생성
+                final dummyShareText = '''
+╔═══════════════════════════════════╗
+║   📊 Time Capital 계산 결과      ║
+╚═══════════════════════════════════╝
+
+💎 만약 5년 전에 비트코인에 \$10,000를 투자했다면 지금 얼마일까?
+
+┌───────────────────────────────────┐
+│ 🏆 단일 투자
+│
+│   최종 가치: \$150,000
+│   수익률: 📈 1,400.0%
+│   수익: 💰 \$140,000
+└───────────────────────────────────┘
+
+💵 총 투자금액: \$10,000
+
+✨ 장기 투자 매매 계산 결과
+
+🔗 다운로드: https://coinpang.org/app
+''';
+
+                await CommonShareUI.showShareOptionsDialog(
+                  context: context,
+                  shareText: dummyShareText,
+                );
+              },
+              icon: Icon(Icons.share, color: Colors.white),
+              label: Text(
+                '공유하기 테스트',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                padding: EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

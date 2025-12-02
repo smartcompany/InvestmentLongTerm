@@ -42,7 +42,26 @@
 	<false/>
 	<key>GADApplicationIdentifier</key>
 	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<key>KAKAO_APP_KEY</key>
+	<string>30272b5f0271c22c1747949a87f1758d</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>KakaoOpen</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>kakao30272b5f0271c22c1747949a87f1758d</string>
+			</array>
+		</dict>
+	</array>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>kakaotalk</string>
+		<string>kakaolink</string>
+		<string>kakaokompassauth</string>
+	</array>
 	</dict>
 </plist>

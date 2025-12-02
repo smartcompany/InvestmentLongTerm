@@ -55,6 +55,14 @@
   "saveAndShare": "Save & Share",
   "basicShare": "Share",
   "basicShareDesc": "Share via messenger, email, etc.",
-  "copyToClipboard": "Copy result to clipboard"
+  "copyToClipboard": "Copy result to clipboard",
+  "shareTextHeader": "Time Capital Calculation Result",
+  "finalValue": "Final Value",
+  "yieldRateLabel": "Yield Rate",
+  "gain": "Gain",
+  "totalInvestmentAmount": "Total Investment Amount",
+  "kakaoTalk": "KakaoTalk",
+  "shareWithKakaoTalk": "Share with KakaoTalk",
+  "sharedToKakaoTalk": "Shared to KakaoTalk!"
 }
 

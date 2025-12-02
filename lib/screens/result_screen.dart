@@ -11,9 +11,18 @@ import '../widgets/common_share_ui.dart';
 import '../widgets/investment_chart.dart';
 import '../widgets/comparison_chart.dart';
 import '../services/ad_service.dart';
+import '../utils/chart_image_utils.dart';
+import 'package:flutter/rendering.dart';
 
-class ResultScreen extends StatelessWidget {
+class ResultScreen extends StatefulWidget {
   const ResultScreen({super.key});
+
+  @override
+  State<ResultScreen> createState() => _ResultScreenState();
+}
+
+class _ResultScreenState extends State<ResultScreen> {
+  final GlobalKey _chartKey = GlobalKey();
   String _getCurrencySymbol(String localeCode) {
     switch (localeCode) {
       case 'ko':
@@ -160,19 +169,22 @@ class ResultScreen extends StatelessWidget {
               style: AppTextStyles.chartSectionTitle,
             ),
             SizedBox(height: 20),
-            Container(
-              height: 300,
-              padding: EdgeInsets.only(right: 16, top: 10, bottom: 10),
-              decoration: BoxDecoration(
-                color: AppColors.navyMedium,
-                borderRadius: BorderRadius.circular(20),
+            RepaintBoundary(
+              key: _chartKey,
+              child: Container(
+                height: 300,
+                padding: EdgeInsets.only(right: 16, top: 10, bottom: 10),
+                decoration: BoxDecoration(
+                  color: AppColors.navyMedium,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: provider.config.type == InvestmentType.recurring
+                    ? _buildComparisonChart(comparisonSeries)
+                    : InvestmentChart(
+                        investedSpots: result.investedSpots,
+                        valueSpots: result.valueSpots,
+                      ),
               ),
-              child: provider.config.type == InvestmentType.recurring
-                  ? _buildComparisonChart(comparisonSeries)
-                  : InvestmentChart(
-                      investedSpots: result.investedSpots,
-                      valueSpots: result.valueSpots,
-                    ),
             ),
             if (provider.config.type == InvestmentType.recurring &&
                 comparisonSeries.isNotEmpty) ...[
@@ -211,7 +223,7 @@ class ResultScreen extends StatelessWidget {
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
-                    onPressed: () {
+                    onPressed: () async {
                       final shareText = _buildShareText(
                         provider,
                         localeCode,
@@ -220,7 +232,12 @@ class ResultScreen extends StatelessWidget {
                         strategySummaries,
                         l10n,
                       );
-                      CommonShareUI.showShareOptionsDialog(
+
+                      // Convert chart to image
+                      final chartImageBytes =
+                          await ChartImageUtils.widgetToImage(_chartKey);
+
+                      await CommonShareUI.showShareOptionsDialog(
                         context: context,
                         shareText: shareText,
                       );
@@ -562,34 +579,50 @@ class ResultScreen extends StatelessWidget {
     final assetName = provider.assetNameForLocale(localeCode);
     final formattedAmount = currencyFormat.format(provider.config.amount);
 
-    // Header with emoji
+    // Beautiful header with emoji
+    buffer.writeln('╔═══════════════════════════════════╗');
+    buffer.writeln('║   📊 ${l10n.shareTextHeader}      ║');
+    buffer.writeln('╚═══════════════════════════════════╝');
+    buffer.writeln('');
+
+    // Title
     buffer.writeln(
-      '📊 ${l10n.shareTextTitle(formattedAmount, assetName, provider.config.yearsAgo)}',
+      '💎 ${l10n.shareTextTitle(formattedAmount, assetName, provider.config.yearsAgo)}',
     );
     buffer.writeln('');
 
-    // Results section
-    buffer.writeln('━━━━━━━━━━━━━━━━━━━━');
+    // Results section with better formatting
+    buffer.writeln('┌───────────────────────────────────┐');
     for (int i = 0; i < summaries.length; i++) {
       final summary = summaries[i];
       final result = summary.result;
       final emoji = summary.highlight ? '🏆' : (i == 0 ? '💎' : '📈');
       final yieldEmoji = result.yieldRate >= 0 ? '📈' : '📉';
+      final gain = result.finalValue - result.totalInvested;
+      final gainEmoji = gain >= 0 ? '💰' : '📉';
 
-      buffer.writeln('$emoji ${summary.label}');
+      buffer.writeln('│ $emoji ${summary.label}');
+      buffer.writeln('│');
       buffer.writeln(
-        '   ${currencyFormat.format(result.finalValue)} $yieldEmoji ${percentFormat.format(result.yieldRate / 100)}',
+        '│   ${l10n.finalValue}: ${currencyFormat.format(result.finalValue)}',
+      );
+      buffer.writeln(
+        '│   ${l10n.yieldRateLabel}: $yieldEmoji ${percentFormat.format(result.yieldRate / 100)}',
+      );
+      buffer.writeln(
+        '│   ${l10n.gain}: $gainEmoji ${currencyFormat.format(gain.abs())}',
       );
       if (i < summaries.length - 1) {
-        buffer.writeln('');
+        buffer.writeln('│');
+        buffer.writeln('├───────────────────────────────────┤');
       }
     }
-    buffer.writeln('━━━━━━━━━━━━━━━━━━━━');
+    buffer.writeln('└───────────────────────────────────┘');
     buffer.writeln('');
 
     // Total invested
     buffer.writeln(
-      '💵 ${l10n.totalInvested(currencyFormat.format(provider.config.amount))}',
+      '💵 ${l10n.totalInvestmentAmount}: ${currencyFormat.format(provider.config.amount)}',
     );
     buffer.writeln('');
 

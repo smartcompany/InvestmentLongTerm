@@ -5,6 +5,7 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'l10n/app_localizations.dart';
 import 'providers/app_state_provider.dart';
 import 'screens/home_screen.dart';
@@ -33,6 +34,9 @@ void main() async {
 
   // Initialize Google Mobile Ads SDK
   await MobileAds.instance.initialize();
+
+  // Initialize Kakao SDK
+  KakaoSdk.init(nativeAppKey: '30272b5f0271c22c1747949a87f1758d');
 
   runApp(
     ChangeNotifierProvider(create: (_) => AppStateProvider(), child: MyApp()),

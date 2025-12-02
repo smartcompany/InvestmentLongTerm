@@ -55,6 +55,14 @@
   "saveAndShare": "저장 & 공유하기",
   "basicShare": "기본 공유",
   "basicShareDesc": "메신저, 메일 등으로 공유",
-  "copyToClipboard": "클립보드에 결과 복사"
+  "copyToClipboard": "클립보드에 결과 복사",
+  "shareTextHeader": "Time Capital 계산 결과",
+  "finalValue": "최종 가치",
+  "yieldRateLabel": "수익률",
+  "gain": "수익",
+  "totalInvestmentAmount": "총 투자금액",
+  "kakaoTalk": "카카오톡",
+  "shareWithKakaoTalk": "카카오톡으로 공유",
+  "sharedToKakaoTalk": "카카오톡으로 공유되었습니다!"
 }
 

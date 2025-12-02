@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
@@ -112,6 +114,16 @@ class CommonShareUI {
               Text(l10n.shareResults, style: AppTextStyles.buttonTextPrimary),
               const SizedBox(height: 20),
               _ShareOptionTile(
+                icon: Icons.chat_bubble_outline,
+                title: l10n.kakaoTalk,
+                subtitle: l10n.shareWithKakaoTalk,
+                onTap: () async {
+                  final navigator = Navigator.of(context);
+                  await _shareToKakao(context, shareText);
+                  if (context.mounted) navigator.pop();
+                },
+              ),
+              _ShareOptionTile(
                 icon: Icons.copy_outlined,
                 title: l10n.copyText,
                 subtitle: l10n.copyToClipboard,
@@ -142,6 +154,68 @@ class CommonShareUI {
         );
       },
     );
+  }
+
+  /// 카카오톡 공유 (SDK 사용)
+  static Future<void> _shareToKakao(
+    BuildContext context,
+    String shareText,
+  ) async {
+    // context를 async gap 전에 미리 저장
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
+    debugPrint('🔍 [카카오톡 공유] SDK 방식 시작');
+
+    // 카카오톡 설치 여부 확인
+    if (await ShareClient.instance.isKakaoTalkSharingAvailable() == false) {
+      debugPrint('❌ [카카오톡 공유] 카카오톡 미설치');
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('카카오톡이 설치되어 있지 않습니다'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    try {
+      // SDK 방식으로 카카오톡에 바로 공유 - TextTemplate 사용
+      debugPrint('🔍 [카카오톡 공유] TextTemplate 생성 중...');
+
+      final template = TextTemplate(
+        text: shareText,
+        link: Link(), // 빈 링크로 앱 이동 방지
+      );
+
+      debugPrint('🔍 [카카오톡 공유] shareDefault 호출 중...');
+      final uri = await ShareClient.instance.shareDefault(template: template);
+      debugPrint('🔍 [카카오톡 공유] shareDefault 완료, URI: $uri');
+
+      if (await canLaunchUrl(uri)) {
+        debugPrint('🔍 [카카오톡 공유] launchUrl 실행 중...');
+        await launchUrl(uri);
+        debugPrint('✅ [카카오톡 공유] 성공');
+      }
+
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.sharedToKakaoTalk),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e, stackTrace) {
+      debugPrint('❌ [카카오톡 공유] 에러: $e');
+      debugPrint('❌ [카카오톡 공유] 스택 트레이스: $stackTrace');
+
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('카카오톡 공유 실패: ${e.toString()}'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 3),
+        ),
+      );
+    }
   }
 }
 
