@@ -244,4 +244,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sharedToKakaoTalk => 'Shared to KakaoTalk!';
+
+  @override
+  String get shareWithTextAndChart => 'Share text and chart image together';
+
+  @override
+  String get showMore => 'Show More';
+
+  @override
+  String get showLess => 'Show Less';
 }

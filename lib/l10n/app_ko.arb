@@ -63,6 +63,9 @@
   "totalInvestmentAmount": "총 투자금액",
   "kakaoTalk": "카카오톡",
   "shareWithKakaoTalk": "카카오톡으로 공유",
-  "sharedToKakaoTalk": "카카오톡으로 공유되었습니다!"
+  "sharedToKakaoTalk": "카카오톡으로 공유되었습니다!",
+  "shareWithTextAndChart": "텍스트와 차트 이미지 함께 공유",
+  "showMore": "더보기",
+  "showLess": "접기"
 }
 

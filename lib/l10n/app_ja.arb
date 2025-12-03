@@ -63,6 +63,9 @@
   "totalInvestmentAmount": "総投資額",
   "kakaoTalk": "KakaoTalk",
   "shareWithKakaoTalk": "KakaoTalkで共有",
-  "sharedToKakaoTalk": "KakaoTalkで共有されました！"
+  "sharedToKakaoTalk": "KakaoTalkで共有されました！",
+  "shareWithTextAndChart": "テキストとチャート画像を一緒に共有",
+  "showMore": "もっと見る",
+  "showLess": "折りたたむ"
 }
 

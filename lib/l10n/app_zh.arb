@@ -63,6 +63,9 @@
   "totalInvestmentAmount": "总投资额",
   "kakaoTalk": "KakaoTalk",
   "shareWithKakaoTalk": "通过KakaoTalk分享",
-  "sharedToKakaoTalk": "已分享到KakaoTalk！"
+  "sharedToKakaoTalk": "已分享到KakaoTalk！",
+  "shareWithTextAndChart": "分享文本和图表图像",
+  "showMore": "查看更多",
+  "showLess": "收起"
 }
 

@@ -63,6 +63,9 @@
   "totalInvestmentAmount": "Total Investment Amount",
   "kakaoTalk": "KakaoTalk",
   "shareWithKakaoTalk": "Share with KakaoTalk",
-  "sharedToKakaoTalk": "Shared to KakaoTalk!"
+  "sharedToKakaoTalk": "Shared to KakaoTalk!",
+  "shareWithTextAndChart": "Share text and chart image together",
+  "showMore": "Show More",
+  "showLess": "Show Less"
 }
 

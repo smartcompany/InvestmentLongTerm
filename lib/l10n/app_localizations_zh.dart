@@ -240,4 +240,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get sharedToKakaoTalk => '已分享到KakaoTalk！';
+
+  @override
+  String get shareWithTextAndChart => '分享文本和图表图像';
+
+  @override
+  String get showMore => '查看更多';
+
+  @override
+  String get showLess => '收起';
 }

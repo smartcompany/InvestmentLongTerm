@@ -175,7 +175,7 @@ class CommonShareUI {
                 icon: Icons.share_outlined,
                 title: l10n.basicShare,
                 subtitle: chartImageBytes != null
-                    ? '텍스트와 차트 이미지 함께 공유'
+                    ? l10n.shareWithTextAndChart
                     : l10n.basicShareDesc,
                 onTap: () async {
                   if (chartImageBytes != null) {

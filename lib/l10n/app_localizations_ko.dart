@@ -240,4 +240,13 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get sharedToKakaoTalk => '카카오톡으로 공유되었습니다!';
+
+  @override
+  String get shareWithTextAndChart => '텍스트와 차트 이미지 함께 공유';
+
+  @override
+  String get showMore => '더보기';
+
+  @override
+  String get showLess => '접기';
 }

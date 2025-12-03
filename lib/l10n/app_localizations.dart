@@ -499,6 +499,24 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'카카오톡으로 공유되었습니다!'**
   String get sharedToKakaoTalk;
+
+  /// No description provided for @shareWithTextAndChart.
+  ///
+  /// In ko, this message translates to:
+  /// **'텍스트와 차트 이미지 함께 공유'**
+  String get shareWithTextAndChart;
+
+  /// No description provided for @showMore.
+  ///
+  /// In ko, this message translates to:
+  /// **'더보기'**
+  String get showMore;
+
+  /// No description provided for @showLess.
+  ///
+  /// In ko, this message translates to:
+  /// **'접기'**
+  String get showLess;
 }
 
 class _AppLocalizationsDelegate

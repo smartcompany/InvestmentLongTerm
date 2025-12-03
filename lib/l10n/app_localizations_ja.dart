@@ -240,4 +240,13 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get sharedToKakaoTalk => 'KakaoTalkで共有されました！';
+
+  @override
+  String get shareWithTextAndChart => 'テキストとチャート画像を一緒に共有';
+
+  @override
+  String get showMore => 'もっと見る';
+
+  @override
+  String get showLess => '折りたたむ';
 }
