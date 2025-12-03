@@ -154,7 +154,8 @@ class _ResultScreenState extends State<ResultScreen> {
                 currencyFormat: currencyFormat,
                 percentFormat: percentFormat,
                 totalInvestment: currencyFormat.format(provider.config.amount),
-                showTotalInvestment: i == 0,
+                showTotalInvestment: true,
+                provider: provider,
                 l10n: l10n,
               ),
               SizedBox(height: 24),
@@ -222,7 +223,7 @@ class _ResultScreenState extends State<ResultScreen> {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
+                  child: ElevatedButton.icon(
                     onPressed: () async {
                       final shareText = _buildShareText(
                         provider,
@@ -243,13 +244,16 @@ class _ResultScreenState extends State<ResultScreen> {
                         chartImageBytes: chartImageBytes,
                       );
                     },
-                    icon: Icon(Icons.share, color: Colors.white),
+                    icon: Icon(Icons.share, color: AppColors.navyDark),
                     label: Text(
                       l10n.share,
-                      style: AppTextStyles.shareButtonLabel,
+                      style: AppTextStyles.buttonTextPrimary.copyWith(
+                        color: AppColors.navyDark,
+                        fontSize: 16,
+                      ),
                     ),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: AppColors.slate700),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.gold,
                       padding: EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -304,6 +308,7 @@ class _ResultScreenState extends State<ResultScreen> {
     required NumberFormat percentFormat,
     required String totalInvestment,
     required bool showTotalInvestment,
+    required AppStateProvider provider,
     required AppLocalizations l10n,
   }) {
     final result = summary.result;
@@ -451,7 +456,13 @@ class _ResultScreenState extends State<ResultScreen> {
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        l10n.totalInvested(totalInvestment),
+                        _getInvestmentText(
+                          summary,
+                          totalInvestment,
+                          provider,
+                          currencyFormat,
+                          l10n,
+                        ),
                         style: AppTextStyles.resultStatValue.copyWith(
                           color: secondaryTextColor,
                           fontWeight: FontWeight.w600,
@@ -466,6 +477,38 @@ class _ResultScreenState extends State<ResultScreen> {
         ),
       ],
     );
+  }
+
+  /// 투자 금액 텍스트 생성
+  /// 단일 투자: 총 투자금 표시
+  /// 정기 투자: 주기별 투자 금액 표시 (매월/매주)
+  String _getInvestmentText(
+    _StrategySummary summary,
+    String totalInvestment,
+    AppStateProvider provider,
+    NumberFormat currencyFormat,
+    AppLocalizations l10n,
+  ) {
+    // 정기 투자인지 확인
+    if (summary.label.contains(l10n.recurringInvestment)) {
+      final isMonthly = summary.label.contains(l10n.monthly);
+      final yearsAgo = provider.config.yearsAgo;
+      final totalInvested = summary.result.totalInvested;
+
+      // 주기별 투자 금액 계산
+      final periodAmount = isMonthly
+          ? totalInvested /
+                (yearsAgo * 12) // 매월 금액
+          : totalInvested / (yearsAgo * 52); // 매주 금액
+
+      final frequencyText = isMonthly ? l10n.monthly : l10n.weekly;
+      final formattedAmount = currencyFormat.format(periodAmount);
+
+      return '${l10n.investmentAmountLabel}: $formattedAmount / $frequencyText';
+    } else {
+      // 단일 투자: 총 투자금 표시
+      return l10n.totalInvested(totalInvestment);
+    }
   }
 
   Widget _buildStatTile({
