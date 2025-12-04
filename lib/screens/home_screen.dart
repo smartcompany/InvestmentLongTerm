@@ -19,11 +19,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  final Map<String, bool> _expandedCategories = {'crypto': true, 'stock': true};
-  final Map<String, bool> _showMoreCategories = {
-    'crypto': false,
-    'stock': false,
-  };
 
   @override
   void initState() {
@@ -292,145 +287,36 @@ class _HomeScreenState extends State<HomeScreen>
     AppLocalizations l10n,
   ) {
     final widgets = <Widget>[];
-    final categorizedAssets = <String, List<dynamic>>{};
+    String? currentType;
 
-    // 카테고리별로 자산 분류
     for (final asset in provider.assets) {
-      if (!categorizedAssets.containsKey(asset.type)) {
-        categorizedAssets[asset.type] = [];
+      if (currentType != asset.type) {
+        currentType = asset.type;
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(top: 12, bottom: 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                currentType == 'crypto' ? l10n.crypto : l10n.stock,
+                style: AppTextStyles.chartSectionTitle,
+              ),
+            ),
+          ),
+        );
       }
-      categorizedAssets[asset.type]!.add(asset);
-    }
-
-    // 각 카테고리별로 UI 생성
-    for (final entry in categorizedAssets.entries) {
-      final type = entry.key;
-      final assets = entry.value;
-      final isExpanded = _expandedCategories[type] ?? true;
-      final showMore = _showMoreCategories[type] ?? false;
-      final categoryName = type == 'crypto' ? l10n.crypto : l10n.stock;
-
-      // 카테고리별로 표시할 자산 수 결정 (처음 2개만 기본 표시)
-      final hasMore = assets.length > 2;
-      final displayCount = showMore || !hasMore ? assets.length : 2;
-      final assetsToShow = assets.take(displayCount).toList();
 
       widgets.add(
-        Container(
-          margin: EdgeInsets.only(bottom: 16),
-          decoration: BoxDecoration(
-            color: AppColors.navyMedium.withValues(alpha: 0.3),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppColors.slate700, width: 1),
-          ),
-          child: Column(
-            children: [
-              // 카테고리 헤더 (접기/펼치기 가능)
-              InkWell(
-                onTap: () {
-                  setState(() {
-                    _expandedCategories[type] = !isExpanded;
-                  });
-                },
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        categoryName,
-                        style: AppTextStyles.chartSectionTitle,
-                      ),
-                      Icon(
-                        isExpanded
-                            ? Icons.keyboard_arrow_up
-                            : Icons.keyboard_arrow_down,
-                        color: AppColors.gold,
-                        size: 24,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              // 자산 버튼들
-              if (isExpanded) ...[
-                ...assetsToShow.map(
-                  (asset) => Padding(
-                    padding: const EdgeInsets.only(
-                      left: 12,
-                      right: 12,
-                      bottom: 8,
-                    ),
-                    child: AssetButton(
-                      assetName: asset.displayName(localeCode),
-                      icon: asset.icon,
-                      isSelected: provider.config.asset == asset.id,
-                      onTap: () {
-                        provider.selectAsset(asset);
-                        _navigateToSettings(context, asset.id);
-                      },
-                    ),
-                  ),
-                ),
-                // 더보기 버튼
-                if (hasMore && !showMore)
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 12,
-                      right: 12,
-                      bottom: 8,
-                    ),
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        setState(() {
-                          _showMoreCategories[type] = true;
-                        });
-                      },
-                      icon: Icon(Icons.expand_more, color: AppColors.gold),
-                      label: Text(
-                        l10n.showMore,
-                        style: TextStyle(color: AppColors.gold),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: AppColors.gold),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        minimumSize: Size(double.infinity, 48),
-                      ),
-                    ),
-                  ),
-                // 접기 버튼 (더보기 상태일 때)
-                if (hasMore && showMore)
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      left: 12,
-                      right: 12,
-                      bottom: 8,
-                    ),
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        setState(() {
-                          _showMoreCategories[type] = false;
-                        });
-                      },
-                      icon: Icon(Icons.expand_less, color: AppColors.gold),
-                      label: Text(
-                        l10n.showLess,
-                        style: TextStyle(color: AppColors.gold),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: AppColors.gold),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        minimumSize: Size(double.infinity, 48),
-                      ),
-                    ),
-                  ),
-              ],
-            ],
+        Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: AssetButton(
+            assetName: asset.displayName(localeCode),
+            icon: asset.icon,
+            isSelected: provider.config.asset == asset.id,
+            onTap: () {
+              provider.selectAsset(asset);
+              _navigateToSettings(context, asset.id);
+            },
           ),
         ),
       );

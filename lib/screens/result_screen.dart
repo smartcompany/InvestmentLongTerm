@@ -148,6 +148,65 @@ class _ResultScreenState extends State<ResultScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // 투자 기간 정보
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.navyMedium,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.slate700),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.calendar_today,
+                        color: AppColors.gold,
+                        size: 20,
+                      ),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          l10n.investmentStartDate(
+                            DateTime.now().year - provider.config.yearsAgo,
+                            provider.config.yearsAgo,
+                          ),
+                          style: AppTextStyles.resultStatValue.copyWith(
+                            color: AppColors.slate300,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (provider.selectedAsset != null) ...[
+                    SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Text(
+                          provider.selectedAsset!.icon,
+                          style: TextStyle(fontSize: 20),
+                        ),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            provider.assetNameForLocale(localeCode),
+                            style: AppTextStyles.resultStatValue.copyWith(
+                              color: AppColors.slate300,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            SizedBox(height: 20),
             for (int i = 0; i < strategySummaries.length; i++) ...[
               _buildStrategySummaryCard(
                 summary: strategySummaries[i],
@@ -669,6 +728,9 @@ class _ResultScreenState extends State<ResultScreen> {
       );
       buffer.writeln(
         '   ${l10n.yieldRateLabel}: $yieldEmoji ${percentFormat.format(result.yieldRate / 100)}',
+      );
+      buffer.writeln(
+        '   ${l10n.cagr}: ${result.cagr >= 0 ? '+' : ''}${result.cagr.toStringAsFixed(1)}%',
       );
       buffer.writeln(
         '   ${l10n.gain}: $gainEmoji ${currencyFormat.format(gain.abs())}',
