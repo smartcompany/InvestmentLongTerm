@@ -66,6 +66,61 @@
   "sharedToKakaoTalk": "已分享到KakaoTalk！",
   "shareWithTextAndChart": "分享文本和图表图像",
   "showMore": "查看更多",
-  "showLess": "收起"
+  "showLess": "收起",
+  "simulationResultPrefix": "如果您持有价值 {initialAsset} 的 {portfolio} {years} 年，每月花费 {monthlyWithdrawal}，那么 {years} 年后的最终资产将是 {finalAsset}。",
+  "@simulationResultPrefix": {
+    "placeholders": {
+      "initialAsset": {
+        "type": "String"
+      },
+      "portfolio": {
+        "type": "String"
+      },
+      "years": {
+        "type": "int"
+      },
+      "monthlyWithdrawal": {
+        "type": "String"
+      },
+      "finalAsset": {
+        "type": "String"
+      }
+    }
+  },
+  "simulationResultTitle": "模拟结果",
+  "detailedStatistics": "详细统计",
+  "simulationResultNoData": "没有模拟结果。",
+  "selectedScenario": "所选场景: ",
+  "scenarioPositive": "积极 (+20%)",
+  "scenarioNegative": "消极 (-20%)",
+  "scenarioNeutral": "中性 (0%)",
+  "monthlyWithdrawalLabel": "每月提取: ",
+  "assetValueTrend": "资产价值趋势",
+  "totalAssets": "总资产",
+  "cumulativeWithdrawal": "累计提取",
+  "finalAsset": "最终资产",
+  "cumulativeReturn": "累计收益率",
+  "totalWithdrawn": "总提取额",
+  "netProfit": "净利润",
+  "monthlyDetails": "月度详情",
+  "yearLabel": "{year}年",
+  "@yearLabel": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "monthLabel": "{month}月",
+  "@monthLabel": {
+    "placeholders": {
+      "month": {
+        "type": "int"
+      }
+    }
+  },
+  "asset": "资产",
+  "withdrawal": "提取",
+  "change": "变动"
 }
 

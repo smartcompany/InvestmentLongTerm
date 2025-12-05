@@ -253,4 +253,82 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get showLess => 'Show Less';
+
+  @override
+  String simulationResultPrefix(
+    String initialAsset,
+    String portfolio,
+    int years,
+    String monthlyWithdrawal,
+    String finalAsset,
+  ) {
+    return 'If you hold $portfolio worth $initialAsset for $years years and spend $monthlyWithdrawal per month, your final asset after $years years will be $finalAsset.';
+  }
+
+  @override
+  String get simulationResultTitle => 'Simulation Result';
+
+  @override
+  String get detailedStatistics => 'Detailed Statistics';
+
+  @override
+  String get simulationResultNoData => 'No simulation results available.';
+
+  @override
+  String get selectedScenario => 'Selected Scenario: ';
+
+  @override
+  String get scenarioPositive => 'Positive (+20%)';
+
+  @override
+  String get scenarioNegative => 'Negative (-20%)';
+
+  @override
+  String get scenarioNeutral => 'Neutral (0%)';
+
+  @override
+  String get monthlyWithdrawalLabel => 'Monthly Withdrawal: ';
+
+  @override
+  String get assetValueTrend => 'Asset Value Trend';
+
+  @override
+  String get totalAssets => 'Total Assets';
+
+  @override
+  String get cumulativeWithdrawal => 'Cumulative Withdrawal';
+
+  @override
+  String get finalAsset => 'Final Asset';
+
+  @override
+  String get cumulativeReturn => 'Cumulative Return';
+
+  @override
+  String get totalWithdrawn => 'Total Withdrawn';
+
+  @override
+  String get netProfit => 'Net Profit';
+
+  @override
+  String get monthlyDetails => 'Monthly Details';
+
+  @override
+  String yearLabel(int year) {
+    return '$year';
+  }
+
+  @override
+  String monthLabel(int month) {
+    return '$month';
+  }
+
+  @override
+  String get asset => 'Asset';
+
+  @override
+  String get withdrawal => 'Withdrawal';
+
+  @override
+  String get change => 'Change';
 }

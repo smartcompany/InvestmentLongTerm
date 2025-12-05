@@ -66,6 +66,61 @@
   "sharedToKakaoTalk": "KakaoTalkで共有されました！",
   "shareWithTextAndChart": "テキストとチャート画像を一緒に共有",
   "showMore": "もっと見る",
-  "showLess": "折りたたむ"
+  "showLess": "折りたたむ",
+  "simulationResultPrefix": "{initialAsset} の {portfolio} を {years} 年間保有し、毎月 {monthlyWithdrawal} ずつ使うとすると、{years} 年後の最終資産は {finalAsset} になります。",
+  "@simulationResultPrefix": {
+    "placeholders": {
+      "initialAsset": {
+        "type": "String"
+      },
+      "portfolio": {
+        "type": "String"
+      },
+      "years": {
+        "type": "int"
+      },
+      "monthlyWithdrawal": {
+        "type": "String"
+      },
+      "finalAsset": {
+        "type": "String"
+      }
+    }
+  },
+  "simulationResultTitle": "シミュレーション結果",
+  "detailedStatistics": "詳細統計",
+  "simulationResultNoData": "シミュレーション結果がありません。",
+  "selectedScenario": "選択したシナリオ: ",
+  "scenarioPositive": "ポジティブ (+20%)",
+  "scenarioNegative": "ネガティブ (-20%)",
+  "scenarioNeutral": "ニュートラル (0%)",
+  "monthlyWithdrawalLabel": "月間引出額: ",
+  "assetValueTrend": "資産価値の推移",
+  "totalAssets": "総資産",
+  "cumulativeWithdrawal": "累積引出額",
+  "finalAsset": "最終資産",
+  "cumulativeReturn": "累積収益率",
+  "totalWithdrawn": "総引出額",
+  "netProfit": "純利益",
+  "monthlyDetails": "月別詳細",
+  "yearLabel": "{year}年",
+  "@yearLabel": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "monthLabel": "{month}月",
+  "@monthLabel": {
+    "placeholders": {
+      "month": {
+        "type": "int"
+      }
+    }
+  },
+  "asset": "資産",
+  "withdrawal": "引出",
+  "change": "変動"
 }
 

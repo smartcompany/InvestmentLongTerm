@@ -517,6 +517,144 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'접기'**
   String get showLess;
+
+  /// No description provided for @simulationResultPrefix.
+  ///
+  /// In ko, this message translates to:
+  /// **'{initialAsset} 의 {portfolio}를 {years}년간 보유하고 한달에 {monthlyWithdrawal}씩 쓴다고 하면 {years}년 후 최종 자산은 {finalAsset}이 됩니다.'**
+  String simulationResultPrefix(
+    String initialAsset,
+    String portfolio,
+    int years,
+    String monthlyWithdrawal,
+    String finalAsset,
+  );
+
+  /// No description provided for @simulationResultTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'시뮬레이션 결과'**
+  String get simulationResultTitle;
+
+  /// No description provided for @detailedStatistics.
+  ///
+  /// In ko, this message translates to:
+  /// **'상세 통계'**
+  String get detailedStatistics;
+
+  /// No description provided for @simulationResultNoData.
+  ///
+  /// In ko, this message translates to:
+  /// **'시뮬레이션 결과가 없습니다.'**
+  String get simulationResultNoData;
+
+  /// No description provided for @selectedScenario.
+  ///
+  /// In ko, this message translates to:
+  /// **'선택한 시나리오: '**
+  String get selectedScenario;
+
+  /// No description provided for @scenarioPositive.
+  ///
+  /// In ko, this message translates to:
+  /// **'긍정적 (+20%)'**
+  String get scenarioPositive;
+
+  /// No description provided for @scenarioNegative.
+  ///
+  /// In ko, this message translates to:
+  /// **'부정적 (-20%)'**
+  String get scenarioNegative;
+
+  /// No description provided for @scenarioNeutral.
+  ///
+  /// In ko, this message translates to:
+  /// **'중립적 (0%)'**
+  String get scenarioNeutral;
+
+  /// No description provided for @monthlyWithdrawalLabel.
+  ///
+  /// In ko, this message translates to:
+  /// **'월 인출액: '**
+  String get monthlyWithdrawalLabel;
+
+  /// No description provided for @assetValueTrend.
+  ///
+  /// In ko, this message translates to:
+  /// **'자산 가치 추이'**
+  String get assetValueTrend;
+
+  /// No description provided for @totalAssets.
+  ///
+  /// In ko, this message translates to:
+  /// **'전체 자산'**
+  String get totalAssets;
+
+  /// No description provided for @cumulativeWithdrawal.
+  ///
+  /// In ko, this message translates to:
+  /// **'누적 인출액'**
+  String get cumulativeWithdrawal;
+
+  /// No description provided for @finalAsset.
+  ///
+  /// In ko, this message translates to:
+  /// **'최종 자산'**
+  String get finalAsset;
+
+  /// No description provided for @cumulativeReturn.
+  ///
+  /// In ko, this message translates to:
+  /// **'누적 수익률'**
+  String get cumulativeReturn;
+
+  /// No description provided for @totalWithdrawn.
+  ///
+  /// In ko, this message translates to:
+  /// **'총 인출 금액'**
+  String get totalWithdrawn;
+
+  /// No description provided for @netProfit.
+  ///
+  /// In ko, this message translates to:
+  /// **'순 수익'**
+  String get netProfit;
+
+  /// No description provided for @monthlyDetails.
+  ///
+  /// In ko, this message translates to:
+  /// **'월별 상세 내역'**
+  String get monthlyDetails;
+
+  /// No description provided for @yearLabel.
+  ///
+  /// In ko, this message translates to:
+  /// **'{year}년'**
+  String yearLabel(int year);
+
+  /// No description provided for @monthLabel.
+  ///
+  /// In ko, this message translates to:
+  /// **'{month}월'**
+  String monthLabel(int month);
+
+  /// No description provided for @asset.
+  ///
+  /// In ko, this message translates to:
+  /// **'자산'**
+  String get asset;
+
+  /// No description provided for @withdrawal.
+  ///
+  /// In ko, this message translates to:
+  /// **'인출'**
+  String get withdrawal;
+
+  /// No description provided for @change.
+  ///
+  /// In ko, this message translates to:
+  /// **'변동'**
+  String get change;
 }
 
 class _AppLocalizationsDelegate

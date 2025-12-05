@@ -8,6 +8,7 @@ import '../providers/app_state_provider.dart';
 import '../models/asset_option.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
+import '../l10n/app_localizations.dart';
 
 class RetireSimulatorResultScreen extends StatefulWidget {
   const RetireSimulatorResultScreen({super.key});
@@ -39,6 +40,7 @@ class _RetireSimulatorResultScreenState
     final provider = context.watch<RetireSimulatorProvider>();
     final appProvider = context.watch<AppStateProvider>();
     final localeCode = Localizations.localeOf(context).languageCode;
+    final l10n = AppLocalizations.of(context)!;
     final currencyFormat = NumberFormat.currency(
       symbol: '₩',
       decimalDigits: 0,
@@ -61,12 +63,15 @@ class _RetireSimulatorResultScreenState
             icon: Icon(Icons.arrow_back_ios, color: Colors.white),
             onPressed: () => Navigator.pop(context),
           ),
-          title: Text('시뮬레이션 결과', style: AppTextStyles.appBarTitle),
+          title: Text(
+            l10n.simulationResultTitle,
+            style: AppTextStyles.appBarTitle,
+          ),
           centerTitle: true,
         ),
         body: Center(
           child: Text(
-            '시뮬레이션 결과가 없습니다.',
+            l10n.simulationResultNoData,
             style: TextStyle(color: AppColors.slate400),
           ),
         ),
@@ -107,10 +112,10 @@ class _RetireSimulatorResultScreenState
 
     // 시나리오 이름
     final scenarioName = provider.selectedScenario == 'positive'
-        ? '긍정적 (+20%)'
+        ? l10n.scenarioPositive
         : provider.selectedScenario == 'negative'
-        ? '부정적 (-20%)'
-        : '중립적 (0%)';
+        ? l10n.scenarioNegative
+        : l10n.scenarioNeutral;
 
     return Scaffold(
       backgroundColor: AppColors.navyDark,
@@ -121,10 +126,14 @@ class _RetireSimulatorResultScreenState
           icon: Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text('시뮬레이션 결과', style: AppTextStyles.appBarTitle),
+        title: Text(
+          l10n.simulationResultTitle,
+          style: AppTextStyles.appBarTitle,
+        ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
+        physics: AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -145,7 +154,7 @@ class _RetireSimulatorResultScreenState
                       Icon(Icons.info_outline, color: AppColors.gold, size: 20),
                       SizedBox(width: 12),
                       Text(
-                        '선택한 시나리오: ',
+                        l10n.selectedScenario,
                         style: TextStyle(
                           color: AppColors.slate300,
                           fontSize: _simulationResultLabelFontSize,
@@ -175,7 +184,7 @@ class _RetireSimulatorResultScreenState
                       ),
                       SizedBox(width: 12),
                       Text(
-                        '월 인출액: ',
+                        l10n.monthlyWithdrawalLabel,
                         style: TextStyle(
                           color: AppColors.slate300,
                           fontSize: _simulationResultLabelFontSize,
@@ -201,10 +210,8 @@ class _RetireSimulatorResultScreenState
               totalSpots,
               assetSpotsList,
               currencyFormat,
+              l10n,
             ),
-            SizedBox(height: 32),
-            // 월별 상세 정보
-            _buildMonthlyDetails(provider, totalPath, currencyFormat),
             SizedBox(height: 32),
             // 읽기 편한 요약 카드
             _buildReadableSummaryCard(
@@ -213,6 +220,7 @@ class _RetireSimulatorResultScreenState
               summary,
               currencyFormat,
               localeCode,
+              l10n,
             ),
             SizedBox(height: 16),
             // 결과 요약
@@ -220,7 +228,11 @@ class _RetireSimulatorResultScreenState
               summary,
               currencyFormat,
               provider.selectedScenario,
+              l10n,
             ),
+            SizedBox(height: 32),
+            // 월별 상세 정보
+            _buildMonthlyDetails(provider, totalPath, currencyFormat, l10n),
           ],
         ),
       ),
@@ -246,6 +258,7 @@ class _RetireSimulatorResultScreenState
     List<FlSpot> totalSpots,
     List<Map<String, dynamic>> assetSpotsList,
     NumberFormat currencyFormat,
+    AppLocalizations l10n,
   ) {
     // 누적 인출액 라인 생성 (월별로 누적)
     final withdrawalSpots = <FlSpot>[];
@@ -299,7 +312,7 @@ class _RetireSimulatorResultScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('자산 가치 추이', style: AppTextStyles.chartSectionTitle),
+        Text(l10n.assetValueTrend, style: AppTextStyles.chartSectionTitle),
         SizedBox(height: 20),
         Container(
           height: 350,
@@ -344,7 +357,7 @@ class _RetireSimulatorResultScreenState
                           return Padding(
                             padding: EdgeInsets.only(top: 8),
                             child: Text(
-                              '$actualYear년',
+                              l10n.yearLabel(actualYear),
                               style: TextStyle(
                                 color: AppColors.slate300,
                                 fontSize: 12,
@@ -411,7 +424,7 @@ class _RetireSimulatorResultScreenState
         ),
         SizedBox(height: 20),
         // 범례
-        _buildLegend(totalSpots, assetSpotsList),
+        _buildLegend(totalSpots, assetSpotsList, l10n),
       ],
     );
   }
@@ -419,14 +432,19 @@ class _RetireSimulatorResultScreenState
   Widget _buildLegend(
     List<FlSpot> totalSpots,
     List<Map<String, dynamic>> assetSpotsList,
+    AppLocalizations l10n,
   ) {
     return Wrap(
       alignment: WrapAlignment.center,
       spacing: 16,
       runSpacing: 12,
       children: [
-        _buildLegendItem('전체 자산', Colors.white, false),
-        _buildLegendItem('누적 인출액', Colors.orange.withValues(alpha: 0.7), true),
+        _buildLegendItem(l10n.totalAssets, Colors.white, false),
+        _buildLegendItem(
+          l10n.cumulativeWithdrawal,
+          Colors.orange.withValues(alpha: 0.7),
+          true,
+        ),
         ...assetSpotsList.map((assetData) {
           final name = assetData['name'] as String;
           final icon = assetData['icon'] as String;
@@ -460,6 +478,7 @@ class _RetireSimulatorResultScreenState
     Map<String, dynamic> summary,
     NumberFormat currencyFormat,
     String localeCode,
+    AppLocalizations l10n,
   ) {
     // 초기 자산 금액 포맷팅 (원 단위 포함)
     final initialAssetText = currencyFormat.format(provider.initialAsset);
@@ -489,6 +508,25 @@ class _RetireSimulatorResultScreenState
     // 최종 자산 포맷팅
     final finalAssetText = currencyFormat.format(summary['finalAsset']);
 
+    // 로컬라이징된 문장 생성 (파라미터 순서: initialAsset, portfolio, years, monthlyWithdrawal, finalAsset)
+    final localizedText = l10n.simulationResultPrefix(
+      initialAssetText,
+      portfolioText,
+      provider.simulationYears,
+      monthlyWithdrawalText,
+      finalAssetText,
+    );
+
+    // 강조할 부분들을 찾아서 TextSpan으로 구성
+    final parts = _parseLocalizedText(
+      localizedText,
+      initialAssetText,
+      portfolioText,
+      '${provider.simulationYears}',
+      monthlyWithdrawalText,
+      finalAssetText,
+    );
+
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -504,7 +542,7 @@ class _RetireSimulatorResultScreenState
               Icon(Icons.description_outlined, color: AppColors.gold, size: 20),
               SizedBox(width: 8),
               Text(
-                '시뮬레이션 결과',
+                l10n.simulationResultTitle,
                 style: TextStyle(
                   color: AppColors.gold,
                   fontSize: _simulationResultTitleFontSize,
@@ -521,63 +559,7 @@ class _RetireSimulatorResultScreenState
                 fontSize: _simulationResultValueFontSize,
                 height: 1.6, // 줄 간격
               ),
-              children: [
-                TextSpan(text: ''),
-                TextSpan(
-                  text: initialAssetText,
-                  style: TextStyle(
-                    color: AppColors.gold,
-                    fontWeight: FontWeight.bold,
-                    fontSize: _simulationResultValueFontSize + 2,
-                  ),
-                ),
-                TextSpan(text: ' 어치의 '),
-                TextSpan(
-                  text: portfolioText,
-                  style: TextStyle(
-                    color: AppColors.gold,
-                    fontWeight: FontWeight.bold,
-                    fontSize: _simulationResultValueFontSize + 2,
-                  ),
-                ),
-                TextSpan(text: '를 '),
-                TextSpan(
-                  text: '${provider.simulationYears}년',
-                  style: TextStyle(
-                    color: AppColors.gold,
-                    fontWeight: FontWeight.bold,
-                    fontSize: _simulationResultValueFontSize + 2,
-                  ),
-                ),
-                TextSpan(text: '간 보유하고 한달에 '),
-                TextSpan(
-                  text: monthlyWithdrawalText,
-                  style: TextStyle(
-                    color: AppColors.gold,
-                    fontWeight: FontWeight.bold,
-                    fontSize: _simulationResultValueFontSize + 2,
-                  ),
-                ),
-                TextSpan(text: '씩 쓴다고 하면 '),
-                TextSpan(
-                  text: '${provider.simulationYears}년',
-                  style: TextStyle(
-                    color: AppColors.gold,
-                    fontWeight: FontWeight.bold,
-                    fontSize: _simulationResultValueFontSize + 2,
-                  ),
-                ),
-                TextSpan(text: ' 후 최종 자산은 '),
-                TextSpan(
-                  text: finalAssetText,
-                  style: TextStyle(
-                    color: AppColors.gold,
-                    fontWeight: FontWeight.bold,
-                    fontSize: _simulationResultValueFontSize + 2,
-                  ),
-                ),
-                TextSpan(text: '이 됩니다.'),
-              ],
+              children: parts,
             ),
           ),
         ],
@@ -585,10 +567,62 @@ class _RetireSimulatorResultScreenState
     );
   }
 
+  List<TextSpan> _parseLocalizedText(
+    String localizedText,
+    String initialAssetText,
+    String portfolioText,
+    String yearsText,
+    String monthlyWithdrawalText,
+    String finalAssetText,
+  ) {
+    final spans = <TextSpan>[];
+    final highlightValues = [
+      initialAssetText,
+      portfolioText,
+      yearsText,
+      monthlyWithdrawalText,
+      finalAssetText,
+    ];
+
+    String remainingText = localizedText;
+    int lastIndex = 0;
+
+    // 각 강조할 값을 순서대로 찾아서 처리
+    for (final value in highlightValues) {
+      final index = remainingText.indexOf(value, lastIndex);
+      if (index != -1) {
+        // 강조 전 텍스트
+        if (index > lastIndex) {
+          spans.add(TextSpan(text: remainingText.substring(lastIndex, index)));
+        }
+        // 강조할 값
+        spans.add(
+          TextSpan(
+            text: value,
+            style: TextStyle(
+              color: AppColors.gold,
+              fontWeight: FontWeight.bold,
+              fontSize: _simulationResultValueFontSize + 2,
+            ),
+          ),
+        );
+        lastIndex = index + value.length;
+      }
+    }
+
+    // 남은 텍스트
+    if (lastIndex < remainingText.length) {
+      spans.add(TextSpan(text: remainingText.substring(lastIndex)));
+    }
+
+    return spans;
+  }
+
   Widget _buildSummaryCard(
     Map<String, dynamic> summary,
     NumberFormat currencyFormat,
     String scenario,
+    AppLocalizations l10n,
   ) {
     final scenarioColor = scenario == 'positive'
         ? AppColors.success
@@ -607,7 +641,7 @@ class _RetireSimulatorResultScreenState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '상세 통계',
+            l10n.detailedStatistics,
             style: TextStyle(
               color: scenarioColor,
               fontSize: _simulationResultTitleFontSize,
@@ -620,14 +654,14 @@ class _RetireSimulatorResultScreenState
             children: [
               Expanded(
                 child: _buildStatItem(
-                  '최종 자산',
+                  l10n.finalAsset,
                   currencyFormat.format(summary['finalAsset']),
                 ),
               ),
               SizedBox(width: 16),
               Expanded(
                 child: _buildStatItem(
-                  '누적 수익률',
+                  l10n.cumulativeReturn,
                   '${(summary['cumulativeReturn'] * 100).toStringAsFixed(1)}%',
                 ),
               ),
@@ -639,14 +673,14 @@ class _RetireSimulatorResultScreenState
             children: [
               Expanded(
                 child: _buildStatItem(
-                  '총 인출 금액',
+                  l10n.totalWithdrawn,
                   currencyFormat.format(summary['totalWithdrawn']),
                 ),
               ),
               SizedBox(width: 16),
               Expanded(
                 child: _buildStatItem(
-                  '순 수익',
+                  l10n.netProfit,
                   currencyFormat.format(summary['totalReturn']),
                 ),
               ),
@@ -685,11 +719,12 @@ class _RetireSimulatorResultScreenState
     RetireSimulatorProvider provider,
     List<double> totalPath,
     NumberFormat currencyFormat,
+    AppLocalizations l10n,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('월별 상세 내역', style: AppTextStyles.chartSectionTitle),
+        Text(l10n.monthlyDetails, style: AppTextStyles.chartSectionTitle),
         SizedBox(height: 16),
         Container(
           height: 400,
@@ -727,14 +762,14 @@ class _RetireSimulatorResultScreenState
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '${year}년',
+                            l10n.yearLabel(year),
                             style: TextStyle(
                               color: AppColors.slate400,
                               fontSize: _monthlyCardYearFontSize,
                             ),
                           ),
                           Text(
-                            '${monthInYear}월',
+                            l10n.monthLabel(monthInYear),
                             style: TextStyle(
                               color: AppColors.gold,
                               fontSize: _monthlyCardMonthFontSize,
@@ -754,7 +789,7 @@ class _RetireSimulatorResultScreenState
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                '자산',
+                                l10n.asset,
                                 style: TextStyle(
                                   color: AppColors.slate400,
                                   fontSize: _monthlyCardLabelFontSize,
@@ -776,7 +811,7 @@ class _RetireSimulatorResultScreenState
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  '인출',
+                                  l10n.withdrawal,
                                   style: TextStyle(
                                     color: Colors.orange.withValues(alpha: 0.8),
                                     fontSize: _monthlyCardLabelFontSize,
@@ -796,7 +831,7 @@ class _RetireSimulatorResultScreenState
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  '변동',
+                                  l10n.change,
                                   style: TextStyle(
                                     color: AppColors.slate400,
                                     fontSize: _monthlyCardLabelFontSize,

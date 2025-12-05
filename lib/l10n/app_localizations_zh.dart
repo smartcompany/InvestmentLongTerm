@@ -249,4 +249,82 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get showLess => '收起';
+
+  @override
+  String simulationResultPrefix(
+    String initialAsset,
+    String portfolio,
+    int years,
+    String monthlyWithdrawal,
+    String finalAsset,
+  ) {
+    return '如果您持有价值 $initialAsset 的 $portfolio $years 年，每月花费 $monthlyWithdrawal，那么 $years 年后的最终资产将是 $finalAsset。';
+  }
+
+  @override
+  String get simulationResultTitle => '模拟结果';
+
+  @override
+  String get detailedStatistics => '详细统计';
+
+  @override
+  String get simulationResultNoData => '没有模拟结果。';
+
+  @override
+  String get selectedScenario => '所选场景: ';
+
+  @override
+  String get scenarioPositive => '积极 (+20%)';
+
+  @override
+  String get scenarioNegative => '消极 (-20%)';
+
+  @override
+  String get scenarioNeutral => '中性 (0%)';
+
+  @override
+  String get monthlyWithdrawalLabel => '每月提取: ';
+
+  @override
+  String get assetValueTrend => '资产价值趋势';
+
+  @override
+  String get totalAssets => '总资产';
+
+  @override
+  String get cumulativeWithdrawal => '累计提取';
+
+  @override
+  String get finalAsset => '最终资产';
+
+  @override
+  String get cumulativeReturn => '累计收益率';
+
+  @override
+  String get totalWithdrawn => '总提取额';
+
+  @override
+  String get netProfit => '净利润';
+
+  @override
+  String get monthlyDetails => '月度详情';
+
+  @override
+  String yearLabel(int year) {
+    return '$year年';
+  }
+
+  @override
+  String monthLabel(int month) {
+    return '$month月';
+  }
+
+  @override
+  String get asset => '资产';
+
+  @override
+  String get withdrawal => '提取';
+
+  @override
+  String get change => '变动';
 }

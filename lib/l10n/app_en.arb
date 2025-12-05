@@ -66,6 +66,61 @@
   "sharedToKakaoTalk": "Shared to KakaoTalk!",
   "shareWithTextAndChart": "Share text and chart image together",
   "showMore": "Show More",
-  "showLess": "Show Less"
+  "showLess": "Show Less",
+  "simulationResultPrefix": "If you hold {portfolio} worth {initialAsset} for {years} years and spend {monthlyWithdrawal} per month, your final asset after {years} years will be {finalAsset}.",
+  "@simulationResultPrefix": {
+    "placeholders": {
+      "initialAsset": {
+        "type": "String"
+      },
+      "portfolio": {
+        "type": "String"
+      },
+      "years": {
+        "type": "int"
+      },
+      "monthlyWithdrawal": {
+        "type": "String"
+      },
+      "finalAsset": {
+        "type": "String"
+      }
+    }
+  },
+  "simulationResultTitle": "Simulation Result",
+  "detailedStatistics": "Detailed Statistics",
+  "simulationResultNoData": "No simulation results available.",
+  "selectedScenario": "Selected Scenario: ",
+  "scenarioPositive": "Positive (+20%)",
+  "scenarioNegative": "Negative (-20%)",
+  "scenarioNeutral": "Neutral (0%)",
+  "monthlyWithdrawalLabel": "Monthly Withdrawal: ",
+  "assetValueTrend": "Asset Value Trend",
+  "totalAssets": "Total Assets",
+  "cumulativeWithdrawal": "Cumulative Withdrawal",
+  "finalAsset": "Final Asset",
+  "cumulativeReturn": "Cumulative Return",
+  "totalWithdrawn": "Total Withdrawn",
+  "netProfit": "Net Profit",
+  "monthlyDetails": "Monthly Details",
+  "yearLabel": "{year}",
+  "@yearLabel": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "monthLabel": "{month}",
+  "@monthLabel": {
+    "placeholders": {
+      "month": {
+        "type": "int"
+      }
+    }
+  },
+  "asset": "Asset",
+  "withdrawal": "Withdrawal",
+  "change": "Change"
 }
 

@@ -249,4 +249,82 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get showLess => '折りたたむ';
+
+  @override
+  String simulationResultPrefix(
+    String initialAsset,
+    String portfolio,
+    int years,
+    String monthlyWithdrawal,
+    String finalAsset,
+  ) {
+    return '$initialAsset の $portfolio を $years 年間保有し、毎月 $monthlyWithdrawal ずつ使うとすると、$years 年後の最終資産は $finalAsset になります。';
+  }
+
+  @override
+  String get simulationResultTitle => 'シミュレーション結果';
+
+  @override
+  String get detailedStatistics => '詳細統計';
+
+  @override
+  String get simulationResultNoData => 'シミュレーション結果がありません。';
+
+  @override
+  String get selectedScenario => '選択したシナリオ: ';
+
+  @override
+  String get scenarioPositive => 'ポジティブ (+20%)';
+
+  @override
+  String get scenarioNegative => 'ネガティブ (-20%)';
+
+  @override
+  String get scenarioNeutral => 'ニュートラル (0%)';
+
+  @override
+  String get monthlyWithdrawalLabel => '月間引出額: ';
+
+  @override
+  String get assetValueTrend => '資産価値の推移';
+
+  @override
+  String get totalAssets => '総資産';
+
+  @override
+  String get cumulativeWithdrawal => '累積引出額';
+
+  @override
+  String get finalAsset => '最終資産';
+
+  @override
+  String get cumulativeReturn => '累積収益率';
+
+  @override
+  String get totalWithdrawn => '総引出額';
+
+  @override
+  String get netProfit => '純利益';
+
+  @override
+  String get monthlyDetails => '月別詳細';
+
+  @override
+  String yearLabel(int year) {
+    return '$year年';
+  }
+
+  @override
+  String monthLabel(int month) {
+    return '$month月';
+  }
+
+  @override
+  String get asset => '資産';
+
+  @override
+  String get withdrawal => '引出';
+
+  @override
+  String get change => '変動';
 }

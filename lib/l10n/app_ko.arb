@@ -66,6 +66,61 @@
   "sharedToKakaoTalk": "카카오톡으로 공유되었습니다!",
   "shareWithTextAndChart": "텍스트와 차트 이미지 함께 공유",
   "showMore": "더보기",
-  "showLess": "접기"
+  "showLess": "접기",
+  "simulationResultPrefix": "{initialAsset} 의 {portfolio}를 {years}년간 보유하고 한달에 {monthlyWithdrawal}씩 쓴다고 하면 {years}년 후 최종 자산은 {finalAsset}이 됩니다.",
+  "@simulationResultPrefix": {
+    "placeholders": {
+      "initialAsset": {
+        "type": "String"
+      },
+      "portfolio": {
+        "type": "String"
+      },
+      "years": {
+        "type": "int"
+      },
+      "monthlyWithdrawal": {
+        "type": "String"
+      },
+      "finalAsset": {
+        "type": "String"
+      }
+    }
+  },
+  "simulationResultTitle": "시뮬레이션 결과",
+  "detailedStatistics": "상세 통계",
+  "simulationResultNoData": "시뮬레이션 결과가 없습니다.",
+  "selectedScenario": "선택한 시나리오: ",
+  "scenarioPositive": "긍정적 (+20%)",
+  "scenarioNegative": "부정적 (-20%)",
+  "scenarioNeutral": "중립적 (0%)",
+  "monthlyWithdrawalLabel": "월 인출액: ",
+  "assetValueTrend": "자산 가치 추이",
+  "totalAssets": "전체 자산",
+  "cumulativeWithdrawal": "누적 인출액",
+  "finalAsset": "최종 자산",
+  "cumulativeReturn": "누적 수익률",
+  "totalWithdrawn": "총 인출 금액",
+  "netProfit": "순 수익",
+  "monthlyDetails": "월별 상세 내역",
+  "yearLabel": "{year}년",
+  "@yearLabel": {
+    "placeholders": {
+      "year": {
+        "type": "int"
+      }
+    }
+  },
+  "monthLabel": "{month}월",
+  "@monthLabel": {
+    "placeholders": {
+      "month": {
+        "type": "int"
+      }
+    }
+  },
+  "asset": "자산",
+  "withdrawal": "인출",
+  "change": "변동"
 }
 

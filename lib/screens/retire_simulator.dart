@@ -94,6 +94,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
         centerTitle: true,
       ),
       body: SingleChildScrollView(
+        physics: AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
