@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'l10n/app_localizations.dart';
 import 'providers/app_state_provider.dart';
+import 'providers/retire_simulator_provider.dart';
 import 'screens/home_screen.dart';
 import 'utils/colors.dart';
 
@@ -43,7 +44,13 @@ void main() async {
   KakaoSdk.init(nativeAppKey: '30272b5f0271c22c1747949a87f1758d');
 
   runApp(
-    ChangeNotifierProvider(create: (_) => AppStateProvider(), child: MyApp()),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AppStateProvider()),
+        ChangeNotifierProvider(create: (_) => RetireSimulatorProvider()),
+      ],
+      child: MyApp(),
+    ),
   );
 }
 

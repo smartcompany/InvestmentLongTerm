@@ -8,6 +8,7 @@ import '../utils/text_styles.dart';
 import '../widgets/asset_button.dart';
 import '../widgets/common_share_ui.dart';
 import 'investment_settings_screen.dart';
+import 'retire_simulator.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -112,6 +113,9 @@ class _HomeScreenState extends State<HomeScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
+                      // 은퇴 시뮬레이션 버튼
+                      _buildRetirementSimulatorButton(context),
+                      SizedBox(height: 24),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -323,5 +327,33 @@ class _HomeScreenState extends State<HomeScreen>
     }
 
     return Column(children: widgets);
+  }
+
+  Widget _buildRetirementSimulatorButton(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const RetireSimulatorScreen(),
+            ),
+          );
+        },
+        icon: Icon(Icons.account_balance_wallet, color: AppColors.navyDark),
+        label: Text(
+          '은퇴 자산 시뮬레이션',
+          style: AppTextStyles.buttonTextPrimary,
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.gold,
+          foregroundColor: AppColors.navyDark,
+          padding: EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+    );
   }
 }

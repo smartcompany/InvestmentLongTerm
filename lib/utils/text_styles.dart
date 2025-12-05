@@ -101,17 +101,17 @@ class AppTextStyles {
 
   // --- 차트 및 기타 ---
 
-  /// 차트 섹션 타이틀
+  /// 차트 섹션 타이틀 (자산 가치 추이, 월별 상세 내역)
   static const TextStyle chartSectionTitle = TextStyle(
     color: AppColors.slate300,
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: FontWeight.bold,
   );
 
   /// 차트 범례 (Legend) 텍스트
   static const TextStyle chartLegend = TextStyle(
     color: AppColors.slate300,
-    fontSize: 14,
+    fontSize: 20,
   );
 
   /// 차트 툴팁 텍스트
