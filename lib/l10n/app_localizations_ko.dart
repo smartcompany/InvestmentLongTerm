@@ -155,6 +155,21 @@ class AppLocalizationsKo extends AppLocalizations {
   String get homeDescription => '시간을 믿는 투자, 그 결과를 직접 확인해보세요.';
 
   @override
+  String get retirementQuestionPart1 => '내 자산으로';
+
+  @override
+  String get retirementQuestionPart2 => '얼마나 놀고 먹을 수 있을까?';
+
+  @override
+  String get retirementDescription => '은퇴 후 자산 변화를 시뮬레이션해보세요.';
+
+  @override
+  String get pastAssetSimulation => '그때 샀다면?';
+
+  @override
+  String get retirementSimulation => '내 돈으로?';
+
+  @override
   String get crypto => '암호화폐';
 
   @override
@@ -327,4 +342,73 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get change => '변동';
+
+  @override
+  String get simulationSettings => '시뮬레이션 설정';
+
+  @override
+  String get initialAssetAmount => '초기 자산 금액';
+
+  @override
+  String get monthlyWithdrawalAmount => '월 인출 금액';
+
+  @override
+  String get simulationDuration => '시뮬레이션 기간';
+
+  @override
+  String get year => '년';
+
+  @override
+  String get selectSimulationDuration => '시뮬레이션 기간 선택';
+
+  @override
+  String get confirm => '확인';
+
+  @override
+  String get scenarioSelection => '시나리오 선택';
+
+  @override
+  String get assetPortfolio => '자산 포트폴리오';
+
+  @override
+  String get addAsset => '자산 추가';
+
+  @override
+  String get pleaseAddAssets => '자산을 추가해주세요';
+
+  @override
+  String get totalAllocation => '총 비중';
+
+  @override
+  String get runSimulation => '시뮬레이션 실행';
+
+  @override
+  String get loadingAnnualReturn => '연수익률 로딩 중...';
+
+  @override
+  String get pastAnnualReturn => '과거 연평균 수익률 (CAGR)';
+
+  @override
+  String get allocation => '비중';
+
+  @override
+  String get delete => '삭제';
+
+  @override
+  String get calculatingAnnualReturn => '연수익률 계산 중...';
+
+  @override
+  String get won => '원';
+
+  @override
+  String get dollar => '달러';
+
+  @override
+  String get yen => '엔';
+
+  @override
+  String get yuan => '위안';
+
+  @override
+  String get duration => '기간';
 }

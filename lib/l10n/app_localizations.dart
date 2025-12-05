@@ -354,6 +354,36 @@ abstract class AppLocalizations {
   /// **'시간을 믿는 투자, 그 결과를 직접 확인해보세요.'**
   String get homeDescription;
 
+  /// No description provided for @retirementQuestionPart1.
+  ///
+  /// In ko, this message translates to:
+  /// **'내 자산으로'**
+  String get retirementQuestionPart1;
+
+  /// No description provided for @retirementQuestionPart2.
+  ///
+  /// In ko, this message translates to:
+  /// **'얼마나 놀고 먹을 수 있을까?'**
+  String get retirementQuestionPart2;
+
+  /// No description provided for @retirementDescription.
+  ///
+  /// In ko, this message translates to:
+  /// **'은퇴 후 자산 변화를 시뮬레이션해보세요.'**
+  String get retirementDescription;
+
+  /// No description provided for @pastAssetSimulation.
+  ///
+  /// In ko, this message translates to:
+  /// **'그때 샀다면?'**
+  String get pastAssetSimulation;
+
+  /// No description provided for @retirementSimulation.
+  ///
+  /// In ko, this message translates to:
+  /// **'내 돈으로?'**
+  String get retirementSimulation;
+
   /// No description provided for @crypto.
   ///
   /// In ko, this message translates to:
@@ -655,6 +685,144 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'변동'**
   String get change;
+
+  /// No description provided for @simulationSettings.
+  ///
+  /// In ko, this message translates to:
+  /// **'시뮬레이션 설정'**
+  String get simulationSettings;
+
+  /// No description provided for @initialAssetAmount.
+  ///
+  /// In ko, this message translates to:
+  /// **'초기 자산 금액'**
+  String get initialAssetAmount;
+
+  /// No description provided for @monthlyWithdrawalAmount.
+  ///
+  /// In ko, this message translates to:
+  /// **'월 인출 금액'**
+  String get monthlyWithdrawalAmount;
+
+  /// No description provided for @simulationDuration.
+  ///
+  /// In ko, this message translates to:
+  /// **'시뮬레이션 기간'**
+  String get simulationDuration;
+
+  /// No description provided for @year.
+  ///
+  /// In ko, this message translates to:
+  /// **'년'**
+  String get year;
+
+  /// No description provided for @selectSimulationDuration.
+  ///
+  /// In ko, this message translates to:
+  /// **'시뮬레이션 기간 선택'**
+  String get selectSimulationDuration;
+
+  /// No description provided for @confirm.
+  ///
+  /// In ko, this message translates to:
+  /// **'확인'**
+  String get confirm;
+
+  /// No description provided for @scenarioSelection.
+  ///
+  /// In ko, this message translates to:
+  /// **'시나리오 선택'**
+  String get scenarioSelection;
+
+  /// No description provided for @assetPortfolio.
+  ///
+  /// In ko, this message translates to:
+  /// **'자산 포트폴리오'**
+  String get assetPortfolio;
+
+  /// No description provided for @addAsset.
+  ///
+  /// In ko, this message translates to:
+  /// **'자산 추가'**
+  String get addAsset;
+
+  /// No description provided for @pleaseAddAssets.
+  ///
+  /// In ko, this message translates to:
+  /// **'자산을 추가해주세요'**
+  String get pleaseAddAssets;
+
+  /// No description provided for @totalAllocation.
+  ///
+  /// In ko, this message translates to:
+  /// **'총 비중'**
+  String get totalAllocation;
+
+  /// No description provided for @runSimulation.
+  ///
+  /// In ko, this message translates to:
+  /// **'시뮬레이션 실행'**
+  String get runSimulation;
+
+  /// No description provided for @loadingAnnualReturn.
+  ///
+  /// In ko, this message translates to:
+  /// **'연수익률 로딩 중...'**
+  String get loadingAnnualReturn;
+
+  /// No description provided for @pastAnnualReturn.
+  ///
+  /// In ko, this message translates to:
+  /// **'과거 연평균 수익률 (CAGR)'**
+  String get pastAnnualReturn;
+
+  /// No description provided for @allocation.
+  ///
+  /// In ko, this message translates to:
+  /// **'비중'**
+  String get allocation;
+
+  /// No description provided for @delete.
+  ///
+  /// In ko, this message translates to:
+  /// **'삭제'**
+  String get delete;
+
+  /// No description provided for @calculatingAnnualReturn.
+  ///
+  /// In ko, this message translates to:
+  /// **'연수익률 계산 중...'**
+  String get calculatingAnnualReturn;
+
+  /// No description provided for @won.
+  ///
+  /// In ko, this message translates to:
+  /// **'원'**
+  String get won;
+
+  /// No description provided for @dollar.
+  ///
+  /// In ko, this message translates to:
+  /// **'달러'**
+  String get dollar;
+
+  /// No description provided for @yen.
+  ///
+  /// In ko, this message translates to:
+  /// **'엔'**
+  String get yen;
+
+  /// No description provided for @yuan.
+  ///
+  /// In ko, this message translates to:
+  /// **'위안'**
+  String get yuan;
+
+  /// No description provided for @duration.
+  ///
+  /// In ko, this message translates to:
+  /// **'기간'**
+  String get duration;
 }
 
 class _AppLocalizationsDelegate

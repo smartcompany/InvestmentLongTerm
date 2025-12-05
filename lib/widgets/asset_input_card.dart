@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/asset.dart';
 import '../models/asset_option.dart';
 import '../utils/colors.dart';
+import '../l10n/app_localizations.dart';
 
 class AssetInputCard extends StatelessWidget {
   final Asset asset;
@@ -21,6 +22,8 @@ class AssetInputCard extends StatelessWidget {
   static const double _allocationValueFontSize =
       18.0; // 비중 퍼센트 값 텍스트 (예: "60.0%")
 
+  final AppLocalizations? l10n;
+
   const AssetInputCard({
     super.key,
     required this.asset,
@@ -29,6 +32,7 @@ class AssetInputCard extends StatelessWidget {
     required this.onAllocationChanged,
     required this.onDelete,
     this.isLoadingCagr = false,
+    this.l10n,
   });
 
   @override
@@ -76,7 +80,7 @@ class AssetInputCard extends StatelessWidget {
               IconButton(
                 icon: Icon(Icons.delete_outline, color: Colors.red),
                 onPressed: onDelete,
-                tooltip: '삭제',
+                tooltip: l10n?.delete ?? '삭제',
               ),
             ],
           ),
@@ -95,7 +99,7 @@ class AssetInputCard extends StatelessWidget {
                 ),
                 SizedBox(width: 8),
                 Text(
-                  '연수익률 계산 중...',
+                  l10n?.calculatingAnnualReturn ?? '연수익률 계산 중...',
                   style: TextStyle(
                     color: AppColors.slate400,
                     fontSize: _cagrLoadingFontSize,
@@ -111,7 +115,7 @@ class AssetInputCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                '과거 연평균 수익률 (CAGR): ${(asset.annualReturn! * 100).toStringAsFixed(2)}%',
+                '${l10n?.pastAnnualReturn ?? '과거 연평균 수익률 (CAGR)'}: ${(asset.annualReturn! * 100).toStringAsFixed(2)}%',
                 style: TextStyle(
                   color: AppColors.success,
                   fontSize: _cagrValueFontSize,
@@ -143,7 +147,7 @@ class AssetInputCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '비중',
+                    l10n?.allocation ?? '비중',
                     style: TextStyle(
                       color: AppColors.slate400,
                       fontSize: _allocationLabelFontSize,

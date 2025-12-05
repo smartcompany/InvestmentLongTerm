@@ -5,10 +5,13 @@ import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../providers/retire_simulator_provider.dart';
 import '../providers/app_state_provider.dart';
+import '../providers/currency_provider.dart';
 import '../models/asset_option.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
 import '../l10n/app_localizations.dart';
+import '../widgets/common_share_ui.dart';
+import '../services/ad_service.dart';
 
 class RetireSimulatorResultScreen extends StatefulWidget {
   const RetireSimulatorResultScreen({super.key});
@@ -20,6 +23,8 @@ class RetireSimulatorResultScreen extends StatefulWidget {
 
 class _RetireSimulatorResultScreenState
     extends State<RetireSimulatorResultScreen> {
+  bool _isMonthlyDetailsExpanded = false; // 월별 상세 내역 펼침 상태
+
   // 시뮬레이션 결과 폰트 크기 상수
   static const double _simulationResultTitleFontSize =
       20.0; // "시뮬레이션 요약" 제목 텍스트
@@ -39,10 +44,12 @@ class _RetireSimulatorResultScreenState
   Widget build(BuildContext context) {
     final provider = context.watch<RetireSimulatorProvider>();
     final appProvider = context.watch<AppStateProvider>();
+    final currencyProvider = context.watch<CurrencyProvider>();
     final localeCode = Localizations.localeOf(context).languageCode;
     final l10n = AppLocalizations.of(context)!;
+    final currencySymbol = currencyProvider.getCurrencySymbol(localeCode);
     final currencyFormat = NumberFormat.currency(
-      symbol: '₩',
+      symbol: currencySymbol,
       decimalDigits: 0,
       locale: localeCode,
     );
@@ -132,108 +139,192 @@ class _RetireSimulatorResultScreenState
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        physics: AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 시나리오 및 인출 정보 표시
-            Container(
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.navyMedium,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.slate700),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.info_outline, color: AppColors.gold, size: 20),
-                      SizedBox(width: 12),
-                      Text(
-                        l10n.selectedScenario,
-                        style: TextStyle(
-                          color: AppColors.slate300,
-                          fontSize: _simulationResultLabelFontSize,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 시나리오 및 인출 정보 표시
+              Container(
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.navyMedium,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.slate700),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          color: AppColors.gold,
+                          size: 20,
                         ),
-                      ),
-                      Text(
-                        scenarioName,
-                        style: TextStyle(
-                          color: provider.selectedScenario == 'positive'
-                              ? AppColors.success
-                              : provider.selectedScenario == 'negative'
-                              ? Colors.red
-                              : AppColors.gold,
-                          fontSize: _simulationResultValueFontSize,
-                          fontWeight: FontWeight.bold,
+                        SizedBox(width: 12),
+                        Flexible(
+                          child: Wrap(
+                            children: [
+                              Text(
+                                l10n.selectedScenario,
+                                style: TextStyle(
+                                  color: AppColors.slate300,
+                                  fontSize: _simulationResultLabelFontSize,
+                                ),
+                              ),
+                              Text(
+                                scenarioName,
+                                style: TextStyle(
+                                  color: provider.selectedScenario == 'positive'
+                                      ? AppColors.success
+                                      : provider.selectedScenario == 'negative'
+                                      ? Colors.red
+                                      : AppColors.gold,
+                                  fontSize: _simulationResultValueFontSize,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.account_balance_wallet,
-                        color: Colors.orange,
-                        size: 20,
-                      ),
-                      SizedBox(width: 12),
-                      Text(
-                        l10n.monthlyWithdrawalLabel,
-                        style: TextStyle(
-                          color: AppColors.slate300,
-                          fontSize: _simulationResultLabelFontSize,
-                        ),
-                      ),
-                      Text(
-                        currencyFormat.format(provider.monthlyWithdrawal),
-                        style: TextStyle(
+                      ],
+                    ),
+                    SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.account_balance_wallet,
                           color: Colors.orange,
-                          fontSize: _simulationResultValueFontSize,
-                          fontWeight: FontWeight.bold,
+                          size: 20,
+                        ),
+                        SizedBox(width: 12),
+                        Flexible(
+                          child: Wrap(
+                            children: [
+                              Text(
+                                l10n.monthlyWithdrawalLabel,
+                                style: TextStyle(
+                                  color: AppColors.slate300,
+                                  fontSize: _simulationResultLabelFontSize,
+                                ),
+                              ),
+                              Text(
+                                currencyFormat.format(
+                                  provider.monthlyWithdrawal,
+                                ),
+                                style: TextStyle(
+                                  color: Colors.orange,
+                                  fontSize: _simulationResultValueFontSize,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 32),
+              // 통합 차트 (전체 + 각 자산)
+              _buildCombinedChart(
+                provider,
+                totalSpots,
+                assetSpotsList,
+                currencyFormat,
+                l10n,
+              ),
+              SizedBox(height: 32),
+              // 읽기 편한 요약 카드
+              _buildReadableSummaryCard(
+                provider,
+                appProvider,
+                summary,
+                currencyFormat,
+                localeCode,
+                l10n,
+              ),
+              SizedBox(height: 16),
+              // 결과 요약
+              _buildSummaryCard(
+                summary,
+                currencyFormat,
+                provider.selectedScenario,
+                l10n,
+              ),
+              SizedBox(height: 32),
+              // 월별 상세 정보
+              _buildMonthlyDetails(provider, totalPath, currencyFormat, l10n),
+              SizedBox(height: 24),
+              // 공유하기 및 다시 계산 버튼
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        final shareText = _buildShareText(
+                          provider,
+                          appProvider,
+                          summary,
+                          currencyFormat,
+                          localeCode,
+                          l10n,
+                        );
+                        await CommonShareUI.showShareOptionsDialog(
+                          context: context,
+                          shareText: shareText,
+                        );
+                      },
+                      icon: Icon(Icons.share, color: AppColors.navyDark),
+                      label: Text(
+                        l10n.share,
+                        style: AppTextStyles.buttonTextPrimary.copyWith(
+                          color: AppColors.navyDark,
+                          fontSize: 16,
                         ),
                       ),
-                    ],
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.gold,
+                        padding: EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      icon: Icon(Icons.refresh, color: AppColors.navyDark),
+                      label: Text(
+                        l10n.recalculate,
+                        style: AppTextStyles.buttonTextPrimary.copyWith(
+                          color: AppColors.navyDark,
+                          fontSize: 16,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.gold,
+                        padding: EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
                   ),
                 ],
               ),
-            ),
-            SizedBox(height: 32),
-            // 통합 차트 (전체 + 각 자산)
-            _buildCombinedChart(
-              provider,
-              totalSpots,
-              assetSpotsList,
-              currencyFormat,
-              l10n,
-            ),
-            SizedBox(height: 32),
-            // 읽기 편한 요약 카드
-            _buildReadableSummaryCard(
-              provider,
-              appProvider,
-              summary,
-              currencyFormat,
-              localeCode,
-              l10n,
-            ),
-            SizedBox(height: 16),
-            // 결과 요약
-            _buildSummaryCard(
-              summary,
-              currencyFormat,
-              provider.selectedScenario,
-              l10n,
-            ),
-            SizedBox(height: 32),
-            // 월별 상세 정보
-            _buildMonthlyDetails(provider, totalPath, currencyFormat, l10n),
-          ],
+              SizedBox(height: 60),
+            ],
+          ),
         ),
       ),
     );
@@ -724,143 +815,182 @@ class _RetireSimulatorResultScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l10n.monthlyDetails, style: AppTextStyles.chartSectionTitle),
-        SizedBox(height: 16),
-        Container(
-          height: 400,
-          child: ListView.builder(
-            itemCount: totalPath.length,
-            itemBuilder: (context, index) {
-              final month = index;
-              final year = month ~/ 12;
-              final monthInYear = (month % 12) + 1;
-              final currentAsset = totalPath[index];
-              final previousAsset = index > 0
-                  ? totalPath[index - 1]
-                  : provider.initialAsset;
-              final assetChange = currentAsset - previousAsset;
-              final monthlyWithdrawal = month > 0
-                  ? provider.monthlyWithdrawal
-                  : 0.0;
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              _isMonthlyDetailsExpanded = !_isMonthlyDetailsExpanded;
+            });
+          },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(l10n.monthlyDetails, style: AppTextStyles.chartSectionTitle),
+              Icon(
+                _isMonthlyDetailsExpanded
+                    ? Icons.keyboard_arrow_up
+                    : Icons.keyboard_arrow_down,
+                color: AppColors.gold,
+                size: 28,
+              ),
+            ],
+          ),
+        ),
+        if (_isMonthlyDetailsExpanded) ...[
+          SizedBox(height: 16),
+          ConstrainedBox(
+            constraints: BoxConstraints(maxHeight: 400),
+            child: ListView.builder(
+              shrinkWrap: true,
+              physics: ClampingScrollPhysics(),
+              itemCount: totalPath.length,
+              itemBuilder: (context, index) {
+                final month = index;
+                final year = month ~/ 12;
+                final monthInYear = (month % 12) + 1;
+                final currentAsset = totalPath[index];
+                final previousAsset = index > 0
+                    ? totalPath[index - 1]
+                    : provider.initialAsset;
+                final assetChange = currentAsset - previousAsset;
+                final monthlyWithdrawal = month > 0
+                    ? provider.monthlyWithdrawal
+                    : 0.0;
 
-              // 모든 월 표시
+                // 모든 월 표시
 
-              return Container(
-                margin: EdgeInsets.only(bottom: 8),
-                padding: EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.navyMedium,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.slate700, width: 1),
-                ),
-                child: Row(
-                  children: [
-                    // 월 정보
-                    Container(
-                      width: 60,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.yearLabel(year),
-                            style: TextStyle(
-                              color: AppColors.slate400,
-                              fontSize: _monthlyCardYearFontSize,
+                return Container(
+                  margin: EdgeInsets.only(bottom: 8),
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.navyMedium,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: AppColors.slate700, width: 1),
+                  ),
+                  child: Row(
+                    children: [
+                      // 월 정보
+                      Container(
+                        width: 60,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              l10n.yearLabel(year),
+                              style: TextStyle(
+                                color: AppColors.slate400,
+                                fontSize: _monthlyCardYearFontSize,
+                              ),
                             ),
-                          ),
-                          Text(
-                            l10n.monthLabel(monthInYear),
-                            style: TextStyle(
-                              color: AppColors.gold,
-                              fontSize: _monthlyCardMonthFontSize,
-                              fontWeight: FontWeight.bold,
+                            Text(
+                              l10n.monthLabel(monthInYear),
+                              style: TextStyle(
+                                color: AppColors.gold,
+                                fontSize: _monthlyCardMonthFontSize,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    SizedBox(width: 12),
-                    // 자산 정보
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                l10n.asset,
-                                style: TextStyle(
-                                  color: AppColors.slate400,
-                                  fontSize: _monthlyCardLabelFontSize,
-                                ),
-                              ),
-                              Text(
-                                currencyFormat.format(currentAsset),
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: _monthlyCardValueFontSize,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          if (month > 0) ...[
-                            SizedBox(height: 4),
+                      SizedBox(width: 12),
+                      // 자산 정보
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  l10n.withdrawal,
-                                  style: TextStyle(
-                                    color: Colors.orange.withValues(alpha: 0.8),
-                                    fontSize: _monthlyCardLabelFontSize,
-                                  ),
-                                ),
-                                Text(
-                                  '-${currencyFormat.format(monthlyWithdrawal)}',
-                                  style: TextStyle(
-                                    color: Colors.orange,
-                                    fontSize: _monthlyCardSubValueFontSize,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 4),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  l10n.change,
+                                  l10n.asset,
                                   style: TextStyle(
                                     color: AppColors.slate400,
                                     fontSize: _monthlyCardLabelFontSize,
                                   ),
                                 ),
-                                Text(
-                                  assetChange >= 0
-                                      ? '+${currencyFormat.format(assetChange)}'
-                                      : currencyFormat.format(assetChange),
-                                  style: TextStyle(
-                                    color: assetChange >= 0
-                                        ? AppColors.success
-                                        : Colors.red,
-                                    fontSize: _monthlyCardSubValueFontSize,
-                                    fontWeight: FontWeight.w500,
+                                Flexible(
+                                  child: Text(
+                                    currencyFormat.format(currentAsset),
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: _monthlyCardValueFontSize,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    textAlign: TextAlign.end,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ],
                             ),
+                            if (month > 0) ...[
+                              SizedBox(height: 4),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    l10n.withdrawal,
+                                    style: TextStyle(
+                                      color: Colors.orange.withValues(
+                                        alpha: 0.8,
+                                      ),
+                                      fontSize: _monthlyCardLabelFontSize,
+                                    ),
+                                  ),
+                                  Flexible(
+                                    child: Text(
+                                      '-${currencyFormat.format(monthlyWithdrawal)}',
+                                      style: TextStyle(
+                                        color: Colors.orange,
+                                        fontSize: _monthlyCardSubValueFontSize,
+                                      ),
+                                      textAlign: TextAlign.end,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 4),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    l10n.change,
+                                    style: TextStyle(
+                                      color: AppColors.slate400,
+                                      fontSize: _monthlyCardLabelFontSize,
+                                    ),
+                                  ),
+                                  Flexible(
+                                    child: Text(
+                                      assetChange >= 0
+                                          ? '+${currencyFormat.format(assetChange)}'
+                                          : currencyFormat.format(assetChange),
+                                      style: TextStyle(
+                                        color: assetChange >= 0
+                                            ? AppColors.success
+                                            : Colors.red,
+                                        fontSize: _monthlyCardSubValueFontSize,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      textAlign: TextAlign.end,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              );
-            },
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
-        ),
+        ],
       ],
     );
   }
@@ -893,6 +1023,85 @@ class _RetireSimulatorResultScreenState
     }
 
     return rounded;
+  }
+
+  String _buildShareText(
+    RetireSimulatorProvider provider,
+    AppStateProvider appProvider,
+    Map<String, dynamic> summary,
+    NumberFormat currencyFormat,
+    String localeCode,
+    AppLocalizations l10n,
+  ) {
+    final buffer = StringBuffer();
+
+    // Header
+    buffer.writeln('📊 ${l10n.simulationResultTitle}');
+    buffer.writeln('');
+
+    // 초기 자산 및 포트폴리오 정보
+    final initialAsset = currencyFormat.format(provider.initialAsset);
+    final portfolioParts = <String>[];
+    for (final asset in provider.assets) {
+      final assetOption = appProvider.assets
+          .where((a) => a.id == asset.assetId)
+          .firstOrNull;
+      if (assetOption != null) {
+        final assetName = assetOption.displayName(localeCode);
+        final allocationPercent = (asset.allocation * 100).toStringAsFixed(0);
+        portfolioParts.add('$assetName ($allocationPercent%)');
+      }
+    }
+    final portfolioText = portfolioParts.join(', ');
+
+    buffer.writeln('💰 초기 자산: $initialAsset');
+    buffer.writeln('📈 포트폴리오: $portfolioText');
+    buffer.writeln('📅 시뮬레이션 기간: ${provider.simulationYears}년');
+    buffer.writeln(
+      '💸 월 인출액: ${currencyFormat.format(provider.monthlyWithdrawal)}',
+    );
+
+    // 시나리오 정보
+    String scenarioText = '';
+    switch (provider.selectedScenario) {
+      case 'positive':
+        scenarioText = '긍정적 (+20%)';
+        break;
+      case 'negative':
+        scenarioText = '부정적 (-20%)';
+        break;
+      case 'neutral':
+      default:
+        scenarioText = '중립적 (0%)';
+        break;
+    }
+    buffer.writeln('📊 시나리오: $scenarioText');
+    buffer.writeln('');
+
+    // 결과
+    buffer.writeln('✨ 시뮬레이션 결과');
+    buffer.writeln('');
+    buffer.writeln('   최종 자산: ${currencyFormat.format(summary['finalAsset'])}');
+    buffer.writeln(
+      '   누적 수익률: ${(summary['cumulativeReturn'] * 100).toStringAsFixed(1)}%',
+    );
+    buffer.writeln(
+      '   총 인출액: ${currencyFormat.format(summary['totalWithdrawn'])}',
+    );
+    buffer.writeln('   순수익: ${currencyFormat.format(summary['totalReturn'])}');
+    buffer.writeln('');
+
+    // Footer
+    buffer.writeln('✨ ${l10n.shareTextFooter}');
+
+    // Add download URL if available
+    final downloadUrl = AdService.shared.downloadUrl;
+    if (downloadUrl != null && downloadUrl.isNotEmpty) {
+      buffer.writeln('');
+      buffer.writeln('🔗 ${l10n.downloadLink(downloadUrl)}');
+    }
+
+    return buffer.toString();
   }
 }
 

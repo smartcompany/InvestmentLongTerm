@@ -157,6 +157,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeDescription => 'Trust in time, verify the results yourself.';
 
   @override
+  String get retirementQuestionPart1 => 'With my assets,';
+
+  @override
+  String get retirementQuestionPart2 => 'how long can I live comfortably?';
+
+  @override
+  String get retirementDescription =>
+      'Simulate how your assets change after retirement.';
+
+  @override
+  String get pastAssetSimulation => 'If I bought it then?';
+
+  @override
+  String get retirementSimulation => 'With my money?';
+
+  @override
   String get crypto => 'Cryptocurrency';
 
   @override
@@ -331,4 +347,73 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get change => 'Change';
+
+  @override
+  String get simulationSettings => 'Simulation Settings';
+
+  @override
+  String get initialAssetAmount => 'Initial Asset Amount';
+
+  @override
+  String get monthlyWithdrawalAmount => 'Monthly Withdrawal Amount';
+
+  @override
+  String get simulationDuration => 'Simulation Duration';
+
+  @override
+  String get year => 'year';
+
+  @override
+  String get selectSimulationDuration => 'Select Simulation Duration';
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String get scenarioSelection => 'Scenario Selection';
+
+  @override
+  String get assetPortfolio => 'Asset Portfolio';
+
+  @override
+  String get addAsset => 'Add Asset';
+
+  @override
+  String get pleaseAddAssets => 'Please add assets';
+
+  @override
+  String get totalAllocation => 'Total Allocation';
+
+  @override
+  String get runSimulation => 'Run Simulation';
+
+  @override
+  String get loadingAnnualReturn => 'Loading annual return...';
+
+  @override
+  String get pastAnnualReturn => 'Past Annual Average Return (CAGR)';
+
+  @override
+  String get allocation => 'Allocation';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get calculatingAnnualReturn => 'Calculating annual return...';
+
+  @override
+  String get won => 'Won';
+
+  @override
+  String get dollar => 'Dollar';
+
+  @override
+  String get yen => 'Yen';
+
+  @override
+  String get yuan => 'Yuan';
+
+  @override
+  String get duration => 'Duration';
 }

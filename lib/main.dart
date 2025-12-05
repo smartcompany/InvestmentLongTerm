@@ -10,6 +10,7 @@ import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'l10n/app_localizations.dart';
 import 'providers/app_state_provider.dart';
 import 'providers/retire_simulator_provider.dart';
+import 'providers/currency_provider.dart';
 import 'screens/home_screen.dart';
 import 'utils/colors.dart';
 
@@ -48,6 +49,7 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => AppStateProvider()),
         ChangeNotifierProvider(create: (_) => RetireSimulatorProvider()),
+        ChangeNotifierProvider(create: (_) => CurrencyProvider()),
       ],
       child: MyApp(),
     ),

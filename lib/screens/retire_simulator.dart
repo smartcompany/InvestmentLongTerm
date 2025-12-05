@@ -6,10 +6,14 @@ import 'package:intl/intl.dart';
 import '../models/asset_option.dart';
 import '../providers/retire_simulator_provider.dart';
 import '../providers/app_state_provider.dart';
+import '../providers/currency_provider.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
 import '../widgets/asset_input_card.dart';
+import '../l10n/app_localizations.dart';
+import '../services/ad_service.dart';
 import 'retire_simulator_result_screen.dart';
+import 'home_screen.dart';
 
 class RetireSimulatorScreen extends StatefulWidget {
   const RetireSimulatorScreen({super.key});
@@ -18,10 +22,13 @@ class RetireSimulatorScreen extends StatefulWidget {
   State<RetireSimulatorScreen> createState() => _RetireSimulatorScreenState();
 }
 
-class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
+class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _initialAssetController = TextEditingController();
   final TextEditingController _monthlyWithdrawalController =
       TextEditingController();
+  late AnimationController _iconController;
+  String? _lastCurrencySymbol;
 
   // 폰트 크기 상수
   static const double _sectionTitleFontSize =
@@ -45,19 +52,62 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
   @override
   void initState() {
     super.initState();
+    _iconController = AnimationController(
+      duration: Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = context.read<RetireSimulatorProvider>();
-      _initialAssetController.text = NumberFormat(
-        '#,###',
-      ).format(provider.initialAsset);
+      final currencyProvider = context.read<CurrencyProvider>();
+      final localeCode = Localizations.localeOf(context).languageCode;
+      final currencySymbol = currencyProvider.getCurrencySymbol(localeCode);
+
+      // 통화에 따라 기본값 조정
+      double initialAsset = provider.initialAsset;
+      double monthlyWithdrawal = provider.monthlyWithdrawal;
+
+      // 기본값이 원화 기준(10억, 500만)이고 통화가 다르면 변환
+      if (provider.initialAsset == 1000000000 &&
+          provider.monthlyWithdrawal == 5000000) {
+        switch (currencySymbol) {
+          case '\$':
+            // 달러: 10억 원 → 10만 달러, 500만 원 → 5천 달러
+            initialAsset = 100000; // $100,000
+            monthlyWithdrawal = 5000; // $5,000
+            provider.setInitialAsset(initialAsset);
+            provider.setMonthlyWithdrawal(monthlyWithdrawal);
+            break;
+          case '¥':
+            // 엔: 10억 원 → 1,500만 엔 (약 1,000원 = 150엔 가정), 500만 원 → 75만 엔
+            initialAsset = 15000000; // ¥15,000,000
+            monthlyWithdrawal = 750000; // ¥750,000
+            provider.setInitialAsset(initialAsset);
+            provider.setMonthlyWithdrawal(monthlyWithdrawal);
+            break;
+          case 'CN¥':
+            // 위안: 10억 원 → 70만 위안 (약 1,000원 = 7위안 가정), 500만 원 → 3.5만 위안
+            initialAsset = 700000; // CN¥700,000
+            monthlyWithdrawal = 35000; // CN¥35,000
+            provider.setInitialAsset(initialAsset);
+            provider.setMonthlyWithdrawal(monthlyWithdrawal);
+            break;
+          case '₩':
+          default:
+            // 원화는 그대로
+            break;
+        }
+      }
+
+      _initialAssetController.text = NumberFormat('#,###').format(initialAsset);
       _monthlyWithdrawalController.text = NumberFormat(
         '#,###',
-      ).format(provider.monthlyWithdrawal);
+      ).format(monthlyWithdrawal);
     });
   }
 
   @override
   void dispose() {
+    _iconController.dispose();
     _initialAssetController.dispose();
     _monthlyWithdrawalController.dispose();
     super.dispose();
@@ -67,16 +117,92 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
     return double.tryParse(text.replaceAll(RegExp(r'[^\d]'), '')) ?? 0.0;
   }
 
+  void _updateCurrencyBasedDefaults() {
+    final provider = context.read<RetireSimulatorProvider>();
+    final currencyProvider = context.read<CurrencyProvider>();
+    final localeCode = Localizations.localeOf(context).languageCode;
+    final currencySymbol = currencyProvider.getCurrencySymbol(localeCode);
+
+    // 통화에 따라 기본값 조정 (원화 기준값이면 변환)
+    double initialAsset = provider.initialAsset;
+    double monthlyWithdrawal = provider.monthlyWithdrawal;
+
+    // 원화 기본값인 경우 통화에 맞게 변환
+    if (initialAsset == 1000000000 && monthlyWithdrawal == 5000000) {
+      switch (currencySymbol) {
+        case '\$':
+          // 달러: 10억 원 → 10만 달러, 500만 원 → 5천 달러
+          initialAsset = 100000; // $100,000
+          monthlyWithdrawal = 5000; // $5,000
+          provider.setInitialAsset(initialAsset);
+          provider.setMonthlyWithdrawal(monthlyWithdrawal);
+          break;
+        case '¥':
+          // 엔: 10억 원 → 1,500만 엔 (약 1,000원 = 150엔 가정), 500만 원 → 75만 엔
+          initialAsset = 15000000; // ¥15,000,000
+          monthlyWithdrawal = 750000; // ¥750,000
+          provider.setInitialAsset(initialAsset);
+          provider.setMonthlyWithdrawal(monthlyWithdrawal);
+          break;
+        case 'CN¥':
+          // 위안: 10억 원 → 70만 위안 (약 1,000원 = 7위안 가정), 500만 원 → 3.5만 위안
+          initialAsset = 700000; // CN¥700,000
+          monthlyWithdrawal = 35000; // CN¥35,000
+          provider.setInitialAsset(initialAsset);
+          provider.setMonthlyWithdrawal(monthlyWithdrawal);
+          break;
+        case '₩':
+        default:
+          // 원화는 그대로
+          break;
+      }
+    }
+
+    _initialAssetController.text = NumberFormat(
+      '#,###',
+    ).format(provider.initialAsset);
+    _monthlyWithdrawalController.text = NumberFormat(
+      '#,###',
+    ).format(provider.monthlyWithdrawal);
+  }
+
+  Widget _buildAnimatedIcon(IconData icon, double delay) {
+    return AnimatedBuilder(
+      animation: _iconController,
+      builder: (context, child) {
+        double value = _iconController.value + delay;
+        if (value > 1.0) value -= 1.0;
+        double yOffset = -10 * (value < 0.5 ? value * 2 : (1 - value) * 2);
+
+        return Transform.translate(
+          offset: Offset(0, yOffset),
+          child: Icon(icon, size: 40, color: AppColors.gold),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<RetireSimulatorProvider>();
     final appProvider = context.watch<AppStateProvider>();
+    final currencyProvider = context.watch<CurrencyProvider>();
     final localeCode = Localizations.localeOf(context).languageCode;
+    final l10n = AppLocalizations.of(context)!;
+    final currencySymbol = currencyProvider.getCurrencySymbol(localeCode);
     final currencyFormat = NumberFormat.currency(
-      symbol: '₩',
+      symbol: currencySymbol,
       decimalDigits: 0,
       locale: localeCode,
     );
+
+    // 통화가 변경되면 기본값 업데이트
+    if (_lastCurrencySymbol != currencySymbol) {
+      _lastCurrencySymbol = currencySymbol;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _updateCurrencyBasedDefaults();
+      });
+    }
 
     // 자산 목록 로드
     if (appProvider.assets.isEmpty && !appProvider.isAssetsLoading) {
@@ -86,37 +212,186 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.navyDark,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text('은퇴 자산 시뮬레이션', style: AppTextStyles.appBarTitle),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        physics: AlwaysScrollableScrollPhysics(),
-        padding: EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 입력 영역
-            _buildInputSection(provider, currencyFormat),
-            SizedBox(height: 32),
-            // 자산 포트폴리오
-            _buildPortfolioSection(provider, appProvider),
-            SizedBox(height: 32),
-            // 시뮬레이션 실행 버튼
-            if (provider.assets.isNotEmpty && provider.totalAllocation > 0)
-              _buildRunButton(provider),
-          ],
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [AppColors.navyDark, AppColors.navyMedium],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            physics: AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // 탭 버튼 (투자 시뮬레이션 / 은퇴 자산 시뮬레이션)
+                _buildTabButtons(context, l10n, true),
+                SizedBox(height: 24),
+                // 홈 화면 스타일 질문 섹션
+                _buildQuestionSection(l10n),
+                SizedBox(height: 36),
+                // 입력 영역
+                _buildInputSection(provider, currencyFormat, l10n),
+                SizedBox(height: 32),
+                // 자산 포트폴리오
+                _buildPortfolioSection(provider, appProvider, l10n),
+                SizedBox(height: 32),
+                // 시뮬레이션 실행 버튼
+                if (provider.assets.isNotEmpty && provider.totalAllocation > 0)
+                  _buildRunButton(provider, l10n),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 
+  Widget _buildTabButtons(
+    BuildContext context,
+    AppLocalizations l10n,
+    bool isRetirementScreen,
+  ) {
+    return Container(
+      padding: EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: AppColors.navyMedium,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.slate700),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildTabButton(
+              context: context,
+              label: l10n.pastAssetSimulation,
+              isSelected: !isRetirementScreen,
+              onPressed: () {
+                Navigator.of(context).pushReplacement(
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        const HomeScreen(),
+                    transitionDuration: Duration(milliseconds: 200),
+                    transitionsBuilder:
+                        (context, animation, secondaryAnimation, child) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: child,
+                          );
+                        },
+                  ),
+                );
+              },
+            ),
+          ),
+          SizedBox(width: 4),
+          Expanded(
+            child: _buildTabButton(
+              context: context,
+              label: l10n.retirementSimulation,
+              isSelected: isRetirementScreen,
+              onPressed: () {
+                // 이미 은퇴 자산 시뮬레이션 화면이므로 아무 동작 안 함
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabButton({
+    required BuildContext context,
+    required String label,
+    required bool isSelected,
+    required VoidCallback onPressed,
+  }) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.gold : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: isSelected ? AppColors.navyDark : AppColors.slate300,
+            fontSize: 14,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuestionSection(AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildAnimatedIcon(Icons.trending_up, 0.0),
+            SizedBox(width: 16),
+            _buildAnimatedIcon(Icons.calendar_today, 0.3),
+            SizedBox(width: 16),
+            _buildAnimatedIcon(Icons.bar_chart, 0.6),
+          ],
+        ),
+        SizedBox(height: 32),
+        Text(
+          l10n.retirementQuestionPart1,
+          textAlign: TextAlign.center,
+          style: AppTextStyles.homeMainQuestion.copyWith(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        Text(
+          l10n.retirementQuestionPart2,
+          textAlign: TextAlign.center,
+          style: AppTextStyles.homeMainQuestion.copyWith(
+            color: AppColors.gold,
+            fontSize: 30,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        SizedBox(height: 16),
+        Text(
+          l10n.retirementDescription,
+          textAlign: TextAlign.center,
+          style: AppTextStyles.homeSubDescription,
+        ),
+      ],
+    );
+  }
+
+  String _getCurrencyUnit(String currencySymbol) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (currencySymbol) {
+      case '₩':
+        return l10n.won;
+      case '\$':
+        return l10n.dollar;
+      case '¥':
+        return l10n.yen;
+      case 'CN¥':
+        return l10n.yuan;
+      default:
+        return currencySymbol;
+    }
+  }
+
   Widget _buildInputSection(
     RetireSimulatorProvider provider,
     NumberFormat currencyFormat,
+    AppLocalizations l10n,
   ) {
     return Container(
       padding: EdgeInsets.all(20),
@@ -129,7 +404,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '시뮬레이션 설정',
+            l10n.simulationSettings,
             style: AppTextStyles.chartSectionTitle.copyWith(
               fontSize: _sectionTitleFontSize,
             ),
@@ -137,8 +412,8 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
           SizedBox(height: 20),
           _buildNumberField(
             controller: _initialAssetController,
-            label: '초기 자산 금액',
-            suffix: '원',
+            label: l10n.initialAssetAmount,
+            suffix: _getCurrencyUnit(currencyFormat.currencySymbol),
             onChanged: (value) {
               provider.setInitialAsset(_parseCurrency(value));
             },
@@ -146,29 +421,32 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
           SizedBox(height: 16),
           _buildNumberField(
             controller: _monthlyWithdrawalController,
-            label: '월 인출 금액',
-            suffix: '원',
+            label: l10n.monthlyWithdrawalAmount,
+            suffix: _getCurrencyUnit(currencyFormat.currencySymbol),
             onChanged: (value) {
               provider.setMonthlyWithdrawal(_parseCurrency(value));
             },
           ),
           SizedBox(height: 16),
           // 시뮬레이션 기간 선택 (스크롤 피커)
-          _buildSimulationYearsPicker(provider),
+          _buildSimulationYearsPicker(provider, l10n),
           SizedBox(height: 16),
           // 시나리오 선택
-          _buildScenarioSelector(provider),
+          _buildScenarioSelector(provider, l10n),
         ],
       ),
     );
   }
 
-  Widget _buildScenarioSelector(RetireSimulatorProvider provider) {
+  Widget _buildScenarioSelector(
+    RetireSimulatorProvider provider,
+    AppLocalizations l10n,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '시나리오 선택',
+          l10n.scenarioSelection,
           style: TextStyle(
             color: AppColors.slate400,
             fontSize: _scenarioLabelFontSize,
@@ -179,7 +457,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
           children: [
             Expanded(
               child: _buildScenarioButton(
-                '긍정적 (+20%)',
+                l10n.scenarioPositive,
                 'positive',
                 provider.selectedScenario == 'positive',
                 AppColors.success,
@@ -189,7 +467,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
             SizedBox(width: 12),
             Expanded(
               child: _buildScenarioButton(
-                '중립적 (0%)',
+                l10n.scenarioNeutral,
                 'neutral',
                 provider.selectedScenario == 'neutral',
                 AppColors.gold,
@@ -199,7 +477,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
             SizedBox(width: 12),
             Expanded(
               child: _buildScenarioButton(
-                '부정적 (-20%)',
+                l10n.scenarioNegative,
                 'negative',
                 provider.selectedScenario == 'negative',
                 Colors.red,
@@ -303,10 +581,13 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
     );
   }
 
-  Widget _buildSimulationYearsPicker(RetireSimulatorProvider provider) {
+  Widget _buildSimulationYearsPicker(
+    RetireSimulatorProvider provider,
+    AppLocalizations l10n,
+  ) {
     return GestureDetector(
       onTap: () {
-        _showYearsPicker(context, provider);
+        _showYearsPicker(context, provider, l10n);
       },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -317,11 +598,14 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              '시뮬레이션 기간',
-              style: TextStyle(
-                color: AppColors.slate400,
-                fontSize: _textFieldLabelFontSize,
+            Flexible(
+              child: Text(
+                l10n.duration,
+                style: TextStyle(
+                  color: AppColors.slate400,
+                  fontSize: _textFieldLabelFontSize,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
             Row(
@@ -336,7 +620,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
                 ),
                 SizedBox(width: 4),
                 Text(
-                  '년',
+                  l10n.year,
                   style: TextStyle(
                     color: AppColors.slate300,
                     fontSize: _textFieldSuffixFontSize,
@@ -355,6 +639,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
   void _showYearsPicker(
     BuildContext context,
     RetireSimulatorProvider provider,
+    AppLocalizations l10n,
   ) {
     int selectedYear = provider.simulationYears;
 
@@ -377,7 +662,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '시뮬레이션 기간 선택',
+                      l10n.selectSimulationDuration,
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 18,
@@ -390,7 +675,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
                         provider.setSimulationYears(selectedYear);
                       },
                       child: Text(
-                        '확인',
+                        l10n.confirm,
                         style: TextStyle(
                           color: AppColors.gold,
                           fontSize: 16,
@@ -415,7 +700,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
                     final year = index + 1;
                     return Center(
                       child: Text(
-                        '$year년',
+                        '${l10n.yearLabel(year)}',
                         style: TextStyle(color: Colors.white, fontSize: 20),
                       ),
                     );
@@ -432,6 +717,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
   Widget _buildPortfolioSection(
     RetireSimulatorProvider provider,
     AppStateProvider appProvider,
+    AppLocalizations l10n,
   ) {
     final localeCode = Localizations.localeOf(context).languageCode;
     final availableAssets = appProvider.assets;
@@ -444,7 +730,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              '자산 포트폴리오',
+              l10n.assetPortfolio,
               style: AppTextStyles.chartSectionTitle.copyWith(
                 fontSize: _sectionTitleFontSize,
               ),
@@ -496,7 +782,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
                     ),
                     SizedBox(width: 4),
                     Text(
-                      '자산 추가',
+                      l10n.addAsset,
                       style: TextStyle(
                         color: AppColors.navyDark,
                         fontSize: _addAssetButtonFontSize,
@@ -520,7 +806,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
             ),
             child: Center(
               child: Text(
-                '자산을 추가해주세요',
+                l10n.pleaseAddAssets,
                 style: TextStyle(
                   color: AppColors.slate400,
                   fontSize: _emptyStateFontSize,
@@ -543,6 +829,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
               assetOption: assetOption,
               index: entry.key,
               isLoadingCagr: provider.isLoadingCagr(entry.value.assetId),
+              l10n: l10n,
               onAllocationChanged: (newAllocation) {
                 provider.updateAssetAllocation(entry.key, newAllocation);
               },
@@ -564,7 +851,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
                 Icon(Icons.check_circle, color: AppColors.success, size: 20),
                 SizedBox(width: 8),
                 Text(
-                  '총 비중: ${(provider.totalAllocation * 100).toStringAsFixed(1)}%',
+                  '${l10n.totalAllocation}: ${(provider.totalAllocation * 100).toStringAsFixed(1)}%',
                   style: TextStyle(
                     color: AppColors.success,
                     fontSize: _totalAllocationFontSize,
@@ -579,18 +866,61 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
     );
   }
 
-  Widget _buildRunButton(RetireSimulatorProvider provider) {
+  Widget _buildRunButton(
+    RetireSimulatorProvider provider,
+    AppLocalizations l10n,
+  ) {
     final allLoaded = provider.allCagrLoaded;
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
         onPressed: allLoaded
-            ? () {
-                // 결과 화면으로 이동
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const RetireSimulatorResultScreen(),
+            ? () async {
+                // Show loading dialog
+                if (!mounted) return;
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  barrierColor: Colors.black.withValues(alpha: 0.7),
+                  builder: (context) => WillPopScope(
+                    onWillPop: () async => false,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.gold,
+                        strokeWidth: 3,
+                      ),
+                    ),
                   ),
+                );
+
+                // Load ad settings
+                await AdService.shared.loadSettings();
+
+                if (!mounted) return;
+
+                // Show ad
+                await AdService.shared.showInterstitialAd(
+                  onAdDismissed: () {
+                    if (!mounted) return;
+                    Navigator.of(context).pop(); // Close loading dialog
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const RetireSimulatorResultScreen(),
+                      ),
+                    );
+                  },
+                  onAdFailedToShow: () {
+                    // If ad fails, close loading dialog and proceed
+                    if (!mounted) return;
+                    Navigator.of(context).pop(); // Close loading dialog
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const RetireSimulatorResultScreen(),
+                      ),
+                    );
+                  },
                 );
               }
             : null,
@@ -603,7 +933,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
           ),
         ),
         child: Text(
-          allLoaded ? '시뮬레이션 실행' : '연수익률 로딩 중...',
+          allLoaded ? l10n.runSimulation : l10n.loadingAnnualReturn,
           style: AppTextStyles.buttonTextPrimary,
         ),
       ),

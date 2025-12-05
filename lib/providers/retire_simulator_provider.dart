@@ -392,7 +392,9 @@ class RetireSimulatorProvider with ChangeNotifier {
     final finalAsset = totalPath.last;
     final totalWithdrawn =
         _monthlyWithdrawal * (totalPath.length - 1); // 초기값 제외
-    final totalReturn = finalAsset - _initialAsset;
+    // 총 수익 = 최종 자산 + 총 인출액 - 초기 자산
+    // 누적 수익률 = 총 수익 / 초기 자산
+    final totalReturn = finalAsset + totalWithdrawn - _initialAsset;
     final cumulativeReturn = totalReturn / _initialAsset;
 
     return {

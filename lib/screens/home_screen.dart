@@ -9,6 +9,7 @@ import '../widgets/asset_button.dart';
 import '../widgets/common_share_ui.dart';
 import 'investment_settings_screen.dart';
 import 'retire_simulator.dart';
+import 'settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -90,6 +91,20 @@ class _HomeScreenState extends State<HomeScreen>
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.settings, color: Colors.white),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
+            },
+          ),
+        ],
+      ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -113,8 +128,8 @@ class _HomeScreenState extends State<HomeScreen>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // 은퇴 시뮬레이션 버튼
-                      _buildRetirementSimulatorButton(context),
+                      // 탭 버튼 (투자 시뮬레이션 / 은퇴 자산 시뮬레이션)
+                      _buildTabButtons(context, l10n, true),
                       SizedBox(height: 24),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -329,28 +344,80 @@ class _HomeScreenState extends State<HomeScreen>
     return Column(children: widgets);
   }
 
-  Widget _buildRetirementSimulatorButton(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton.icon(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const RetireSimulatorScreen(),
+  Widget _buildTabButtons(
+    BuildContext context,
+    AppLocalizations l10n,
+    bool isHomeScreen,
+  ) {
+    return Container(
+      padding: EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: AppColors.navyMedium,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.slate700),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildTabButton(
+              context: context,
+              label: l10n.pastAssetSimulation,
+              isSelected: isHomeScreen,
+              onPressed: () {
+                // 이미 홈 화면이므로 아무 동작 안 함
+              },
             ),
-          );
-        },
-        icon: Icon(Icons.account_balance_wallet, color: AppColors.navyDark),
-        label: Text(
-          '은퇴 자산 시뮬레이션',
-          style: AppTextStyles.buttonTextPrimary,
+          ),
+          SizedBox(width: 4),
+          Expanded(
+            child: _buildTabButton(
+              context: context,
+              label: l10n.retirementSimulation,
+              isSelected: !isHomeScreen,
+              onPressed: () {
+                Navigator.of(context).pushReplacement(
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) =>
+                        const RetireSimulatorScreen(),
+                    transitionDuration: Duration(milliseconds: 200),
+                    transitionsBuilder:
+                        (context, animation, secondaryAnimation, child) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: child,
+                          );
+                        },
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabButton({
+    required BuildContext context,
+    required String label,
+    required bool isSelected,
+    required VoidCallback onPressed,
+  }) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.gold : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
         ),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.gold,
-          foregroundColor: AppColors.navyDark,
-          padding: EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+        child: Text(
+          label,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: isSelected ? AppColors.navyDark : AppColors.slate300,
+            fontSize: 14,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
           ),
         ),
       ),
