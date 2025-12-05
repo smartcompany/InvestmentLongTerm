@@ -6,7 +6,7 @@ import '../services/api_service.dart';
 class RetireSimulatorProvider with ChangeNotifier {
   double _initialAsset = 1000000000; // 10억 원
   double _monthlyWithdrawal = 5000000; // 500만 원
-  int _simulationYears = 20;
+  int _simulationYears = 5;
   String _selectedScenario = 'neutral'; // 'positive', 'neutral', 'negative'
   final List<Asset> _assets = [];
   final Map<String, double> _cagrCache = {}; // assetId -> CAGR 캐시

@@ -344,71 +344,107 @@ class AppLocalizationsZh extends AppLocalizations {
   String get change => '变动';
 
   @override
-  String get simulationSettings => '시뮬레이션 설정';
+  String get simulationSettings => '模拟设置';
 
   @override
-  String get initialAssetAmount => '초기 자산 금액';
+  String get initialAssetAmount => '初始资产金额';
 
   @override
-  String get monthlyWithdrawalAmount => '월 인출 금액';
+  String get monthlyWithdrawalAmount => '每月提取金额';
 
   @override
-  String get simulationDuration => '시뮬레이션 기간';
+  String get simulationDuration => '模拟期限';
 
   @override
-  String get year => '년';
+  String get year => '年';
 
   @override
-  String get selectSimulationDuration => '시뮬레이션 기간 선택';
+  String get selectSimulationDuration => '选择模拟期限';
 
   @override
-  String get confirm => '확인';
+  String get confirm => '确认';
 
   @override
-  String get scenarioSelection => '시나리오 선택';
+  String get scenarioSelection => '场景选择';
 
   @override
-  String get assetPortfolio => '자산 포트폴리오';
+  String get assetPortfolio => '资产组合';
 
   @override
-  String get addAsset => '자산 추가';
+  String get addAsset => '添加资产';
 
   @override
-  String get pleaseAddAssets => '자산을 추가해주세요';
+  String get pleaseAddAssets => '请添加资产';
 
   @override
-  String get totalAllocation => '총 비중';
+  String get totalAllocation => '总分配';
 
   @override
-  String get runSimulation => '시뮬레이션 실행';
+  String get runSimulation => '运行模拟';
 
   @override
-  String get loadingAnnualReturn => '연수익률 로딩 중...';
+  String get loadingAnnualReturn => '正在加载年收益率...';
 
   @override
-  String get pastAnnualReturn => '과거 연평균 수익률 (CAGR)';
+  String get pastAnnualReturn => '过去年平均收益率 (CAGR)';
 
   @override
-  String get allocation => '비중';
+  String get allocation => '分配';
 
   @override
-  String get delete => '삭제';
+  String get delete => '删除';
 
   @override
-  String get calculatingAnnualReturn => '연수익률 계산 중...';
+  String get calculatingAnnualReturn => '正在计算年收益率...';
 
   @override
-  String get won => '원';
+  String get won => '韩元';
 
   @override
-  String get dollar => '달러';
+  String get dollar => '美元';
 
   @override
-  String get yen => '엔';
+  String get yen => '日元';
 
   @override
-  String get yuan => '위안';
+  String get yuan => '人民币';
 
   @override
-  String get duration => '기간';
+  String get duration => '期限';
+
+  @override
+  String get settings => '设置';
+
+  @override
+  String get currencySettings => '货币设置';
+
+  @override
+  String get currencyKRW => '韩元 (KRW)';
+
+  @override
+  String get currencyUSD => '美元 (USD)';
+
+  @override
+  String get currencyJPY => '日元 (JPY)';
+
+  @override
+  String get currencyCNY => '人民币 (CNY)';
+
+  @override
+  String get currencyDefault => '默认值 (按语言自动)';
+
+  @override
+  String get currencyKRWDesc => '韩国韩元';
+
+  @override
+  String get currencyUSDDesc => '美国美元';
+
+  @override
+  String get currencyJPYDesc => '日本日元';
+
+  @override
+  String get currencyCNYDesc => '中国人民币';
+
+  @override
+  String get currencyDefaultDesc => '根据语言自动设置';
 }

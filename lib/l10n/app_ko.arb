@@ -149,6 +149,18 @@
   "dollar": "달러",
   "yen": "엔",
   "yuan": "위안",
-  "duration": "기간"
+  "duration": "기간",
+  "settings": "설정",
+  "currencySettings": "통화 설정",
+  "currencyKRW": "원 (KRW)",
+  "currencyUSD": "달러 (USD)",
+  "currencyJPY": "엔 (JPY)",
+  "currencyCNY": "위안 (CNY)",
+  "currencyDefault": "기본값 (언어별 자동)",
+  "currencyKRWDesc": "한국 원",
+  "currencyUSDDesc": "미국 달러",
+  "currencyJPYDesc": "일본 엔",
+  "currencyCNYDesc": "중국 위안",
+  "currencyDefaultDesc": "언어에 따라 자동으로 설정"
 }
 

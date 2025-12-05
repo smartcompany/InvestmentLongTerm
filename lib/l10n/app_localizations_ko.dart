@@ -411,4 +411,40 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get duration => '기간';
+
+  @override
+  String get settings => '설정';
+
+  @override
+  String get currencySettings => '통화 설정';
+
+  @override
+  String get currencyKRW => '원 (KRW)';
+
+  @override
+  String get currencyUSD => '달러 (USD)';
+
+  @override
+  String get currencyJPY => '엔 (JPY)';
+
+  @override
+  String get currencyCNY => '위안 (CNY)';
+
+  @override
+  String get currencyDefault => '기본값 (언어별 자동)';
+
+  @override
+  String get currencyKRWDesc => '한국 원';
+
+  @override
+  String get currencyUSDDesc => '미국 달러';
+
+  @override
+  String get currencyJPYDesc => '일본 엔';
+
+  @override
+  String get currencyCNYDesc => '중국 위안';
+
+  @override
+  String get currencyDefaultDesc => '언어에 따라 자동으로 설정';
 }

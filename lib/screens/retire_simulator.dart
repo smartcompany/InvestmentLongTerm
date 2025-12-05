@@ -14,6 +14,7 @@ import '../l10n/app_localizations.dart';
 import '../services/ad_service.dart';
 import 'retire_simulator_result_screen.dart';
 import 'home_screen.dart';
+import 'settings_screen.dart';
 
 class RetireSimulatorScreen extends StatefulWidget {
   const RetireSimulatorScreen({super.key});
@@ -57,51 +58,11 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
       vsync: this,
     )..repeat(reverse: true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = context.read<RetireSimulatorProvider>();
       final currencyProvider = context.read<CurrencyProvider>();
       final localeCode = Localizations.localeOf(context).languageCode;
       final currencySymbol = currencyProvider.getCurrencySymbol(localeCode);
-
-      // 통화에 따라 기본값 조정
-      double initialAsset = provider.initialAsset;
-      double monthlyWithdrawal = provider.monthlyWithdrawal;
-
-      // 기본값이 원화 기준(10억, 500만)이고 통화가 다르면 변환
-      if (provider.initialAsset == 1000000000 &&
-          provider.monthlyWithdrawal == 5000000) {
-        switch (currencySymbol) {
-          case '\$':
-            // 달러: 10억 원 → 10만 달러, 500만 원 → 5천 달러
-            initialAsset = 100000; // $100,000
-            monthlyWithdrawal = 5000; // $5,000
-            provider.setInitialAsset(initialAsset);
-            provider.setMonthlyWithdrawal(monthlyWithdrawal);
-            break;
-          case '¥':
-            // 엔: 10억 원 → 1,500만 엔 (약 1,000원 = 150엔 가정), 500만 원 → 75만 엔
-            initialAsset = 15000000; // ¥15,000,000
-            monthlyWithdrawal = 750000; // ¥750,000
-            provider.setInitialAsset(initialAsset);
-            provider.setMonthlyWithdrawal(monthlyWithdrawal);
-            break;
-          case 'CN¥':
-            // 위안: 10억 원 → 70만 위안 (약 1,000원 = 7위안 가정), 500만 원 → 3.5만 위안
-            initialAsset = 700000; // CN¥700,000
-            monthlyWithdrawal = 35000; // CN¥35,000
-            provider.setInitialAsset(initialAsset);
-            provider.setMonthlyWithdrawal(monthlyWithdrawal);
-            break;
-          case '₩':
-          default:
-            // 원화는 그대로
-            break;
-        }
-      }
-
-      _initialAssetController.text = NumberFormat('#,###').format(initialAsset);
-      _monthlyWithdrawalController.text = NumberFormat(
-        '#,###',
-      ).format(monthlyWithdrawal);
+      _lastCurrencySymbol = currencySymbol;
+      _updateCurrencyBasedDefaults();
     });
   }
 
@@ -118,6 +79,8 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
   }
 
   void _updateCurrencyBasedDefaults() {
+    if (!mounted) return;
+
     final provider = context.read<RetireSimulatorProvider>();
     final currencyProvider = context.read<CurrencyProvider>();
     final localeCode = Localizations.localeOf(context).languageCode;
@@ -131,22 +94,22 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
     if (initialAsset == 1000000000 && monthlyWithdrawal == 5000000) {
       switch (currencySymbol) {
         case '\$':
-          // 달러: 10억 원 → 10만 달러, 500만 원 → 5천 달러
-          initialAsset = 100000; // $100,000
+          // 달러: 10억 원 → 100만 달러, 500만 원 → 5천 달러
+          initialAsset = 1000000; // $1,000,000
           monthlyWithdrawal = 5000; // $5,000
           provider.setInitialAsset(initialAsset);
           provider.setMonthlyWithdrawal(monthlyWithdrawal);
           break;
         case '¥':
-          // 엔: 10억 원 → 1,500만 엔 (약 1,000원 = 150엔 가정), 500만 원 → 75만 엔
-          initialAsset = 15000000; // ¥15,000,000
+          // 엔: 10억 원 → 1억 5천만 엔 (약 1,000원 = 150엔 가정), 500만 원 → 75만 엔
+          initialAsset = 150000000; // ¥150,000,000
           monthlyWithdrawal = 750000; // ¥750,000
           provider.setInitialAsset(initialAsset);
           provider.setMonthlyWithdrawal(monthlyWithdrawal);
           break;
         case 'CN¥':
-          // 위안: 10억 원 → 70만 위안 (약 1,000원 = 7위안 가정), 500만 원 → 3.5만 위안
-          initialAsset = 700000; // CN¥700,000
+          // 위안: 10억 원 → 700만 위안 (약 1,000원 = 7위안 가정), 500만 원 → 3.5만 위안
+          initialAsset = 7000000; // CN¥7,000,000
           monthlyWithdrawal = 35000; // CN¥35,000
           provider.setInitialAsset(initialAsset);
           provider.setMonthlyWithdrawal(monthlyWithdrawal);
@@ -158,6 +121,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
       }
     }
 
+    // 통화가 변경되면 항상 입력 필드 텍스트를 현재 값으로 업데이트
     _initialAssetController.text = NumberFormat(
       '#,###',
     ).format(provider.initialAsset);
@@ -196,11 +160,13 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
       locale: localeCode,
     );
 
-    // 통화가 변경되면 기본값 업데이트
+    // 통화가 변경되면 기본값 업데이트 및 입력 필드 새로고침
     if (_lastCurrencySymbol != currencySymbol) {
       _lastCurrencySymbol = currencySymbol;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        _updateCurrencyBasedDefaults();
+        if (mounted) {
+          _updateCurrencyBasedDefaults();
+        }
       });
     }
 
@@ -255,51 +221,67 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
     AppLocalizations l10n,
     bool isRetirementScreen,
   ) {
-    return Container(
-      padding: EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: AppColors.navyMedium,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.slate700),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildTabButton(
-              context: context,
-              label: l10n.pastAssetSimulation,
-              isSelected: !isRetirementScreen,
-              onPressed: () {
-                Navigator.of(context).pushReplacement(
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) =>
-                        const HomeScreen(),
-                    transitionDuration: Duration(milliseconds: 200),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) {
-                          return FadeTransition(
-                            opacity: animation,
-                            child: child,
-                          );
-                        },
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            padding: EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: AppColors.navyMedium,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.slate700),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildTabButton(
+                    context: context,
+                    label: l10n.pastAssetSimulation,
+                    isSelected: !isRetirementScreen,
+                    onPressed: () {
+                      Navigator.of(context).pushReplacement(
+                        PageRouteBuilder(
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  const HomeScreen(),
+                          transitionDuration: Duration(milliseconds: 200),
+                          transitionsBuilder:
+                              (context, animation, secondaryAnimation, child) {
+                                return FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                );
+                              },
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
+                ),
+                SizedBox(width: 4),
+                Expanded(
+                  child: _buildTabButton(
+                    context: context,
+                    label: l10n.retirementSimulation,
+                    isSelected: isRetirementScreen,
+                    onPressed: () {
+                      // 이미 은퇴 자산 시뮬레이션 화면이므로 아무 동작 안 함
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
-          SizedBox(width: 4),
-          Expanded(
-            child: _buildTabButton(
-              context: context,
-              label: l10n.retirementSimulation,
-              isSelected: isRetirementScreen,
-              onPressed: () {
-                // 이미 은퇴 자산 시뮬레이션 화면이므로 아무 동작 안 함
-              },
-            ),
-          ),
-        ],
-      ),
+        ),
+        SizedBox(width: 12),
+        IconButton(
+          icon: Icon(Icons.settings, color: Colors.white),
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const SettingsScreen()),
+            );
+          },
+        ),
+      ],
     );
   }
 

@@ -149,6 +149,18 @@
   "dollar": "Dollar",
   "yen": "Yen",
   "yuan": "Yuan",
-  "duration": "Duration"
+  "duration": "Duration",
+  "settings": "Settings",
+  "currencySettings": "Currency Settings",
+  "currencyKRW": "Won (KRW)",
+  "currencyUSD": "Dollar (USD)",
+  "currencyJPY": "Yen (JPY)",
+  "currencyCNY": "Yuan (CNY)",
+  "currencyDefault": "Default (Auto by Language)",
+  "currencyKRWDesc": "Korean Won",
+  "currencyUSDDesc": "US Dollar",
+  "currencyJPYDesc": "Japanese Yen",
+  "currencyCNYDesc": "Chinese Yuan",
+  "currencyDefaultDesc": "Automatically set by language"
 }
 

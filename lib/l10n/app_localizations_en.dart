@@ -416,4 +416,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get duration => 'Duration';
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get currencySettings => 'Currency Settings';
+
+  @override
+  String get currencyKRW => 'Won (KRW)';
+
+  @override
+  String get currencyUSD => 'Dollar (USD)';
+
+  @override
+  String get currencyJPY => 'Yen (JPY)';
+
+  @override
+  String get currencyCNY => 'Yuan (CNY)';
+
+  @override
+  String get currencyDefault => 'Default (Auto by Language)';
+
+  @override
+  String get currencyKRWDesc => 'Korean Won';
+
+  @override
+  String get currencyUSDDesc => 'US Dollar';
+
+  @override
+  String get currencyJPYDesc => 'Japanese Yen';
+
+  @override
+  String get currencyCNYDesc => 'Chinese Yuan';
+
+  @override
+  String get currencyDefaultDesc => 'Automatically set by language';
 }

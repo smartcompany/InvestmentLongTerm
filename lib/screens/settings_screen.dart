@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/currency_provider.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
+import '../l10n/app_localizations.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -11,6 +12,7 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final currencyProvider = context.watch<CurrencyProvider>();
     final localeCode = Localizations.localeOf(context).languageCode;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: AppColors.navyDark,
@@ -21,7 +23,7 @@ class SettingsScreen extends StatelessWidget {
           icon: Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text('설정', style: AppTextStyles.appBarTitle),
+        title: Text(l10n.settings, style: AppTextStyles.appBarTitle),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -29,7 +31,7 @@ class SettingsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('통화 설정', style: AppTextStyles.chartSectionTitle),
+            Text(l10n.currencySettings, style: AppTextStyles.chartSectionTitle),
             SizedBox(height: 16),
             Container(
               padding: EdgeInsets.all(16),
@@ -38,53 +40,11 @@ class SettingsScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: AppColors.slate700),
               ),
-              child: Column(
-                children: [
-                  _buildCurrencyOption(
-                    context,
-                    currencyProvider,
-                    localeCode,
-                    '₩',
-                    '원 (KRW)',
-                    '한국 원',
-                  ),
-                  Divider(color: AppColors.slate700),
-                  _buildCurrencyOption(
-                    context,
-                    currencyProvider,
-                    localeCode,
-                    '\$',
-                    '달러 (USD)',
-                    '미국 달러',
-                  ),
-                  Divider(color: AppColors.slate700),
-                  _buildCurrencyOption(
-                    context,
-                    currencyProvider,
-                    localeCode,
-                    '¥',
-                    '엔 (JPY)',
-                    '일본 엔',
-                  ),
-                  Divider(color: AppColors.slate700),
-                  _buildCurrencyOption(
-                    context,
-                    currencyProvider,
-                    localeCode,
-                    'CN¥',
-                    '위안 (CNY)',
-                    '중국 위안',
-                  ),
-                  Divider(color: AppColors.slate700),
-                  _buildCurrencyOption(
-                    context,
-                    currencyProvider,
-                    localeCode,
-                    null,
-                    '기본값 (언어별 자동)',
-                    '언어에 따라 자동으로 설정',
-                  ),
-                ],
+              child: _buildCurrencyDropdown(
+                context,
+                currencyProvider,
+                localeCode,
+                l10n,
               ),
             ),
           ],
@@ -93,74 +53,84 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCurrencyOption(
+  Widget _buildCurrencyDropdown(
     BuildContext context,
     CurrencyProvider currencyProvider,
     String localeCode,
-    String? currencySymbol,
-    String title,
-    String subtitle,
+    AppLocalizations l10n,
   ) {
-    final isSelected = currencySymbol == null
-        ? currencyProvider.selectedCurrency == null
-        : currencyProvider.selectedCurrency == currencySymbol;
+    final selectedCurrency = currencyProvider.selectedCurrency;
     final defaultSymbol = currencyProvider.getCurrencySymbol(localeCode);
 
-    return InkWell(
-      onTap: () async {
-        if (currencySymbol == null) {
+    // 통화 옵션 리스트
+    final currencyOptions = [
+      {'symbol': null, 'label': l10n.currencyDefault},
+      {'symbol': '₩', 'label': l10n.currencyKRW},
+      {'symbol': '\$', 'label': l10n.currencyUSD},
+      {'symbol': '¥', 'label': l10n.currencyJPY},
+      {'symbol': 'CN¥', 'label': l10n.currencyCNY},
+    ];
+
+    return DropdownButton<String?>(
+      value: selectedCurrency,
+      isExpanded: true,
+      dropdownColor: AppColors.navyMedium,
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: 16,
+        fontWeight: FontWeight.bold,
+      ),
+      icon: Icon(Icons.arrow_drop_down, color: AppColors.gold),
+      underline: Container(height: 2, color: AppColors.gold),
+      items: currencyOptions.map((option) {
+        final symbol = option['symbol'] as String?;
+        final label = option['label'] as String;
+        final isSelected = symbol == selectedCurrency;
+
+        return DropdownMenuItem<String?>(
+          value: symbol,
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                  ),
+                ),
+              ),
+              if (symbol != null)
+                Text(
+                  symbol,
+                  style: TextStyle(
+                    color: AppColors.gold,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                )
+              else
+                Text(
+                  defaultSymbol,
+                  style: TextStyle(color: AppColors.slate400, fontSize: 16),
+                ),
+              SizedBox(width: 8),
+              if (isSelected)
+                Icon(Icons.check_circle, color: AppColors.gold, size: 20),
+            ],
+          ),
+        );
+      }).toList(),
+      onChanged: (String? newValue) async {
+        if (newValue == null) {
           await currencyProvider.resetToDefault(localeCode);
         } else {
-          await currencyProvider.setCurrency(currencySymbol);
+          await currencyProvider.setCurrency(newValue);
         }
       },
-      child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 12),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: TextStyle(color: AppColors.slate400, fontSize: 14),
-                  ),
-                ],
-              ),
-            ),
-            if (currencySymbol != null)
-              Text(
-                currencySymbol,
-                style: TextStyle(
-                  color: AppColors.gold,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              )
-            else
-              Text(
-                defaultSymbol,
-                style: TextStyle(color: AppColors.slate400, fontSize: 16),
-              ),
-            SizedBox(width: 12),
-            Icon(
-              isSelected ? Icons.check_circle : Icons.circle_outlined,
-              color: isSelected ? AppColors.gold : AppColors.slate400,
-              size: 24,
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

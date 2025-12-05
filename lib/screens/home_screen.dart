@@ -91,20 +91,7 @@ class _HomeScreenState extends State<HomeScreen>
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.settings, color: Colors.white),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const SettingsScreen()),
-              );
-            },
-          ),
-        ],
-      ),
+      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -349,51 +336,67 @@ class _HomeScreenState extends State<HomeScreen>
     AppLocalizations l10n,
     bool isHomeScreen,
   ) {
-    return Container(
-      padding: EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: AppColors.navyMedium,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.slate700),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildTabButton(
-              context: context,
-              label: l10n.pastAssetSimulation,
-              isSelected: isHomeScreen,
-              onPressed: () {
-                // 이미 홈 화면이므로 아무 동작 안 함
-              },
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            padding: EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: AppColors.navyMedium,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.slate700),
             ),
-          ),
-          SizedBox(width: 4),
-          Expanded(
-            child: _buildTabButton(
-              context: context,
-              label: l10n.retirementSimulation,
-              isSelected: !isHomeScreen,
-              onPressed: () {
-                Navigator.of(context).pushReplacement(
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation, secondaryAnimation) =>
-                        const RetireSimulatorScreen(),
-                    transitionDuration: Duration(milliseconds: 200),
-                    transitionsBuilder:
-                        (context, animation, secondaryAnimation, child) {
-                          return FadeTransition(
-                            opacity: animation,
-                            child: child,
-                          );
-                        },
+            child: Row(
+              children: [
+                Expanded(
+                  child: _buildTabButton(
+                    context: context,
+                    label: l10n.pastAssetSimulation,
+                    isSelected: isHomeScreen,
+                    onPressed: () {
+                      // 이미 홈 화면이므로 아무 동작 안 함
+                    },
                   ),
-                );
-              },
+                ),
+                SizedBox(width: 4),
+                Expanded(
+                  child: _buildTabButton(
+                    context: context,
+                    label: l10n.retirementSimulation,
+                    isSelected: !isHomeScreen,
+                    onPressed: () {
+                      Navigator.of(context).pushReplacement(
+                        PageRouteBuilder(
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  const RetireSimulatorScreen(),
+                          transitionDuration: Duration(milliseconds: 200),
+                          transitionsBuilder:
+                              (context, animation, secondaryAnimation, child) {
+                                return FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                );
+                              },
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+        SizedBox(width: 12),
+        IconButton(
+          icon: Icon(Icons.settings, color: Colors.white),
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const SettingsScreen()),
+            );
+          },
+        ),
+      ],
     );
   }
 

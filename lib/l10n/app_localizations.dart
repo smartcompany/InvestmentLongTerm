@@ -823,6 +823,78 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'기간'**
   String get duration;
+
+  /// No description provided for @settings.
+  ///
+  /// In ko, this message translates to:
+  /// **'설정'**
+  String get settings;
+
+  /// No description provided for @currencySettings.
+  ///
+  /// In ko, this message translates to:
+  /// **'통화 설정'**
+  String get currencySettings;
+
+  /// No description provided for @currencyKRW.
+  ///
+  /// In ko, this message translates to:
+  /// **'원 (KRW)'**
+  String get currencyKRW;
+
+  /// No description provided for @currencyUSD.
+  ///
+  /// In ko, this message translates to:
+  /// **'달러 (USD)'**
+  String get currencyUSD;
+
+  /// No description provided for @currencyJPY.
+  ///
+  /// In ko, this message translates to:
+  /// **'엔 (JPY)'**
+  String get currencyJPY;
+
+  /// No description provided for @currencyCNY.
+  ///
+  /// In ko, this message translates to:
+  /// **'위안 (CNY)'**
+  String get currencyCNY;
+
+  /// No description provided for @currencyDefault.
+  ///
+  /// In ko, this message translates to:
+  /// **'기본값 (언어별 자동)'**
+  String get currencyDefault;
+
+  /// No description provided for @currencyKRWDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'한국 원'**
+  String get currencyKRWDesc;
+
+  /// No description provided for @currencyUSDDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'미국 달러'**
+  String get currencyUSDDesc;
+
+  /// No description provided for @currencyJPYDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'일본 엔'**
+  String get currencyJPYDesc;
+
+  /// No description provided for @currencyCNYDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'중국 위안'**
+  String get currencyCNYDesc;
+
+  /// No description provided for @currencyDefaultDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'언어에 따라 자동으로 설정'**
+  String get currencyDefaultDesc;
 }
 
 class _AppLocalizationsDelegate
