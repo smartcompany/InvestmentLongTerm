@@ -10,10 +10,10 @@ import '../providers/currency_provider.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
 import '../widgets/asset_input_card.dart';
+import '../widgets/tab_navigation.dart';
 import '../l10n/app_localizations.dart';
 import '../services/ad_service.dart';
 import 'retire_simulator_result_screen.dart';
-import 'home_screen.dart';
 import 'settings_screen.dart';
 
 class RetireSimulatorScreen extends StatefulWidget {
@@ -194,7 +194,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // 탭 버튼 (투자 시뮬레이션 / 은퇴 자산 시뮬레이션)
-                _buildTabButtons(context, l10n, true),
+                TabNavigation(isHomeScreen: false),
                 SizedBox(height: 24),
                 // 홈 화면 스타일 질문 섹션
                 _buildQuestionSection(l10n),
@@ -210,102 +210,6 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
                   _buildRunButton(provider, l10n),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTabButtons(
-    BuildContext context,
-    AppLocalizations l10n,
-    bool isRetirementScreen,
-  ) {
-    return Row(
-      children: [
-        Expanded(
-          child: Container(
-            padding: EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: AppColors.navyMedium,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.slate700),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _buildTabButton(
-                    context: context,
-                    label: l10n.pastAssetSimulation,
-                    isSelected: !isRetirementScreen,
-                    onPressed: () {
-                      Navigator.of(context).pushReplacement(
-                        PageRouteBuilder(
-                          pageBuilder:
-                              (context, animation, secondaryAnimation) =>
-                                  const HomeScreen(),
-                          transitionDuration: Duration(milliseconds: 200),
-                          transitionsBuilder:
-                              (context, animation, secondaryAnimation, child) {
-                                return FadeTransition(
-                                  opacity: animation,
-                                  child: child,
-                                );
-                              },
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                SizedBox(width: 4),
-                Expanded(
-                  child: _buildTabButton(
-                    context: context,
-                    label: l10n.retirementSimulation,
-                    isSelected: isRetirementScreen,
-                    onPressed: () {
-                      // 이미 은퇴 자산 시뮬레이션 화면이므로 아무 동작 안 함
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        SizedBox(width: 12),
-        IconButton(
-          icon: Icon(Icons.settings, color: Colors.white),
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (context) => const SettingsScreen()),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTabButton({
-    required BuildContext context,
-    required String label,
-    required bool isSelected,
-    required VoidCallback onPressed,
-  }) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.gold : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: isSelected ? AppColors.navyDark : AppColors.slate300,
-            fontSize: 14,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
           ),
         ),
       ),
@@ -385,11 +289,34 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            l10n.simulationSettings,
-            style: AppTextStyles.chartSectionTitle.copyWith(
-              fontSize: _sectionTitleFontSize,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                l10n.simulationSettings,
+                style: AppTextStyles.chartSectionTitle.copyWith(
+                  fontSize: _sectionTitleFontSize,
+                ),
+              ),
+              IconButton(
+                icon: Icon(
+                  Icons.currency_exchange,
+                  color: AppColors.gold,
+                  size: 24,
+                ),
+                padding: EdgeInsets.zero,
+                constraints: BoxConstraints(minWidth: 24, minHeight: 24),
+                tooltip: l10n.currencySettings,
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const SettingsScreen(),
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
           SizedBox(height: 20),
           _buildNumberField(
