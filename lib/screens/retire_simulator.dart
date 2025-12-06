@@ -187,28 +187,36 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
-            physics: AlwaysScrollableScrollPhysics(),
-            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 30),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // 탭 버튼 (투자 시뮬레이션 / 은퇴 자산 시뮬레이션)
-                TabNavigation(isHomeScreen: false),
-                SizedBox(height: 24),
-                // 홈 화면 스타일 질문 섹션
-                _buildQuestionSection(l10n),
-                SizedBox(height: 36),
-                // 입력 영역
-                _buildInputSection(provider, currencyFormat, l10n),
-                SizedBox(height: 32),
-                // 자산 포트폴리오
-                _buildPortfolioSection(provider, appProvider, l10n),
-                SizedBox(height: 32),
-                // 시뮬레이션 실행 버튼
-                if (provider.assets.isNotEmpty && provider.totalAllocation > 0)
-                  _buildRunButton(provider, l10n),
-              ],
+          child: GestureDetector(
+            onTap: () {
+              // 텍스트 필드 외부 클릭 시 포커스 해제 및 키보드 닫기
+              FocusScope.of(context).unfocus();
+            },
+            behavior: HitTestBehavior.opaque,
+            child: SingleChildScrollView(
+              physics: AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // 탭 버튼 (투자 시뮬레이션 / 은퇴 자산 시뮬레이션)
+                  TabNavigation(isHomeScreen: false),
+                  SizedBox(height: 24),
+                  // 홈 화면 스타일 질문 섹션
+                  _buildQuestionSection(l10n),
+                  SizedBox(height: 36),
+                  // 입력 영역
+                  _buildInputSection(provider, currencyFormat, l10n),
+                  SizedBox(height: 32),
+                  // 자산 포트폴리오
+                  _buildPortfolioSection(provider, appProvider, l10n),
+                  SizedBox(height: 32),
+                  // 시뮬레이션 실행 버튼
+                  if (provider.assets.isNotEmpty &&
+                      provider.totalAllocation > 0)
+                    _buildRunButton(provider, l10n),
+                ],
+              ),
             ),
           ),
         ),

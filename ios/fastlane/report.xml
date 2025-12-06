@@ -5,37 +5,37 @@
     
     
       
-      <testcase classname="fastlane.lanes" name="0: app_store_connect_api_key" time="0.005018">
+      <testcase classname="fastlane.lanes" name="0: app_store_connect_api_key" time="0.00199">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="1: default_platform" time="0.000309">
+      <testcase classname="fastlane.lanes" name="1: default_platform" time="7.8e-05">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="2: cocoapods" time="4.563924">
+      <testcase classname="fastlane.lanes" name="2: cocoapods" time="1.638666">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="3: increment_build_number" time="0.922601">
+      <testcase classname="fastlane.lanes" name="3: increment_build_number" time="0.586822">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="4: build_app" time="201.945707">
+      <testcase classname="fastlane.lanes" name="4: build_app" time="83.467296">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="5: upload_symbols_to_crashlytics" time="44.413067">
+      <testcase classname="fastlane.lanes" name="5: upload_symbols_to_crashlytics" time="63.978371">
         
       </testcase>
     
       
-      <testcase classname="fastlane.lanes" name="6: upload_to_app_store" time="98.543919">
+      <testcase classname="fastlane.lanes" name="6: upload_to_app_store" time="84.676863">
         
       </testcase>
     
