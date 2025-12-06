@@ -433,6 +433,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
         children: [
           // "With my assets of [amount],"
           Row(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
@@ -444,15 +445,13 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
                 ),
               ),
               SizedBox(width: 8),
-              Expanded(
-                child: _buildInlineTextField(
-                  controller: _initialAssetController,
-                  currencyUnit: currencyUnit,
-                  onChanged: (value) {
-                    provider.setInitialAsset(_parseCurrency(value));
-                  },
-                  isLarge: isLargeText,
-                ),
+              _buildInlineTextField(
+                controller: _initialAssetController,
+                currencyUnit: currencyUnit,
+                onChanged: (value) {
+                  provider.setInitialAsset(_parseCurrency(value));
+                },
+                isLarge: isLargeText,
               ),
               SizedBox(width: 8),
               Text(
@@ -468,6 +467,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
           SizedBox(height: 8),
           // 두 번째 줄: "can I play and eat for [years] years by withdrawing [amount]"
           Row(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
@@ -490,15 +490,13 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
                 ),
               ),
               SizedBox(width: 8),
-              Expanded(
-                child: _buildInlineTextField(
-                  controller: _monthlyWithdrawalController,
-                  currencyUnit: currencyUnit,
-                  onChanged: (value) {
-                    provider.setMonthlyWithdrawal(_parseCurrency(value));
-                  },
-                  isLarge: isLargeText,
-                ),
+              _buildInlineTextField(
+                controller: _monthlyWithdrawalController,
+                currencyUnit: currencyUnit,
+                onChanged: (value) {
+                  provider.setMonthlyWithdrawal(_parseCurrency(value));
+                },
+                isLarge: isLargeText,
               ),
             ],
           ),
@@ -528,6 +526,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
         children: [
           // "내 자산 [금액]원으로 매월"까지 한 줄
           Row(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
@@ -539,15 +538,13 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
                 ),
               ),
               SizedBox(width: 8),
-              Expanded(
-                child: _buildInlineTextField(
-                  controller: _initialAssetController,
-                  currencyUnit: currencyUnit,
-                  onChanged: (value) {
-                    provider.setInitialAsset(_parseCurrency(value));
-                  },
-                  isLarge: isLargeText,
-                ),
+              _buildInlineTextField(
+                controller: _initialAssetController,
+                currencyUnit: currencyUnit,
+                onChanged: (value) {
+                  provider.setInitialAsset(_parseCurrency(value));
+                },
+                isLarge: isLargeText,
               ),
               SizedBox(width: 8),
               Text(
@@ -563,6 +560,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
           SizedBox(height: 8),
           // 두 번째 줄: "매월" + [월 인출 금액 입력] + "으로"
           Row(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
@@ -574,15 +572,13 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
                 ),
               ),
               SizedBox(width: 8),
-              Expanded(
-                child: _buildInlineTextField(
-                  controller: _monthlyWithdrawalController,
-                  currencyUnit: currencyUnit,
-                  onChanged: (value) {
-                    provider.setMonthlyWithdrawal(_parseCurrency(value));
-                  },
-                  isLarge: isLargeText,
-                ),
+              _buildInlineTextField(
+                controller: _monthlyWithdrawalController,
+                currencyUnit: currencyUnit,
+                onChanged: (value) {
+                  provider.setMonthlyWithdrawal(_parseCurrency(value));
+                },
+                isLarge: isLargeText,
               ),
               SizedBox(width: 8),
               Text(
@@ -596,7 +592,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
             ],
           ),
           SizedBox(height: 8),
-          // 세 번째 줄: [년 선택] + "년 놀고 먹을 수 있을까?"
+          // 세 번째 줄: [년 선택] + "동안 놀고 먹을 수 있을까?"
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -627,52 +623,89 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
   }) {
     final fontSize = isLarge ? 30.0 : 18.0;
     final suffixSize = isLarge ? 24.0 : 16.0;
+    final textStyle = TextStyle(
+      color: AppColors.gold,
+      fontSize: fontSize,
+      fontWeight: FontWeight.bold,
+    );
+    final suffixStyle = TextStyle(
+      color: AppColors.gold,
+      fontSize: suffixSize,
+      fontWeight: FontWeight.bold,
+    );
 
-    return TextField(
-      controller: controller,
-      decoration: InputDecoration(
-        suffixText: currencyUnit,
-        suffixStyle: TextStyle(
-          color: AppColors.gold,
-          fontSize: suffixSize,
-          fontWeight: FontWeight.bold,
-        ),
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: isLarge ? 12 : 8,
-        ),
-        border: UnderlineInputBorder(
-          borderSide: BorderSide(color: AppColors.gold, width: 2),
-        ),
-        enabledBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: AppColors.gold, width: 2),
-        ),
-        focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: AppColors.gold, width: 2),
-        ),
-      ),
-      keyboardType: TextInputType.number,
-      inputFormatters: [
-        FilteringTextInputFormatter.allow(RegExp(r'[\d,]+')),
-        TextInputFormatter.withFunction((oldValue, newValue) {
-          if (newValue.text.isEmpty) return newValue;
-          final cleanText = newValue.text.replaceAll(RegExp(r'[^\d]'), '');
-          final number = int.tryParse(cleanText);
-          if (number == null) return oldValue;
-          final formatted = NumberFormat('#,###').format(number);
-          return TextEditingValue(
-            text: formatted,
-            selection: TextSelection.collapsed(offset: formatted.length),
-          );
-        }),
-      ],
-      textAlign: TextAlign.right,
-      style: TextStyle(
-        color: AppColors.gold,
-        fontSize: fontSize,
-        fontWeight: FontWeight.bold,
-      ),
-      onChanged: onChanged,
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: controller,
+      builder: (context, value, child) {
+        // 텍스트 너비 계산
+        final displayText = value.text.isEmpty ? '0' : value.text;
+        final textPainter = TextPainter(
+          text: TextSpan(text: displayText, style: textStyle),
+          textDirection: Directionality.of(context),
+        );
+        textPainter.layout();
+
+        // 통화 단위 너비 계산
+        final suffixPainter = TextPainter(
+          text: TextSpan(text: currencyUnit, style: suffixStyle),
+          textDirection: Directionality.of(context),
+        );
+        suffixPainter.layout();
+
+        // 전체 너비 = 텍스트 너비 + 통화 단위 너비 + 패딩
+        final minWidth = 100.0;
+        final calculatedWidth =
+            textPainter.width + suffixPainter.width + 40; // 패딩 포함
+        final fieldWidth = calculatedWidth < minWidth
+            ? minWidth
+            : calculatedWidth;
+
+        return Container(
+          width: fieldWidth,
+          child: TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              suffixText: currencyUnit,
+              suffixStyle: suffixStyle,
+              isDense: true,
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: isLarge ? 12 : 8,
+              ),
+              border: UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.gold, width: 2),
+              ),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.gold, width: 2),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: AppColors.gold, width: 2),
+              ),
+            ),
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[\d,]+')),
+              TextInputFormatter.withFunction((oldValue, newValue) {
+                if (newValue.text.isEmpty) return newValue;
+                final cleanText = newValue.text.replaceAll(
+                  RegExp(r'[^\d]'),
+                  '',
+                );
+                final number = int.tryParse(cleanText);
+                if (number == null) return oldValue;
+                final formatted = NumberFormat('#,###').format(number);
+                return TextEditingValue(
+                  text: formatted,
+                  selection: TextSelection.collapsed(offset: formatted.length),
+                );
+              }),
+            ],
+            textAlign: TextAlign.right,
+            style: textStyle,
+            onChanged: onChanged,
+          ),
+        );
+      },
     );
   }
 

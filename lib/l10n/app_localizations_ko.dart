@@ -461,5 +461,5 @@ class AppLocalizationsKo extends AppLocalizations {
   String get retirementQuestionSuffix => '을 쓰면서';
 
   @override
-  String get retirementQuestionEnd => '년 놀고 먹을 수 있을까?';
+  String get retirementQuestionEnd => '동안 놀고 먹을 수 있을까?';
 }

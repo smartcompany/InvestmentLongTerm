@@ -461,5 +461,5 @@ class AppLocalizationsJa extends AppLocalizations {
   String get retirementQuestionSuffix => 'を使いながら';
 
   @override
-  String get retirementQuestionEnd => '年間遊んで食べられる？';
+  String get retirementQuestionEnd => '間遊んで食べられる？';
 }

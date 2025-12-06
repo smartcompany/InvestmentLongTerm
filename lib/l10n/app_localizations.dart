@@ -923,7 +923,7 @@ abstract class AppLocalizations {
   /// No description provided for @retirementQuestionEnd.
   ///
   /// In ko, this message translates to:
-  /// **'년 놀고 먹을 수 있을까?'**
+  /// **'동안 놀고 먹을 수 있을까?'**
   String get retirementQuestionEnd;
 }
 

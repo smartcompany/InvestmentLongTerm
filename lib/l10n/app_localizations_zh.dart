@@ -461,5 +461,5 @@ class AppLocalizationsZh extends AppLocalizations {
   String get retirementQuestionSuffix => '在使用';
 
   @override
-  String get retirementQuestionEnd => '年能玩多久、吃多久？';
+  String get retirementQuestionEnd => '期间能玩多久、吃多久？';
 }
