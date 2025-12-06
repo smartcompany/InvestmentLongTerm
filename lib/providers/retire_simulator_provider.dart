@@ -50,9 +50,16 @@ class RetireSimulatorProvider with ChangeNotifier {
     }
 
     // 새 자산 추가 시 비중 재분배
+    Asset newAsset;
     if (_assets.isEmpty) {
       // 첫 자산은 100%
-      _assets.add(Asset(assetId: assetId, allocation: 1.0));
+      // 현금 자산은 즉시 annualReturn 설정
+      newAsset = Asset(
+        assetId: assetId,
+        allocation: 1.0,
+        annualReturn: assetId == 'cash' ? 0.021 : null, // 현금은 2.1%
+      );
+      _assets.add(newAsset);
     } else {
       // 기존 자산들의 비중을 균등하게 재분배
       final newCount = _assets.length + 1;
@@ -63,11 +70,23 @@ class RetireSimulatorProvider with ChangeNotifier {
         _assets[i] = _assets[i].copyWith(allocation: equalAllocation);
       }
 
-      // 새 자산 추가
-      _assets.add(Asset(assetId: assetId, allocation: equalAllocation));
+      // 새 자산 추가 (현금 자산은 즉시 annualReturn 설정)
+      newAsset = Asset(
+        assetId: assetId,
+        allocation: equalAllocation,
+        annualReturn: assetId == 'cash' ? 0.021 : null, // 현금은 2.1%
+      );
+      _assets.add(newAsset);
     }
 
-    _loadCagrForAsset(assetId);
+    // 현금 자산이 아닌 경우에만 API 호출
+    if (assetId != 'cash') {
+      _loadCagrForAsset(assetId);
+    } else {
+      // 현금 자산은 캐시에 저장하고 로딩 상태 설정
+      _cagrCache[assetId] = 0.021;
+      _loadingCagr[assetId] = false;
+    }
     notifyListeners();
   }
 
@@ -158,6 +177,20 @@ class RetireSimulatorProvider with ChangeNotifier {
   Future<void> _loadCagrForAsset(String assetId) async {
     if (_cagrCache.containsKey(assetId) || _loadingCagr[assetId] == true) {
       return; // 이미 로드되었거나 로딩 중
+    }
+
+    // 현금 자산은 금리 2.1%로 고정
+    if (assetId == 'cash') {
+      _loadingCagr[assetId] = false; // 로딩 상태 명시적으로 false로 설정
+      _cagrCache[assetId] = 0.021; // 2.1%
+      final assetIndex = _assets.indexWhere((a) => a.assetId == assetId);
+      if (assetIndex >= 0) {
+        _assets[assetIndex] = _assets[assetIndex].copyWith(
+          annualReturn: 0.021, // 2.1%
+        );
+      }
+      notifyListeners();
+      return;
     }
 
     _loadingCagr[assetId] = true;

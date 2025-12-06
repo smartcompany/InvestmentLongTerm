@@ -666,15 +666,9 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
                 horizontal: 4,
                 vertical: isLarge ? 12 : 8,
               ),
-              border: UnderlineInputBorder(
-                borderSide: BorderSide(color: AppColors.gold, width: 2),
-              ),
-              enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: AppColors.gold, width: 2),
-              ),
-              focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: AppColors.gold, width: 2),
-              ),
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
             ),
             keyboardType: TextInputType.number,
             inputFormatters: [
@@ -969,6 +963,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
             ),
             PopupMenuButton<AssetOption>(
               color: AppColors.navyMedium,
+              requestFocus: false,
               onSelected: (assetOption) {
                 provider.addAsset(assetOption.id);
               },
