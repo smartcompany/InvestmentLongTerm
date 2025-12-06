@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/app_state_provider.dart';
+import '../models/asset_option.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
 import '../widgets/asset_button.dart';
@@ -20,6 +21,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
+  // 각 자산 타입별 펼침 상태 관리
+  final Map<String, bool> _expandedTypes = {};
 
   @override
   void initState() {
@@ -291,45 +294,101 @@ class _HomeScreenState extends State<HomeScreen>
     AppLocalizations l10n,
   ) {
     final widgets = <Widget>[];
-    String? currentType;
-
+    
+    // 자산을 타입별로 그룹화
+    final Map<String, List<AssetOption>> assetsByType = {};
     for (final asset in provider.assets) {
-      if (currentType != asset.type) {
-        currentType = asset.type;
+      assetsByType.putIfAbsent(asset.type, () => []).add(asset);
+    }
+
+    // 타입별로 정렬된 순서대로 처리
+    final sortedTypes = assetsByType.keys.toList()..sort((a, b) {
+      // 타입 순서: crypto, stock, commodity, cash
+      final order = {'crypto': 0, 'stock': 1, 'commodity': 2, 'cash': 3};
+      return (order[a] ?? 99).compareTo(order[b] ?? 99);
+    });
+
+    for (final type in sortedTypes) {
+      final assets = assetsByType[type]!;
+      final isExpanded = _expandedTypes[type] ?? false;
+      
+      // 타입 제목 추가
+      widgets.add(
+        Padding(
+          padding: const EdgeInsets.only(top: 12, bottom: 8),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              type == 'crypto'
+                  ? l10n.crypto
+                  : type == 'cash'
+                  ? l10n.cash
+                  : type == 'commodity'
+                  ? l10n.commodity
+                  : l10n.stock,
+              style: AppTextStyles.chartSectionTitle,
+            ),
+          ),
+        ),
+      );
+
+      // 처음 2개만 항상 표시
+      final visibleCount = isExpanded ? assets.length : (assets.length > 2 ? 2 : assets.length);
+      
+      for (int i = 0; i < visibleCount; i++) {
+        final asset = assets[i];
         widgets.add(
           Padding(
-            padding: const EdgeInsets.only(top: 12, bottom: 8),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                currentType == 'crypto'
-                    ? l10n.crypto
-                    : currentType == 'cash'
-                    ? l10n.cash
-                    : currentType == 'commodity'
-                    ? l10n.commodity
-                    : l10n.stock,
-                style: AppTextStyles.chartSectionTitle,
-              ),
+            padding: const EdgeInsets.only(bottom: 12),
+            child: AssetButton(
+              assetName: asset.displayName(localeCode),
+              icon: asset.icon,
+              isSelected: provider.config.asset == asset.id,
+              onTap: () {
+                provider.selectAsset(asset);
+                _navigateToSettings(context, asset.id);
+              },
             ),
           ),
         );
       }
 
-      widgets.add(
-        Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: AssetButton(
-            assetName: asset.displayName(localeCode),
-            icon: asset.icon,
-            isSelected: provider.config.asset == asset.id,
-            onTap: () {
-              provider.selectAsset(asset);
-              _navigateToSettings(context, asset.id);
-            },
+      // 나머지가 있으면 펼치기/접기 버튼 추가
+      if (assets.length > 2) {
+        widgets.add(
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Center(
+              child: TextButton(
+                onPressed: () {
+                  setState(() {
+                    _expandedTypes[type] = !isExpanded;
+                  });
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      isExpanded ? l10n.showLess : l10n.showMore,
+                      style: TextStyle(
+                        color: AppColors.gold,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(width: 4),
+                    Icon(
+                      isExpanded ? Icons.expand_less : Icons.expand_more,
+                      color: AppColors.gold,
+                      size: 20,
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
-      );
+        );
+      }
     }
 
     return Column(children: widgets);
