@@ -161,6 +161,11 @@
   "currencyUSDDesc": "US Dollar",
   "currencyJPYDesc": "Japanese Yen",
   "currencyCNYDesc": "Chinese Yuan",
-  "currencyDefaultDesc": "Automatically set by language"
+  "currencyDefaultDesc": "Automatically set by language",
+  "retirementQuestionPrefix": "With my assets of",
+  "retirementQuestionMiddle": ",",
+  "retirementQuestionMonthlyPrefix": "can I play and eat for",
+  "retirementQuestionSuffix": "years by spending",
+  "retirementQuestionEnd": "monthly?"
 }
 

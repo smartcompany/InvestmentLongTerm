@@ -161,6 +161,11 @@
   "currencyUSDDesc": "美国美元",
   "currencyJPYDesc": "日本日元",
   "currencyCNYDesc": "中国人民币",
-  "currencyDefaultDesc": "根据语言自动设置"
+  "currencyDefaultDesc": "根据语言自动设置",
+  "retirementQuestionPrefix": "用我的资产",
+  "retirementQuestionMiddle": "，",
+  "retirementQuestionMonthlyPrefix": "每月",
+  "retirementQuestionSuffix": "在使用",
+  "retirementQuestionEnd": "年能玩多久、吃多久？"
 }
 

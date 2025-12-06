@@ -161,6 +161,11 @@
   "currencyUSDDesc": "미국 달러",
   "currencyJPYDesc": "일본 엔",
   "currencyCNYDesc": "중국 위안",
-  "currencyDefaultDesc": "언어에 따라 자동으로 설정"
+  "currencyDefaultDesc": "언어에 따라 자동으로 설정",
+  "retirementQuestionPrefix": "내 자산",
+  "retirementQuestionMiddle": "으로",
+  "retirementQuestionMonthlyPrefix": "매월",
+  "retirementQuestionSuffix": "을 쓰면서",
+  "retirementQuestionEnd": "년 놀고 먹을 수 있을까?"
 }
 

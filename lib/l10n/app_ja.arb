@@ -161,6 +161,11 @@
   "currencyUSDDesc": "米ドル",
   "currencyJPYDesc": "日本円",
   "currencyCNYDesc": "中国元",
-  "currencyDefaultDesc": "言語に応じて自動設定"
+  "currencyDefaultDesc": "言語に応じて自動設定",
+  "retirementQuestionPrefix": "私の資産",
+  "retirementQuestionMiddle": "で",
+  "retirementQuestionMonthlyPrefix": "毎月",
+  "retirementQuestionSuffix": "を使いながら",
+  "retirementQuestionEnd": "年間遊んで食べられる？"
 }
 

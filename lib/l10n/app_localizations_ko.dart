@@ -447,4 +447,19 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get currencyDefaultDesc => '언어에 따라 자동으로 설정';
+
+  @override
+  String get retirementQuestionPrefix => '내 자산';
+
+  @override
+  String get retirementQuestionMiddle => '으로';
+
+  @override
+  String get retirementQuestionMonthlyPrefix => '매월';
+
+  @override
+  String get retirementQuestionSuffix => '을 쓰면서';
+
+  @override
+  String get retirementQuestionEnd => '년 놀고 먹을 수 있을까?';
 }

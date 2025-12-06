@@ -452,4 +452,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get currencyDefaultDesc => 'Automatically set by language';
+
+  @override
+  String get retirementQuestionPrefix => 'With my assets of';
+
+  @override
+  String get retirementQuestionMiddle => ',';
+
+  @override
+  String get retirementQuestionMonthlyPrefix => 'can I play and eat for';
+
+  @override
+  String get retirementQuestionSuffix => 'years by spending';
+
+  @override
+  String get retirementQuestionEnd => 'monthly?';
 }

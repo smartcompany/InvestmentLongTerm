@@ -447,4 +447,19 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get currencyDefaultDesc => '根据语言自动设置';
+
+  @override
+  String get retirementQuestionPrefix => '用我的资产';
+
+  @override
+  String get retirementQuestionMiddle => '，';
+
+  @override
+  String get retirementQuestionMonthlyPrefix => '每月';
+
+  @override
+  String get retirementQuestionSuffix => '在使用';
+
+  @override
+  String get retirementQuestionEnd => '年能玩多久、吃多久？';
 }

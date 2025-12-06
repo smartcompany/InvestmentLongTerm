@@ -447,4 +447,19 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get currencyDefaultDesc => '言語に応じて自動設定';
+
+  @override
+  String get retirementQuestionPrefix => '私の資産';
+
+  @override
+  String get retirementQuestionMiddle => 'で';
+
+  @override
+  String get retirementQuestionMonthlyPrefix => '毎月';
+
+  @override
+  String get retirementQuestionSuffix => 'を使いながら';
+
+  @override
+  String get retirementQuestionEnd => '年間遊んで食べられる？';
 }

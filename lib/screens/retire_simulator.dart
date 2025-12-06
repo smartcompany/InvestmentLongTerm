@@ -202,10 +202,10 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
                   // 탭 버튼 (투자 시뮬레이션 / 은퇴 자산 시뮬레이션)
                   TabNavigation(isHomeScreen: false),
                   SizedBox(height: 24),
-                  // 홈 화면 스타일 질문 섹션
-                  _buildQuestionSection(l10n),
+                  // 서술형 질문 섹션 (입력 필드 포함)
+                  _buildQuestionSection(provider, currencyFormat, l10n),
                   SizedBox(height: 36),
-                  // 입력 영역
+                  // 입력 영역 (시나리오 선택만)
                   _buildInputSection(provider, currencyFormat, l10n),
                   SizedBox(height: 32),
                   // 자산 포트폴리오
@@ -224,7 +224,13 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
     );
   }
 
-  Widget _buildQuestionSection(AppLocalizations l10n) {
+  Widget _buildQuestionSection(
+    RetireSimulatorProvider provider,
+    NumberFormat currencyFormat,
+    AppLocalizations l10n,
+  ) {
+    final currencyUnit = _getCurrencyUnit(currencyFormat.currencySymbol);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -239,22 +245,12 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
           ],
         ),
         SizedBox(height: 32),
-        Text(
-          l10n.retirementQuestionPart1,
-          textAlign: TextAlign.center,
-          style: AppTextStyles.homeMainQuestion.copyWith(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        Text(
-          l10n.retirementQuestionPart2,
-          textAlign: TextAlign.center,
-          style: AppTextStyles.homeMainQuestion.copyWith(
-            color: AppColors.gold,
-            fontSize: 30,
-            fontWeight: FontWeight.w800,
-          ),
+        // 서술형 질문 (입력 필드 포함)
+        _buildDescriptiveQuestion(
+          provider: provider,
+          currencyUnit: currencyUnit,
+          l10n: l10n,
+          isLargeText: false,
         ),
         SizedBox(height: 16),
         Text(
@@ -327,27 +323,6 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
             ],
           ),
           SizedBox(height: 20),
-          _buildNumberField(
-            controller: _initialAssetController,
-            label: l10n.initialAssetAmount,
-            suffix: _getCurrencyUnit(currencyFormat.currencySymbol),
-            onChanged: (value) {
-              provider.setInitialAsset(_parseCurrency(value));
-            },
-          ),
-          SizedBox(height: 16),
-          _buildNumberField(
-            controller: _monthlyWithdrawalController,
-            label: l10n.monthlyWithdrawalAmount,
-            suffix: _getCurrencyUnit(currencyFormat.currencySymbol),
-            onChanged: (value) {
-              provider.setMonthlyWithdrawal(_parseCurrency(value));
-            },
-          ),
-          SizedBox(height: 16),
-          // 시뮬레이션 기간 선택 (스크롤 피커)
-          _buildSimulationYearsPicker(provider, l10n),
-          SizedBox(height: 16),
           // 시나리오 선택
           _buildScenarioSelector(provider, l10n),
         ],
@@ -434,6 +409,318 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
             fontSize: _scenarioButtonFontSize,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDescriptiveQuestion({
+    required RetireSimulatorProvider provider,
+    required String currencyUnit,
+    required AppLocalizations l10n,
+    bool isLargeText = false,
+  }) {
+    final localeCode = Localizations.localeOf(context).languageCode;
+    final textSize = isLargeText ? 30.0 : 18.0;
+    final textWeight = isLargeText ? FontWeight.w800 : FontWeight.w500;
+    final textColor = isLargeText ? AppColors.gold : Colors.white;
+
+    // 한국어, 일본어, 중국어: "내 자산 [금액]원으로 매월 [금액]원 [년]년 놀고 먹을 수 있을까?"
+    // 영어: "With my assets of [amount], can I play and eat for [years] years by withdrawing [amount] monthly?"
+    if (localeCode == 'en') {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // "With my assets of [amount],"
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                l10n.retirementQuestionPrefix,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: textSize,
+                  fontWeight: textWeight,
+                ),
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                child: _buildInlineTextField(
+                  controller: _initialAssetController,
+                  currencyUnit: currencyUnit,
+                  onChanged: (value) {
+                    provider.setInitialAsset(_parseCurrency(value));
+                  },
+                  isLarge: isLargeText,
+                ),
+              ),
+              SizedBox(width: 8),
+              Text(
+                l10n.retirementQuestionMiddle,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: textSize,
+                  fontWeight: textWeight,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8),
+          // 두 번째 줄: "can I play and eat for [years] years by withdrawing [amount]"
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                l10n.retirementQuestionMonthlyPrefix,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: textSize,
+                  fontWeight: textWeight,
+                ),
+              ),
+              SizedBox(width: 8),
+              _buildInlineYearPicker(provider, l10n, isLarge: isLargeText),
+              SizedBox(width: 8),
+              Text(
+                l10n.retirementQuestionSuffix,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: textSize,
+                  fontWeight: textWeight,
+                ),
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                child: _buildInlineTextField(
+                  controller: _monthlyWithdrawalController,
+                  currencyUnit: currencyUnit,
+                  onChanged: (value) {
+                    provider.setMonthlyWithdrawal(_parseCurrency(value));
+                  },
+                  isLarge: isLargeText,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8),
+          // 세 번째 줄: "monthly?"
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Flexible(
+                child: Text(
+                  l10n.retirementQuestionEnd,
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: textSize,
+                    fontWeight: textWeight,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    } else {
+      // 한국어, 일본어, 중국어
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // "내 자산 [금액]원으로 매월"까지 한 줄
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                l10n.retirementQuestionPrefix,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: textSize,
+                  fontWeight: textWeight,
+                ),
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                child: _buildInlineTextField(
+                  controller: _initialAssetController,
+                  currencyUnit: currencyUnit,
+                  onChanged: (value) {
+                    provider.setInitialAsset(_parseCurrency(value));
+                  },
+                  isLarge: isLargeText,
+                ),
+              ),
+              SizedBox(width: 8),
+              Text(
+                l10n.retirementQuestionMiddle,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: textSize,
+                  fontWeight: textWeight,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8),
+          // 두 번째 줄: "매월" + [월 인출 금액 입력] + "으로"
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                l10n.retirementQuestionMonthlyPrefix,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: textSize,
+                  fontWeight: textWeight,
+                ),
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                child: _buildInlineTextField(
+                  controller: _monthlyWithdrawalController,
+                  currencyUnit: currencyUnit,
+                  onChanged: (value) {
+                    provider.setMonthlyWithdrawal(_parseCurrency(value));
+                  },
+                  isLarge: isLargeText,
+                ),
+              ),
+              SizedBox(width: 8),
+              Text(
+                l10n.retirementQuestionSuffix,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: textSize,
+                  fontWeight: textWeight,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8),
+          // 세 번째 줄: [년 선택] + "년 놀고 먹을 수 있을까?"
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _buildInlineYearPicker(provider, l10n, isLarge: isLargeText),
+              SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  l10n.retirementQuestionEnd,
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: textSize,
+                    fontWeight: textWeight,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+  }
+
+  Widget _buildInlineTextField({
+    required TextEditingController controller,
+    required String currencyUnit,
+    required Function(String) onChanged,
+    bool isLarge = false,
+  }) {
+    final fontSize = isLarge ? 30.0 : 18.0;
+    final suffixSize = isLarge ? 24.0 : 16.0;
+
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        suffixText: currencyUnit,
+        suffixStyle: TextStyle(
+          color: AppColors.gold,
+          fontSize: suffixSize,
+          fontWeight: FontWeight.bold,
+        ),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: isLarge ? 12 : 8,
+        ),
+        border: UnderlineInputBorder(
+          borderSide: BorderSide(color: AppColors.gold, width: 2),
+        ),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: AppColors.gold, width: 2),
+        ),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: AppColors.gold, width: 2),
+        ),
+      ),
+      keyboardType: TextInputType.number,
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'[\d,]+')),
+        TextInputFormatter.withFunction((oldValue, newValue) {
+          if (newValue.text.isEmpty) return newValue;
+          final cleanText = newValue.text.replaceAll(RegExp(r'[^\d]'), '');
+          final number = int.tryParse(cleanText);
+          if (number == null) return oldValue;
+          final formatted = NumberFormat('#,###').format(number);
+          return TextEditingValue(
+            text: formatted,
+            selection: TextSelection.collapsed(offset: formatted.length),
+          );
+        }),
+      ],
+      textAlign: TextAlign.right,
+      style: TextStyle(
+        color: AppColors.gold,
+        fontSize: fontSize,
+        fontWeight: FontWeight.bold,
+      ),
+      onChanged: onChanged,
+    );
+  }
+
+  Widget _buildInlineYearPicker(
+    RetireSimulatorProvider provider,
+    AppLocalizations l10n, {
+    bool isLarge = false,
+  }) {
+    final fontSize = isLarge ? 30.0 : 18.0;
+    final iconSize = isLarge ? 28.0 : 20.0;
+    final padding = isLarge
+        ? EdgeInsets.symmetric(horizontal: 12, vertical: 8)
+        : EdgeInsets.symmetric(horizontal: 8, vertical: 4);
+
+    return GestureDetector(
+      onTap: () {
+        _showYearsPicker(context, provider, l10n);
+      },
+      child: Container(
+        padding: padding,
+        decoration: BoxDecoration(
+          color: AppColors.gold.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppColors.gold, width: 2),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '${provider.simulationYears}',
+              style: TextStyle(
+                color: AppColors.gold,
+                fontSize: fontSize,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(width: 4),
+            Text(
+              l10n.year,
+              style: TextStyle(
+                color: AppColors.gold,
+                fontSize: fontSize,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(width: 4),
+            Icon(Icons.arrow_drop_down, color: AppColors.gold, size: iconSize),
+          ],
         ),
       ),
     );

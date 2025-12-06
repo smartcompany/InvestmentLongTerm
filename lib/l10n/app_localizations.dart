@@ -895,6 +895,36 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'언어에 따라 자동으로 설정'**
   String get currencyDefaultDesc;
+
+  /// No description provided for @retirementQuestionPrefix.
+  ///
+  /// In ko, this message translates to:
+  /// **'내 자산'**
+  String get retirementQuestionPrefix;
+
+  /// No description provided for @retirementQuestionMiddle.
+  ///
+  /// In ko, this message translates to:
+  /// **'으로'**
+  String get retirementQuestionMiddle;
+
+  /// No description provided for @retirementQuestionMonthlyPrefix.
+  ///
+  /// In ko, this message translates to:
+  /// **'매월'**
+  String get retirementQuestionMonthlyPrefix;
+
+  /// No description provided for @retirementQuestionSuffix.
+  ///
+  /// In ko, this message translates to:
+  /// **'을 쓰면서'**
+  String get retirementQuestionSuffix;
+
+  /// No description provided for @retirementQuestionEnd.
+  ///
+  /// In ko, this message translates to:
+  /// **'년 놀고 먹을 수 있을까?'**
+  String get retirementQuestionEnd;
 }
 
 class _AppLocalizationsDelegate
