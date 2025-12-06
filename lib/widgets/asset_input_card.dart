@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../models/asset.dart';
 import '../models/asset_option.dart';
 import '../utils/colors.dart';
@@ -23,6 +24,8 @@ class AssetInputCard extends StatelessWidget {
       18.0; // 비중 퍼센트 값 텍스트 (예: "60.0%")
 
   final AppLocalizations? l10n;
+  final double? initialAsset;
+  final NumberFormat? currencyFormat;
 
   const AssetInputCard({
     super.key,
@@ -33,6 +36,8 @@ class AssetInputCard extends StatelessWidget {
     required this.onDelete,
     this.isLoadingCagr = false,
     this.l10n,
+    this.initialAsset,
+    this.currencyFormat,
   });
 
   @override
@@ -153,13 +158,28 @@ class AssetInputCard extends StatelessWidget {
                       fontSize: _allocationLabelFontSize,
                     ),
                   ),
-                  Text(
-                    '${(asset.allocation * 100).toStringAsFixed(1)}%',
-                    style: TextStyle(
-                      color: AppColors.gold,
-                      fontSize: _allocationValueFontSize,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '${(asset.allocation * 100).toStringAsFixed(1)}%',
+                        style: TextStyle(
+                          color: AppColors.gold,
+                          fontSize: _allocationValueFontSize,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (initialAsset != null && currencyFormat != null) ...[
+                        SizedBox(width: 8),
+                        Text(
+                          '(${currencyFormat!.format((initialAsset! * asset.allocation).toInt())})',
+                          style: TextStyle(
+                            color: AppColors.slate300,
+                            fontSize: _allocationValueFontSize - 2,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),

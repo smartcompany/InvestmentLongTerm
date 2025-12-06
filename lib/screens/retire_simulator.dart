@@ -209,7 +209,12 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
                   _buildInputSection(provider, currencyFormat, l10n),
                   SizedBox(height: 32),
                   // 자산 포트폴리오
-                  _buildPortfolioSection(provider, appProvider, l10n),
+                  _buildPortfolioSection(
+                    provider,
+                    appProvider,
+                    l10n,
+                    currencyFormat,
+                  ),
                   SizedBox(height: 32),
                   // 시뮬레이션 실행 버튼
                   if (provider.assets.isNotEmpty &&
@@ -252,12 +257,6 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
           l10n: l10n,
           isLargeText: false,
         ),
-        SizedBox(height: 16),
-        Text(
-          l10n.retirementDescription,
-          textAlign: TextAlign.center,
-          style: AppTextStyles.homeSubDescription,
-        ),
       ],
     );
   }
@@ -283,51 +282,8 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
     NumberFormat currencyFormat,
     AppLocalizations l10n,
   ) {
-    return Container(
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.navyMedium,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.slate700),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                l10n.simulationSettings,
-                style: AppTextStyles.chartSectionTitle.copyWith(
-                  fontSize: _sectionTitleFontSize,
-                ),
-              ),
-              IconButton(
-                icon: Icon(
-                  Icons.currency_exchange,
-                  color: AppColors.gold,
-                  size: 24,
-                ),
-                padding: EdgeInsets.zero,
-                constraints: BoxConstraints(minWidth: 24, minHeight: 24),
-                tooltip: l10n.currencySettings,
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const SettingsScreen(),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-          SizedBox(height: 20),
-          // 시나리오 선택
-          _buildScenarioSelector(provider, l10n),
-        ],
-      ),
-    );
+    // 시나리오 선택만 표시
+    return _buildScenarioSelector(provider, l10n);
   }
 
   Widget _buildScenarioSelector(
@@ -501,7 +457,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
             ],
           ),
           SizedBox(height: 8),
-          // 세 번째 줄: "monthly?"
+          // 세 번째 줄: "monthly?" + 통화 설정 버튼
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -512,6 +468,24 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
                     color: textColor,
                     fontSize: textSize,
                     fontWeight: textWeight,
+                  ),
+                ),
+              ),
+              SizedBox(width: 4),
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const SettingsScreen(),
+                    ),
+                  );
+                },
+                child: Tooltip(
+                  message: l10n.currencySettings,
+                  child: Icon(
+                    Icons.currency_exchange,
+                    color: AppColors.gold,
+                    size: 24,
                   ),
                 ),
               ),
@@ -592,7 +566,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
             ],
           ),
           SizedBox(height: 8),
-          // 세 번째 줄: [년 선택] + "동안 놀고 먹을 수 있을까?"
+          // 세 번째 줄: [년 선택] + "동안 놀고 먹을 수 있을까?" + 통화 설정 버튼
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -605,6 +579,24 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
                     color: textColor,
                     fontSize: textSize,
                     fontWeight: textWeight,
+                  ),
+                ),
+              ),
+              SizedBox(width: 4),
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const SettingsScreen(),
+                    ),
+                  );
+                },
+                child: Tooltip(
+                  message: l10n.currencySettings,
+                  child: Icon(
+                    Icons.currency_exchange,
+                    color: AppColors.gold,
+                    size: 24,
                   ),
                 ),
               ),
@@ -655,7 +647,9 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
         // 전체 너비 = 텍스트 너비 + 통화 단위 너비 + 패딩
         final minWidth = 100.0;
         final calculatedWidth =
-            textPainter.width + suffixPainter.width + 40; // 패딩 포함
+            textPainter.width +
+            suffixPainter.width +
+            20; // 패딩 포함 (horizontal: 4 * 2 = 8, 여유 공간 12)
         final fieldWidth = calculatedWidth < minWidth
             ? minWidth
             : calculatedWidth;
@@ -669,7 +663,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
               suffixStyle: suffixStyle,
               isDense: true,
               contentPadding: EdgeInsets.symmetric(
-                horizontal: 12,
+                horizontal: 4,
                 vertical: isLarge ? 12 : 8,
               ),
               border: UnderlineInputBorder(
@@ -955,6 +949,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
     RetireSimulatorProvider provider,
     AppStateProvider appProvider,
     AppLocalizations l10n,
+    NumberFormat currencyFormat,
   ) {
     final localeCode = Localizations.localeOf(context).languageCode;
     final availableAssets = appProvider.assets;
@@ -1067,6 +1062,8 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
               index: entry.key,
               isLoadingCagr: provider.isLoadingCagr(entry.value.assetId),
               l10n: l10n,
+              initialAsset: provider.initialAsset,
+              currencyFormat: currencyFormat,
               onAllocationChanged: (newAllocation) {
                 provider.updateAssetAllocation(entry.key, newAllocation);
               },

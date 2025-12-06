@@ -90,15 +90,6 @@ class TabNavigation extends StatelessWidget {
             ),
           ),
         ),
-        /*
-        SizedBox(width: 12),
-        IconButton(
-          icon: Icon(Icons.settings, color: Colors.white, size: 24),
-          padding: EdgeInsets.zero,
-          constraints: BoxConstraints(minWidth: 24, minHeight: 24),
-          onPressed: () => _navigateToSettingsScreen(context),
-        ),
-        */
       ],
     );
   }
