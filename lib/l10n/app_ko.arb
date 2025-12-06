@@ -49,6 +49,7 @@
   "crypto": "암호화폐",
   "stock": "미국 주식",
   "cash": "현금",
+  "commodity": "원자재",
   "failedToLoadAssetList": "자산 목록을 불러오지 못했습니다.",
   "frequencySelectionHint": "둘 다 선택하면 단일 투자와 함께 그래프로 비교해볼 수 있어요.",
   "investmentFrequencyLabel": "투자 주기 (중복 선택 가능)",

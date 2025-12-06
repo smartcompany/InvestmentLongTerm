@@ -49,6 +49,7 @@
   "crypto": "加密货币",
   "stock": "美股",
   "cash": "现金",
+  "commodity": "商品",
   "failedToLoadAssetList": "加载资产列表失败。",
   "frequencySelectionHint": "若同时选择，可在图表中与单次投资进行比较。",
   "investmentFrequencyLabel": "投资周期（可多选）",

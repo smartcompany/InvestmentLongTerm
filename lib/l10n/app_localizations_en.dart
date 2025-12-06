@@ -182,6 +182,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cash => 'Cash';
 
   @override
+  String get commodity => 'Commodity';
+
+  @override
   String get failedToLoadAssetList => 'Failed to load asset list.';
 
   @override

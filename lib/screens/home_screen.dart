@@ -306,6 +306,8 @@ class _HomeScreenState extends State<HomeScreen>
                     ? l10n.crypto
                     : currentType == 'cash'
                     ? l10n.cash
+                    : currentType == 'commodity'
+                    ? l10n.commodity
                     : l10n.stock,
                 style: AppTextStyles.chartSectionTitle,
               ),

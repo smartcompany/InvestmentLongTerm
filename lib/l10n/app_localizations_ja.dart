@@ -179,6 +179,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get cash => '現金';
 
   @override
+  String get commodity => '商品';
+
+  @override
   String get failedToLoadAssetList => '資産リストの読み込みに失敗しました。';
 
   @override

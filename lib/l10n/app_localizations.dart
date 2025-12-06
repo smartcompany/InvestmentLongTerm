@@ -402,6 +402,12 @@ abstract class AppLocalizations {
   /// **'현금'**
   String get cash;
 
+  /// No description provided for @commodity.
+  ///
+  /// In ko, this message translates to:
+  /// **'원자재'**
+  String get commodity;
+
   /// No description provided for @failedToLoadAssetList.
   ///
   /// In ko, this message translates to:
