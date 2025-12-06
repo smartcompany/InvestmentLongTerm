@@ -302,7 +302,11 @@ class _HomeScreenState extends State<HomeScreen>
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                currentType == 'crypto' ? l10n.crypto : l10n.stock,
+                currentType == 'crypto'
+                    ? l10n.crypto
+                    : currentType == 'cash'
+                    ? l10n.cash
+                    : l10n.stock,
                 style: AppTextStyles.chartSectionTitle,
               ),
             ),

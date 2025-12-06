@@ -48,6 +48,7 @@
   "retirementSimulation": "With my money?",
   "crypto": "Cryptocurrency",
   "stock": "US Stock",
+  "cash": "Cash",
   "failedToLoadAssetList": "Failed to load asset list.",
   "frequencySelectionHint": "Select both to compare with single investment on the graph.",
   "investmentFrequencyLabel": "Frequency (Multiple selection allowed)",

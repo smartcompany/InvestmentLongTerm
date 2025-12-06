@@ -48,6 +48,7 @@
   "retirementSimulation": "私のお金で？",
   "crypto": "暗号資産",
   "stock": "米国株",
+  "cash": "現金",
   "failedToLoadAssetList": "資産リストの読み込みに失敗しました。",
   "frequencySelectionHint": "両方選択すると、一括投資と比較してグラフで見ることができます。",
   "investmentFrequencyLabel": "投資サイクル（複数選択可）",

@@ -179,6 +179,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get stock => 'US Stock';
 
   @override
+  String get cash => 'Cash';
+
+  @override
   String get failedToLoadAssetList => 'Failed to load asset list.';
 
   @override

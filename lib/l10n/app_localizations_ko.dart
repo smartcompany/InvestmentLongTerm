@@ -176,6 +176,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get stock => '미국 주식';
 
   @override
+  String get cash => '현금';
+
+  @override
   String get failedToLoadAssetList => '자산 목록을 불러오지 못했습니다.';
 
   @override

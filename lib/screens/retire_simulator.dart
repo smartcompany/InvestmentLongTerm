@@ -346,7 +346,11 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
     VoidCallback onTap,
   ) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        // 시나리오 버튼 클릭 시 포커스 해제
+        FocusScope.of(context).unfocus();
+        onTap();
+      },
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 12, horizontal: 8),
         decoration: BoxDecoration(
@@ -388,9 +392,10 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // "With my assets of [amount],"
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
             children: [
               Text(
                 l10n.retirementQuestionPrefix,
@@ -400,7 +405,6 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
                   fontWeight: textWeight,
                 ),
               ),
-              SizedBox(width: 8),
               _buildInlineTextField(
                 controller: _initialAssetController,
                 currencyUnit: currencyUnit,
@@ -409,7 +413,6 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
                 },
                 isLarge: isLargeText,
               ),
-              SizedBox(width: 8),
               Text(
                 l10n.retirementQuestionMiddle,
                 style: TextStyle(
@@ -422,9 +425,10 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
           ),
           SizedBox(height: 8),
           // 두 번째 줄: "can I play and eat for [years] years by withdrawing [amount]"
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
             children: [
               Text(
                 l10n.retirementQuestionMonthlyPrefix,
@@ -434,9 +438,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
                   fontWeight: textWeight,
                 ),
               ),
-              SizedBox(width: 8),
               _buildInlineYearPicker(provider, l10n, isLarge: isLargeText),
-              SizedBox(width: 8),
               Text(
                 l10n.retirementQuestionSuffix,
                 style: TextStyle(
@@ -445,7 +447,6 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
                   fontWeight: textWeight,
                 ),
               ),
-              SizedBox(width: 8),
               _buildInlineTextField(
                 controller: _monthlyWithdrawalController,
                 currencyUnit: currencyUnit,
@@ -964,8 +965,19 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
             PopupMenuButton<AssetOption>(
               color: AppColors.navyMedium,
               requestFocus: false,
+              onOpened: () {
+                FocusScope.of(context).unfocus();
+              },
               onSelected: (assetOption) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (mounted) {
+                    FocusScope.of(context).unfocus();
+                  }
+                });
                 provider.addAsset(assetOption.id);
+              },
+              onCanceled: () {
+                FocusScope.of(context).unfocus();
               },
               itemBuilder: (context) {
                 return availableAssets

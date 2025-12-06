@@ -396,6 +396,12 @@ abstract class AppLocalizations {
   /// **'미국 주식'**
   String get stock;
 
+  /// No description provided for @cash.
+  ///
+  /// In ko, this message translates to:
+  /// **'현금'**
+  String get cash;
+
   /// No description provided for @failedToLoadAssetList.
   ///
   /// In ko, this message translates to:
