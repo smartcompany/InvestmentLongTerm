@@ -13,6 +13,7 @@ import '../widgets/comparison_chart.dart';
 import '../services/ad_service.dart';
 import '../utils/chart_image_utils.dart';
 import 'package:flutter/rendering.dart';
+import 'retire_simulator.dart';
 
 class ResultScreen extends StatefulWidget {
   const ResultScreen({super.key});
@@ -324,12 +325,17 @@ class _ResultScreenState extends State<ResultScreen> {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      provider.reset();
-                      Navigator.of(context).popUntil((route) => route.isFirst);
+                      // 은퇴 시뮬레이터 입력 화면으로 이동
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(
+                          builder: (context) => const RetireSimulatorScreen(),
+                        ),
+                        (route) => route.isFirst, // 홈 화면까지만 유지
+                      );
                     },
-                    icon: Icon(Icons.refresh, color: AppColors.navyDark),
+                    icon: Icon(Icons.arrow_back, color: AppColors.navyDark),
                     label: Text(
-                      l10n.recalculate,
+                      l10n.retirementSimulation,
                       style: AppTextStyles.buttonTextPrimary.copyWith(
                         color: AppColors.navyDark,
                         fontSize: 16,

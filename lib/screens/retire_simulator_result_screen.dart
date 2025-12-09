@@ -12,6 +12,7 @@ import '../utils/text_styles.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/common_share_ui.dart';
 import '../services/ad_service.dart';
+import 'home_screen.dart';
 
 class RetireSimulatorResultScreen extends StatefulWidget {
   const RetireSimulatorResultScreen({super.key});
@@ -332,11 +333,17 @@ class _RetireSimulatorResultScreenState
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: () {
-                        Navigator.of(context).pop();
+                        // 투자 시뮬레이션 화면으로 이동
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(
+                            builder: (context) => const HomeScreen(),
+                          ),
+                          (route) => route.isFirst, // 홈 화면까지만 유지
+                        );
                       },
-                      icon: Icon(Icons.refresh, color: AppColors.navyDark),
+                      icon: Icon(Icons.arrow_back, color: AppColors.navyDark),
                       label: Text(
-                        l10n.recalculate,
+                        l10n.pastAssetSimulation,
                         style: AppTextStyles.buttonTextPrimary.copyWith(
                           color: AppColors.navyDark,
                           fontSize: 16,
