@@ -82,44 +82,6 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
     if (!mounted) return;
 
     final provider = context.read<RetireSimulatorProvider>();
-    final currencyProvider = context.read<CurrencyProvider>();
-    final localeCode = Localizations.localeOf(context).languageCode;
-    final currencySymbol = currencyProvider.getCurrencySymbol(localeCode);
-
-    // 통화에 따라 기본값 조정 (원화 기준값이면 변환)
-    double initialAsset = provider.initialAsset;
-    double monthlyWithdrawal = provider.monthlyWithdrawal;
-
-    // 원화 기본값인 경우 통화에 맞게 변환
-    if (initialAsset == 1000000000 && monthlyWithdrawal == 5000000) {
-      switch (currencySymbol) {
-        case '\$':
-          // 달러: 10억 원 → 100만 달러, 500만 원 → 5천 달러
-          initialAsset = 1000000; // $1,000,000
-          monthlyWithdrawal = 5000; // $5,000
-          provider.setInitialAsset(initialAsset);
-          provider.setMonthlyWithdrawal(monthlyWithdrawal);
-          break;
-        case '¥':
-          // 엔: 10억 원 → 1억 5천만 엔 (약 1,000원 = 150엔 가정), 500만 원 → 75만 엔
-          initialAsset = 150000000; // ¥150,000,000
-          monthlyWithdrawal = 750000; // ¥750,000
-          provider.setInitialAsset(initialAsset);
-          provider.setMonthlyWithdrawal(monthlyWithdrawal);
-          break;
-        case 'CN¥':
-          // 위안: 10억 원 → 700만 위안 (약 1,000원 = 7위안 가정), 500만 원 → 3.5만 위안
-          initialAsset = 7000000; // CN¥7,000,000
-          monthlyWithdrawal = 35000; // CN¥35,000
-          provider.setInitialAsset(initialAsset);
-          provider.setMonthlyWithdrawal(monthlyWithdrawal);
-          break;
-        case '₩':
-        default:
-          // 원화는 그대로
-          break;
-      }
-    }
 
     // 통화가 변경되면 항상 입력 필드 텍스트를 현재 값으로 업데이트
     _initialAssetController.text = NumberFormat(
@@ -165,6 +127,9 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
       _lastCurrencySymbol = currencySymbol;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
+          // Provider에서 통화 기본값 업데이트
+          provider.updateCurrencyDefaults(currencySymbol);
+          // 입력 필드 텍스트 업데이트
           _updateCurrencyBasedDefaults();
         }
       });
@@ -282,8 +247,15 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
     NumberFormat currencyFormat,
     AppLocalizations l10n,
   ) {
-    // 시나리오 선택만 표시
-    return _buildScenarioSelector(provider, l10n);
+    // 시나리오 선택과 인플레이션율 입력
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildScenarioSelector(provider, l10n),
+        SizedBox(height: 24),
+        _buildInflationRateInput(provider, l10n),
+      ],
+    );
   }
 
   Widget _buildScenarioSelector(
@@ -371,6 +343,65 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildInflationRateInput(
+    RetireSimulatorProvider provider,
+    AppLocalizations l10n,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.inflationRate,
+          style: TextStyle(
+            color: AppColors.slate400,
+            fontSize: _scenarioLabelFontSize,
+          ),
+        ),
+        SizedBox(height: 8),
+        Text(
+          l10n.inflationRateDesc,
+          style: TextStyle(color: AppColors.slate400, fontSize: 14),
+        ),
+        SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: Slider(
+                value: provider.inflationRate,
+                min: 0.0,
+                max: 0.10, // 0% ~ 10%
+                divisions: 100,
+                label: '${(provider.inflationRate * 100).toStringAsFixed(1)}%',
+                activeColor: AppColors.gold,
+                inactiveColor: AppColors.slate700,
+                onChanged: (value) {
+                  provider.setInflationRate(value);
+                },
+              ),
+            ),
+            SizedBox(width: 16),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.gold.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.gold, width: 1),
+              ),
+              child: Text(
+                '${(provider.inflationRate * 100).toStringAsFixed(1)}%',
+                style: TextStyle(
+                  color: AppColors.gold,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 

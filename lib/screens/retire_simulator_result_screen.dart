@@ -203,25 +203,56 @@ class _RetireSimulatorResultScreenState
                         ),
                         SizedBox(width: 12),
                         Flexible(
-                          child: Wrap(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                l10n.monthlyWithdrawalLabel,
-                                style: TextStyle(
-                                  color: AppColors.slate300,
-                                  fontSize: _simulationResultLabelFontSize,
-                                ),
+                              Wrap(
+                                children: [
+                                  Text(
+                                    provider.inflationRate > 0
+                                        ? l10n.monthlyWithdrawalWithInflation
+                                        : l10n.monthlyWithdrawalLabel,
+                                    style: TextStyle(
+                                      color: AppColors.slate300,
+                                      fontSize: _simulationResultLabelFontSize,
+                                    ),
+                                  ),
+                                  Text(
+                                    currencyFormat.format(
+                                      provider.monthlyWithdrawal,
+                                    ),
+                                    style: TextStyle(
+                                      color: Colors.orange,
+                                      fontSize: _simulationResultValueFontSize,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              Text(
-                                currencyFormat.format(
-                                  provider.monthlyWithdrawal,
+                              if (provider.inflationRate > 0) ...[
+                                SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.trending_up,
+                                      color: AppColors.gold,
+                                      size: 16,
+                                    ),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      l10n.inflationRateApplied(
+                                        provider.inflationRate * 100,
+                                      ),
+                                      style: TextStyle(
+                                        color: AppColors.gold,
+                                        fontSize:
+                                            _simulationResultValueFontSize,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                style: TextStyle(
-                                  color: Colors.orange,
-                                  fontSize: _simulationResultValueFontSize,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                              ],
                             ],
                           ),
                         ),
@@ -351,13 +382,17 @@ class _RetireSimulatorResultScreenState
     NumberFormat currencyFormat,
     AppLocalizations l10n,
   ) {
-    // 누적 인출액 라인 생성 (월별로 누적)
+    // 누적 인출액 라인 생성 (월별로 누적, 인플레이션 적용)
     final withdrawalSpots = <FlSpot>[];
     double cumulativeWithdrawal = 0.0;
     for (int i = 0; i < totalSpots.length; i++) {
       if (i > 0) {
-        // 첫 달부터 인출 시작
-        cumulativeWithdrawal += provider.monthlyWithdrawal;
+        // 인플레이션 적용된 월 인출액 계산
+        final year = (i - 1) ~/ 12;
+        final monthlyWithdrawalWithInflation =
+            provider.monthlyWithdrawal *
+            math.pow(1 + provider.inflationRate, year);
+        cumulativeWithdrawal += monthlyWithdrawalWithInflation;
       }
       final year = i / 12.0;
       withdrawalSpots.add(FlSpot(year, cumulativeWithdrawal));
@@ -600,13 +635,22 @@ class _RetireSimulatorResultScreenState
     final finalAssetText = currencyFormat.format(summary['finalAsset']);
 
     // 로컬라이징된 문장 생성 (파라미터 순서: initialAsset, portfolio, years, monthlyWithdrawal, finalAsset)
-    final localizedText = l10n.simulationResultPrefix(
-      initialAssetText,
-      portfolioText,
-      provider.simulationYears,
-      monthlyWithdrawalText,
-      finalAssetText,
-    );
+    // 인플레이션이 적용되면 다른 문구 사용
+    final localizedText = provider.inflationRate > 0
+        ? l10n.simulationResultPrefixWithInflation(
+            initialAssetText,
+            portfolioText,
+            provider.simulationYears,
+            monthlyWithdrawalText,
+            finalAssetText,
+          )
+        : l10n.simulationResultPrefix(
+            initialAssetText,
+            portfolioText,
+            provider.simulationYears,
+            monthlyWithdrawalText,
+            finalAssetText,
+          );
 
     // 강조할 부분들을 찾아서 TextSpan으로 구성
     final parts = _parseLocalizedText(
@@ -852,8 +896,10 @@ class _RetireSimulatorResultScreenState
                     ? totalPath[index - 1]
                     : provider.initialAsset;
                 final assetChange = currentAsset - previousAsset;
+                // 인플레이션 적용된 월 인출액 계산
                 final monthlyWithdrawal = month > 0
-                    ? provider.monthlyWithdrawal
+                    ? provider.monthlyWithdrawal *
+                          math.pow(1 + provider.inflationRate, year)
                     : 0.0;
 
                 // 모든 월 표시

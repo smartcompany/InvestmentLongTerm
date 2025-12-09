@@ -94,6 +94,26 @@
       }
     }
   },
+  "simulationResultPrefixWithInflation": "如果您持有价值 {initialAsset} 的 {portfolio} {years} 年，每月花费相当于当前价值 {monthlyWithdrawal} 的金额，那么 {years} 年后的最终资产将是 {finalAsset}。",
+  "@simulationResultPrefixWithInflation": {
+    "placeholders": {
+      "initialAsset": {
+        "type": "String"
+      },
+      "portfolio": {
+        "type": "String"
+      },
+      "years": {
+        "type": "int"
+      },
+      "monthlyWithdrawal": {
+        "type": "String"
+      },
+      "finalAsset": {
+        "type": "String"
+      }
+    }
+  },
   "simulationResultTitle": "模拟结果",
   "detailedStatistics": "详细统计",
   "simulationResultNoData": "没有模拟结果。",
@@ -102,6 +122,15 @@
   "scenarioNegative": "消极 (-20%)",
   "scenarioNeutral": "中性 (0%)",
   "monthlyWithdrawalLabel": "每月提取: ",
+  "monthlyWithdrawalWithInflation": "每月提取: ",
+  "inflationRateApplied": "通胀率 {rate}% 已应用",
+  "@inflationRateApplied": {
+    "placeholders": {
+      "rate": {
+        "type": "double"
+      }
+    }
+  },
   "assetValueTrend": "资产价值趋势",
   "totalAssets": "总资产",
   "cumulativeWithdrawal": "累计提取",

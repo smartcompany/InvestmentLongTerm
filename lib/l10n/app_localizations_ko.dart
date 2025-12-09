@@ -283,6 +283,17 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String simulationResultPrefixWithInflation(
+    String initialAsset,
+    String portfolio,
+    int years,
+    String monthlyWithdrawal,
+    String finalAsset,
+  ) {
+    return '$initialAsset 의 $portfolio를 $years년간 보유하고 현재 가치 기준 월 $monthlyWithdrawal에 해당하는 금액을 쓴다고 하면 $years년 후 최종 자산은 $finalAsset이 됩니다.';
+  }
+
+  @override
   String get simulationResultTitle => '시뮬레이션 결과';
 
   @override
@@ -305,6 +316,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get monthlyWithdrawalLabel => '월 인출액: ';
+
+  @override
+  String get monthlyWithdrawalWithInflation => '월 인출액: ';
+
+  @override
+  String inflationRateApplied(double rate) {
+    return '인플레이션 $rate% 적용';
+  }
 
   @override
   String get assetValueTrend => '자산 가치 추이';
@@ -468,4 +487,15 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get retirementQuestionEnd => '동안 놀고 먹을 수 있을까?';
+
+  @override
+  String get inflationRate => '연간 인플레이션율';
+
+  @override
+  String get inflationRateDesc => '매년 생활비가 증가하는 비율을 설정하세요';
+
+  @override
+  String inflationRatePercent(double rate) {
+    return '$rate%';
+  }
 }

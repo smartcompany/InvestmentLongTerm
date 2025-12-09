@@ -572,6 +572,18 @@ abstract class AppLocalizations {
     String finalAsset,
   );
 
+  /// No description provided for @simulationResultPrefixWithInflation.
+  ///
+  /// In ko, this message translates to:
+  /// **'{initialAsset} 의 {portfolio}를 {years}년간 보유하고 현재 가치 기준 월 {monthlyWithdrawal}에 해당하는 금액을 쓴다고 하면 {years}년 후 최종 자산은 {finalAsset}이 됩니다.'**
+  String simulationResultPrefixWithInflation(
+    String initialAsset,
+    String portfolio,
+    int years,
+    String monthlyWithdrawal,
+    String finalAsset,
+  );
+
   /// No description provided for @simulationResultTitle.
   ///
   /// In ko, this message translates to:
@@ -619,6 +631,18 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'월 인출액: '**
   String get monthlyWithdrawalLabel;
+
+  /// No description provided for @monthlyWithdrawalWithInflation.
+  ///
+  /// In ko, this message translates to:
+  /// **'월 인출액: '**
+  String get monthlyWithdrawalWithInflation;
+
+  /// No description provided for @inflationRateApplied.
+  ///
+  /// In ko, this message translates to:
+  /// **'인플레이션 {rate}% 적용'**
+  String inflationRateApplied(double rate);
 
   /// No description provided for @assetValueTrend.
   ///
@@ -937,6 +961,24 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'동안 놀고 먹을 수 있을까?'**
   String get retirementQuestionEnd;
+
+  /// No description provided for @inflationRate.
+  ///
+  /// In ko, this message translates to:
+  /// **'연간 인플레이션율'**
+  String get inflationRate;
+
+  /// No description provided for @inflationRateDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'매년 생활비가 증가하는 비율을 설정하세요'**
+  String get inflationRateDesc;
+
+  /// No description provided for @inflationRatePercent.
+  ///
+  /// In ko, this message translates to:
+  /// **'{rate}%'**
+  String inflationRatePercent(double rate);
 }
 
 class _AppLocalizationsDelegate

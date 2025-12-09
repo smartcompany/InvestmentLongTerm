@@ -94,6 +94,26 @@
       }
     }
   },
+  "simulationResultPrefixWithInflation": "If you hold {portfolio} worth {initialAsset} for {years} years and spend an amount equivalent to {monthlyWithdrawal} per month at current value, your final asset after {years} years will be {finalAsset}.",
+  "@simulationResultPrefixWithInflation": {
+    "placeholders": {
+      "initialAsset": {
+        "type": "String"
+      },
+      "portfolio": {
+        "type": "String"
+      },
+      "years": {
+        "type": "int"
+      },
+      "monthlyWithdrawal": {
+        "type": "String"
+      },
+      "finalAsset": {
+        "type": "String"
+      }
+    }
+  },
   "simulationResultTitle": "Simulation Result",
   "detailedStatistics": "Detailed Statistics",
   "simulationResultNoData": "No simulation results available.",
@@ -102,6 +122,15 @@
   "scenarioNegative": "Negative (-20%)",
   "scenarioNeutral": "Neutral (0%)",
   "monthlyWithdrawalLabel": "Monthly Withdrawal: ",
+  "monthlyWithdrawalWithInflation": "Monthly Withdrawal: ",
+  "inflationRateApplied": "Inflation {rate}% applied",
+  "@inflationRateApplied": {
+    "placeholders": {
+      "rate": {
+        "type": "double"
+      }
+    }
+  },
   "assetValueTrend": "Asset Value Trend",
   "totalAssets": "Total Assets",
   "cumulativeWithdrawal": "Cumulative Withdrawal",

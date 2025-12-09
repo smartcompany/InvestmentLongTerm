@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/foundation.dart';
 import '../models/asset.dart';
 import '../models/investment_config.dart';
@@ -8,6 +9,8 @@ class RetireSimulatorProvider with ChangeNotifier {
   double _monthlyWithdrawal = 5000000; // 500만 원
   int _simulationYears = 5;
   String _selectedScenario = 'neutral'; // 'positive', 'neutral', 'negative'
+  double _inflationRate = 0.03; // 연간 인플레이션율 3% (기본값)
+  String? _lastCurrencySymbol; // 마지막 통화 기호 (통화 변경 감지용)
   final List<Asset> _assets = [];
   final Map<String, double> _cagrCache = {}; // assetId -> CAGR 캐시
   final Map<String, bool> _loadingCagr = {}; // assetId -> 로딩 상태
@@ -16,6 +19,7 @@ class RetireSimulatorProvider with ChangeNotifier {
   double get monthlyWithdrawal => _monthlyWithdrawal;
   int get simulationYears => _simulationYears;
   String get selectedScenario => _selectedScenario;
+  double get inflationRate => _inflationRate;
   List<Asset> get assets => List.unmodifiable(_assets);
   Map<String, double> get cagrCache => Map.unmodifiable(_cagrCache);
 
@@ -40,6 +44,58 @@ class RetireSimulatorProvider with ChangeNotifier {
         scenario == 'negative') {
       _selectedScenario = scenario;
       notifyListeners();
+    }
+  }
+
+  void setInflationRate(double value) {
+    _inflationRate = value.clamp(0.0, 1.0); // 0% ~ 100% 범위로 제한
+    notifyListeners();
+  }
+
+  // 통화 변경 시 기본값 재설정
+  void updateCurrencyDefaults(String currencySymbol) {
+    // 통화가 변경되지 않았으면 무시
+    if (_lastCurrencySymbol == currencySymbol) {
+      return;
+    }
+
+    // 원화 기본값 정의
+    const krwInitialAsset = 1000000000.0; // 10억 원
+    const krwMonthlyWithdrawal = 5000000.0; // 500만 원
+
+    // 통화별 기본값 정의
+    final defaultValues = {
+      '\$': {'initial': 1000000.0, 'monthly': 5000.0}, // 달러
+      '¥': {'initial': 150000000.0, 'monthly': 750000.0}, // 엔
+      'CN¥': {'initial': 7000000.0, 'monthly': 35000.0}, // 위안
+      '₩': {'initial': krwInitialAsset, 'monthly': krwMonthlyWithdrawal}, // 원화
+    };
+
+    // 현재 값이 이전 통화의 기본값인지 확인
+    bool isDefaultValue = false;
+    if (_lastCurrencySymbol != null &&
+        defaultValues.containsKey(_lastCurrencySymbol)) {
+      final prevDefaults = defaultValues[_lastCurrencySymbol]!;
+      isDefaultValue =
+          (_initialAsset == prevDefaults['initial'] &&
+          _monthlyWithdrawal == prevDefaults['monthly']);
+    } else {
+      // 첫 실행이거나 이전 통화가 없으면 원화 기본값인지 확인
+      isDefaultValue =
+          (_initialAsset == krwInitialAsset &&
+          _monthlyWithdrawal == krwMonthlyWithdrawal);
+    }
+
+    // 기본값인 경우에만 새 통화의 기본값으로 변경
+    if (isDefaultValue && defaultValues.containsKey(currencySymbol)) {
+      final newDefaults = defaultValues[currencySymbol]!;
+      _initialAsset = newDefaults['initial']!;
+      _monthlyWithdrawal = newDefaults['monthly']!;
+      _lastCurrencySymbol = currencySymbol;
+      notifyListeners();
+    } else {
+      // 기본값이 아니면 통화만 업데이트 (값은 유지)
+      _lastCurrencySymbol = currencySymbol;
     }
   }
 
@@ -196,12 +252,15 @@ class RetireSimulatorProvider with ChangeNotifier {
     _loadingCagr[assetId] = true;
     notifyListeners();
 
+    // CAGR 계산용 임시 금액 (CAGR은 비율이므로 금액과 무관)
+    const cagrCalculationAmount = 1000000.0;
+
     try {
       // 5년 CAGR 가져오기
       final config5y = InvestmentConfig(
         asset: assetId,
         yearsAgo: 5,
-        amount: 1000000,
+        amount: cagrCalculationAmount,
         type: InvestmentType.single,
         frequency: Frequency.monthly,
       );
@@ -214,7 +273,7 @@ class RetireSimulatorProvider with ChangeNotifier {
         final config3y = InvestmentConfig(
           asset: assetId,
           yearsAgo: 3,
-          amount: 1000000,
+          amount: cagrCalculationAmount,
           type: InvestmentType.single,
           frequency: Frequency.monthly,
         );
@@ -345,8 +404,23 @@ class RetireSimulatorProvider with ChangeNotifier {
       );
     }
 
+    // 인플레이션 적용을 위한 현재 월 인출액 (매년 갱신)
+    double currentMonthlyWithdrawal = _monthlyWithdrawal;
+    int currentYear = 0;
+
     for (int month = 0; month < months; month++) {
       double totalValue = 0.0;
+
+      // 매년 시작 시 인플레이션 적용 (1월 = month % 12 == 0)
+      if (month % 12 == 0 && month > 0) {
+        currentYear = month ~/ 12;
+        // 연간 인플레이션율 적용: 월 인출액 = 월 인출액 × (1 + 인플레이션율)^년수
+        currentMonthlyWithdrawal =
+            _monthlyWithdrawal * pow(1 + _inflationRate, currentYear);
+        debugPrint(
+          '${currentYear}년차: 월 인출액 ${(currentMonthlyWithdrawal / 1000000).toStringAsFixed(2)}만원 (인플레이션 ${(_inflationRate * 100).toStringAsFixed(1)}% 적용)',
+        );
+      }
 
       // 1단계: 각 자산에 월 복리 수익률 적용 (먼저 수익률 적용)
       // 계산: 자산가치 = 자산가치 × (1 + 월수익률)
@@ -360,20 +434,20 @@ class RetireSimulatorProvider with ChangeNotifier {
       }
 
       // 2단계: 월 인출액 차감 (수익률 적용 후 인출액 차감)
-      // 계산: 자산가치 = 자산가치 - 월인출액
-      if (totalValue > 0 && totalValue >= _monthlyWithdrawal) {
+      // 계산: 자산가치 = 자산가치 - 월인출액 (인플레이션 적용된 금액)
+      if (totalValue > 0 && totalValue >= currentMonthlyWithdrawal) {
         // 각 자산의 현재 비중에 따라 월 인출액 분배
         for (int i = 0; i < normalizedAssets.length; i++) {
           final assetRatio = assetValues[i] / totalValue;
-          final withdrawalAmount = _monthlyWithdrawal * assetRatio;
+          final withdrawalAmount = currentMonthlyWithdrawal * assetRatio;
           // 각 자산에서 비중에 맞게 인출액 차감
           assetValues[i] = (assetValues[i] - withdrawalAmount).clamp(
             0.0,
             double.infinity,
           );
         }
-        totalValue -= _monthlyWithdrawal;
-      } else if (totalValue < _monthlyWithdrawal) {
+        totalValue -= currentMonthlyWithdrawal;
+      } else if (totalValue < currentMonthlyWithdrawal) {
         // 자산이 부족하면 0으로
         totalValue = 0.0;
         for (int i = 0; i < assetValues.length; i++) {
@@ -390,7 +464,13 @@ class RetireSimulatorProvider with ChangeNotifier {
       // 디버그: 매년 말 로그
       if ((month + 1) % 12 == 0) {
         final year = (month + 1) ~/ 12;
-        final totalWithdrawn = _monthlyWithdrawal * (month + 1);
+        // 인플레이션 적용된 총 인출액 계산
+        double totalWithdrawn = 0.0;
+        for (int y = 0; y < year; y++) {
+          final yearWithdrawal =
+              _monthlyWithdrawal * pow(1 + _inflationRate, y) * 12;
+          totalWithdrawn += yearWithdrawal;
+        }
         final netReturn = totalValue + totalWithdrawn - initialTotal;
         debugPrint(
           '${year}년 후: 자산 ${(totalValue / 100000000).toStringAsFixed(2)}억, 인출 누적 ${(totalWithdrawn / 100000000).toStringAsFixed(2)}억, 순수익 ${(netReturn / 100000000).toStringAsFixed(2)}억',
@@ -400,10 +480,18 @@ class RetireSimulatorProvider with ChangeNotifier {
 
     // 디버그: 최종 결과
     final finalAsset = totalPath.last;
-    final totalWithdrawn = _monthlyWithdrawal * months;
+    // 인플레이션 적용된 총 인출액 계산
+    double totalWithdrawn = 0.0;
+    for (int year = 0; year < _simulationYears; year++) {
+      final yearWithdrawal =
+          _monthlyWithdrawal * pow(1 + _inflationRate, year) * 12;
+      totalWithdrawn += yearWithdrawal;
+    }
     debugPrint('=== 시뮬레이션 완료 ===');
     debugPrint('최종 자산: ${(finalAsset / 100000000).toStringAsFixed(2)}억');
-    debugPrint('총 인출액: ${(totalWithdrawn / 100000000).toStringAsFixed(2)}억');
+    debugPrint(
+      '총 인출액 (인플레이션 적용): ${(totalWithdrawn / 100000000).toStringAsFixed(2)}억',
+    );
 
     return {'total': totalPath, 'assets': assetPaths};
   }
@@ -423,8 +511,13 @@ class RetireSimulatorProvider with ChangeNotifier {
     }
 
     final finalAsset = totalPath.last;
-    final totalWithdrawn =
-        _monthlyWithdrawal * (totalPath.length - 1); // 초기값 제외
+    // 인플레이션 적용된 총 인출액 계산
+    double totalWithdrawn = 0.0;
+    for (int year = 0; year < _simulationYears; year++) {
+      final yearWithdrawal =
+          _monthlyWithdrawal * pow(1 + _inflationRate, year) * 12;
+      totalWithdrawn += yearWithdrawal;
+    }
     // 총 수익 = 최종 자산 + 총 인출액 - 초기 자산
     // 누적 수익률 = 총 수익 / 초기 자산
     final totalReturn = finalAsset + totalWithdrawn - _initialAsset;

@@ -18,6 +18,10 @@ class AdService {
   String? get downloadUrl => share_lib.AdService.shared.downloadUrl;
 
   Future<bool> loadSettings() async {
+    // baseUrl이 설정되지 않았으면 설정
+    share_lib.AdService.shared.setBaseUrl(
+      'https://investment-long-term-server.vercel.app',
+    );
     return await share_lib.AdService.shared.loadSettings();
   }
 

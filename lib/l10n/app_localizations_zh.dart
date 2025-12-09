@@ -283,6 +283,17 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String simulationResultPrefixWithInflation(
+    String initialAsset,
+    String portfolio,
+    int years,
+    String monthlyWithdrawal,
+    String finalAsset,
+  ) {
+    return '如果您持有价值 $initialAsset 的 $portfolio $years 年，每月花费相当于当前价值 $monthlyWithdrawal 的金额，那么 $years 年后的最终资产将是 $finalAsset。';
+  }
+
+  @override
   String get simulationResultTitle => '模拟结果';
 
   @override
@@ -305,6 +316,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get monthlyWithdrawalLabel => '每月提取: ';
+
+  @override
+  String get monthlyWithdrawalWithInflation => '每月提取: ';
+
+  @override
+  String inflationRateApplied(double rate) {
+    return '通胀率 $rate% 已应用';
+  }
 
   @override
   String get assetValueTrend => '资产价值趋势';
@@ -468,4 +487,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get retirementQuestionEnd => '期间能玩多久、吃多久？';
+
+  @override
+  String get inflationRate => '연간 인플레이션율';
+
+  @override
+  String get inflationRateDesc => '매년 생활비가 증가하는 비율을 설정하세요';
+
+  @override
+  String inflationRatePercent(double rate) {
+    return '$rate%';
+  }
 }

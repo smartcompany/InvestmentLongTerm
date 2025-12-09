@@ -94,6 +94,26 @@
       }
     }
   },
+  "simulationResultPrefixWithInflation": "{initialAsset} 의 {portfolio}를 {years}년간 보유하고 현재 가치 기준 월 {monthlyWithdrawal}에 해당하는 금액을 쓴다고 하면 {years}년 후 최종 자산은 {finalAsset}이 됩니다.",
+  "@simulationResultPrefixWithInflation": {
+    "placeholders": {
+      "initialAsset": {
+        "type": "String"
+      },
+      "portfolio": {
+        "type": "String"
+      },
+      "years": {
+        "type": "int"
+      },
+      "monthlyWithdrawal": {
+        "type": "String"
+      },
+      "finalAsset": {
+        "type": "String"
+      }
+    }
+  },
   "simulationResultTitle": "시뮬레이션 결과",
   "detailedStatistics": "상세 통계",
   "simulationResultNoData": "시뮬레이션 결과가 없습니다.",
@@ -102,6 +122,15 @@
   "scenarioNegative": "부정적 (-20%)",
   "scenarioNeutral": "중립적 (0%)",
   "monthlyWithdrawalLabel": "월 인출액: ",
+  "monthlyWithdrawalWithInflation": "월 인출액: ",
+  "inflationRateApplied": "인플레이션 {rate}% 적용",
+  "@inflationRateApplied": {
+    "placeholders": {
+      "rate": {
+        "type": "double"
+      }
+    }
+  },
   "assetValueTrend": "자산 가치 추이",
   "totalAssets": "전체 자산",
   "cumulativeWithdrawal": "누적 인출액",
@@ -168,6 +197,16 @@
   "retirementQuestionMiddle": "으로",
   "retirementQuestionMonthlyPrefix": "매월",
   "retirementQuestionSuffix": "을 쓰면서",
-  "retirementQuestionEnd": "동안 놀고 먹을 수 있을까?"
+  "retirementQuestionEnd": "동안 놀고 먹을 수 있을까?",
+  "inflationRate": "연간 인플레이션율",
+  "inflationRateDesc": "매년 생활비가 증가하는 비율을 설정하세요",
+  "inflationRatePercent": "{rate}%",
+  "@inflationRatePercent": {
+    "placeholders": {
+      "rate": {
+        "type": "double"
+      }
+    }
+  }
 }
 
