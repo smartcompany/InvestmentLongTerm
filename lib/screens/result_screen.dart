@@ -11,6 +11,7 @@ import '../widgets/common_share_ui.dart';
 import '../widgets/investment_chart.dart';
 import '../widgets/comparison_chart.dart';
 import '../services/ad_service.dart';
+import '../services/app_review_service.dart';
 import '../utils/chart_image_utils.dart';
 import 'package:flutter/rendering.dart';
 import 'retire_simulator.dart';
@@ -24,6 +25,20 @@ class ResultScreen extends StatefulWidget {
 
 class _ResultScreenState extends State<ResultScreen> {
   final GlobalKey _chartKey = GlobalKey();
+  bool _hasRequestedReview = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // 화면이 완전히 렌더링된 후 리뷰 요청
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_hasRequestedReview) {
+        _hasRequestedReview = true;
+        AppReviewService.requestReviewIfAppropriate();
+      }
+    });
+  }
+
   String _getCurrencySymbol(String localeCode) {
     switch (localeCode) {
       case 'ko':

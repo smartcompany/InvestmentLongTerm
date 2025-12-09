@@ -12,6 +12,7 @@ import '../utils/text_styles.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/common_share_ui.dart';
 import '../services/ad_service.dart';
+import '../services/app_review_service.dart';
 import 'home_screen.dart';
 
 class RetireSimulatorResultScreen extends StatefulWidget {
@@ -25,6 +26,19 @@ class RetireSimulatorResultScreen extends StatefulWidget {
 class _RetireSimulatorResultScreenState
     extends State<RetireSimulatorResultScreen> {
   bool _isMonthlyDetailsExpanded = false; // 월별 상세 내역 펼침 상태
+  bool _hasRequestedReview = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // 화면이 완전히 렌더링된 후 리뷰 요청
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_hasRequestedReview) {
+        _hasRequestedReview = true;
+        AppReviewService.requestReviewIfAppropriate();
+      }
+    });
+  }
 
   // 시뮬레이션 결과 폰트 크기 상수
   static const double _simulationResultTitleFontSize =
