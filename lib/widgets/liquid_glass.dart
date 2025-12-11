@@ -54,7 +54,7 @@ class LiquidGlass extends StatelessWidget {
         child: Container(
           padding: padding,
           decoration: BoxDecoration(
-            color: defaultBackgroundColor.withOpacity(opacity!),
+            color: defaultBackgroundColor.withValues(alpha: opacity!),
             borderRadius: defaultBorderRadius,
             border: defaultBorder,
             boxShadow: defaultBoxShadow,

@@ -177,23 +177,34 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
               style: AppTextStyles.settingsSectionLabel,
             ),
             SizedBox(height: 10),
-            SliderTheme(
-              data: SliderThemeData(
-                activeTrackColor: AppColors.gold,
-                inactiveTrackColor: AppColors.slate700,
-                thumbColor: AppColors.gold,
-                overlayColor: AppColors.gold.withValues(alpha: 0.2),
-                trackHeight: 4,
-                thumbShape: RoundSliderThumbShape(enabledThumbRadius: 10),
+            LiquidGlass(
+              blur: 10,
+              backgroundColor: Colors.white,
+              opacity: 0.1,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.2),
+                width: 1.5,
               ),
-              child: Slider(
-                value: config.yearsAgo.toDouble(),
-                min: 1,
-                max: 10,
-                divisions: 9,
-                onChanged: (value) {
-                  provider.updateConfig(yearsAgo: value.toInt());
-                },
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: SliderTheme(
+                data: SliderThemeData(
+                  activeTrackColor: AppColors.gold,
+                  inactiveTrackColor: AppColors.slate700,
+                  thumbColor: AppColors.gold,
+                  overlayColor: AppColors.gold.withValues(alpha: 0.2),
+                  trackHeight: 4,
+                  thumbShape: RoundSliderThumbShape(enabledThumbRadius: 10),
+                ),
+                child: Slider(
+                  value: config.yearsAgo.toDouble(),
+                  min: 1,
+                  max: 10,
+                  divisions: 9,
+                  onChanged: (value) {
+                    provider.updateConfig(yearsAgo: value.toInt());
+                  },
+                ),
               ),
             ),
 

@@ -368,40 +368,75 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
           style: TextStyle(color: AppColors.slate400, fontSize: 14),
         ),
         SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: Slider(
-                value: provider.inflationRate,
-                min: 0.0,
-                max: 0.10, // 0% ~ 10%
-                divisions: 100,
-                label: '${(provider.inflationRate * 100).toStringAsFixed(1)}%',
-                activeColor: AppColors.gold,
-                inactiveColor: AppColors.slate700,
-                onChanged: (value) {
-                  provider.setInflationRate(value);
-                },
-              ),
-            ),
-            SizedBox(width: 16),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: AppColors.gold.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.gold, width: 1),
-              ),
-              child: Text(
-                '${(provider.inflationRate * 100).toStringAsFixed(1)}%',
-                style: TextStyle(
-                  color: AppColors.gold,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+        LiquidGlass(
+          blur: 10,
+          backgroundColor: Colors.white,
+          opacity: 0.1,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.2),
+            width: 1.5,
+          ),
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: Slider(
+                  value: provider.inflationRate,
+                  min: 0.0,
+                  max: 0.10, // 0% ~ 10%
+                  divisions: 100,
+                  label:
+                      '${(provider.inflationRate * 100).toStringAsFixed(1)}%',
+                  activeColor: AppColors.gold,
+                  inactiveColor: AppColors.slate700,
+                  onChanged: (value) {
+                    provider.setInflationRate(value);
+                  },
                 ),
               ),
-            ),
-          ],
+              SizedBox(width: 16),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.gold.withValues(alpha: 0.4),
+                          AppColors.goldLight.withValues(alpha: 0.3),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: AppColors.gold.withValues(alpha: 0.6),
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.gold.withValues(alpha: 0.3),
+                          blurRadius: 15,
+                          offset: Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      '${(provider.inflationRate * 100).toStringAsFixed(1)}%',
+                      style: TextStyle(
+                        color: AppColors.navyDark,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
