@@ -95,6 +95,7 @@ class LiquidGlassButton extends StatelessWidget {
     if (isSelected) {
       return GestureDetector(
         onTap: onTap,
+        behavior: HitTestBehavior.opaque,
         child: ClipRRect(
           borderRadius: defaultBorderRadius,
           child: BackdropFilter(
@@ -134,17 +135,21 @@ class LiquidGlassButton extends StatelessWidget {
         ),
       );
     } else {
-      return LiquidGlass(
-        blur: blur,
-        borderRadius: defaultBorderRadius,
-        padding: padding,
-        backgroundColor: Colors.white,
-        opacity: 0.18,
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.25),
-          width: 1.5,
+      return GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: LiquidGlass(
+          blur: blur,
+          borderRadius: defaultBorderRadius,
+          padding: padding,
+          backgroundColor: Colors.white,
+          opacity: 0.18,
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.25),
+            width: 1.5,
+          ),
+          child: child,
         ),
-        child: GestureDetector(onTap: onTap, child: child),
       );
     }
   }
