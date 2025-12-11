@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'dart:ui';
 import '../models/asset_option.dart';
 import '../providers/retire_simulator_provider.dart';
 import '../providers/app_state_provider.dart';
@@ -10,6 +11,7 @@ import '../providers/currency_provider.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
 import '../widgets/asset_input_card.dart';
+import '../widgets/liquid_glass.dart';
 import '../widgets/tab_navigation.dart';
 import '../l10n/app_localizations.dart';
 import '../services/ad_service.dart';
@@ -846,12 +848,16 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
       onTap: () {
         _showYearsPicker(context, provider, l10n);
       },
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        decoration: BoxDecoration(
-          border: Border.all(color: AppColors.slate700),
-          borderRadius: BorderRadius.circular(12),
+      child: LiquidGlass(
+        blur: 10,
+        backgroundColor: Colors.white,
+        opacity: 0.1,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.18),
+          width: 1.5,
         ),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -1036,30 +1042,54 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
                     })
                     .toList();
               },
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: AppColors.gold,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.add,
-                      size: _addAssetIconSize,
-                      color: AppColors.navyDark,
-                    ),
-                    SizedBox(width: 4),
-                    Text(
-                      l10n.addAsset,
-                      style: TextStyle(
-                        color: AppColors.navyDark,
-                        fontSize: _addAssetButtonFontSize,
-                        fontWeight: FontWeight.bold,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.gold.withValues(alpha: 0.6),
+                          AppColors.goldLight.withValues(alpha: 0.5),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                       ),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: AppColors.gold.withValues(alpha: 0.6),
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.gold.withValues(alpha: 0.4),
+                          blurRadius: 20,
+                          offset: Offset(0, 10),
+                        ),
+                      ],
                     ),
-                  ],
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.add,
+                          size: _addAssetIconSize,
+                          color: AppColors.navyDark,
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          l10n.addAsset,
+                          style: TextStyle(
+                            color: AppColors.navyDark,
+                            fontSize: _addAssetButtonFontSize,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -1067,13 +1097,16 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
         ),
         SizedBox(height: 16),
         if (provider.assets.isEmpty)
-          Container(
-            padding: EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.navyMedium,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.slate700),
+          LiquidGlass(
+            blur: 10,
+            backgroundColor: Colors.white,
+            opacity: 0.1,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.18),
+              width: 1.5,
             ),
+            padding: EdgeInsets.all(20),
             child: Center(
               child: Text(
                 l10n.pleaseAddAssets,
@@ -1112,25 +1145,39 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
           }),
         if (provider.assets.isNotEmpty) ...[
           SizedBox(height: 12),
-          Container(
-            padding: EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.success.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.check_circle, color: AppColors.success, size: 20),
-                SizedBox(width: 8),
-                Text(
-                  '${l10n.totalAllocation}: ${(provider.totalAllocation * 100).toStringAsFixed(1)}%',
-                  style: TextStyle(
-                    color: AppColors.success,
-                    fontSize: _totalAllocationFontSize,
-                    fontWeight: FontWeight.bold,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+              child: Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withValues(alpha: 0.25),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: AppColors.success.withValues(alpha: 0.3),
+                    width: 1.5,
                   ),
                 ),
-              ],
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.check_circle,
+                      color: AppColors.success,
+                      size: 20,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      '${l10n.totalAllocation}: ${(provider.totalAllocation * 100).toStringAsFixed(1)}%',
+                      style: TextStyle(
+                        color: AppColors.success,
+                        fontSize: _totalAllocationFontSize,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
         ],
@@ -1145,68 +1192,96 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
     final allLoaded = provider.allCagrLoaded;
     return SizedBox(
       width: double.infinity,
-      child: ElevatedButton(
-        onPressed: allLoaded
-            ? () async {
-                // Show loading dialog
-                if (!mounted) return;
-                showDialog(
-                  context: context,
-                  barrierDismissible: false,
-                  barrierColor: Colors.black.withValues(alpha: 0.7),
-                  builder: (context) => WillPopScope(
-                    onWillPop: () async => false,
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.gold,
-                        strokeWidth: 3,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: GestureDetector(
+            onTap: allLoaded
+                ? () async {
+                    // Show loading dialog
+                    if (!mounted) return;
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      barrierColor: Colors.black.withValues(alpha: 0.7),
+                      builder: (context) => WillPopScope(
+                        onWillPop: () async => false,
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.gold,
+                            strokeWidth: 3,
+                          ),
+                        ),
                       ),
-                    ),
+                    );
+
+                    // Load ad settings
+                    await AdService.shared.loadSettings();
+
+                    if (!mounted) return;
+
+                    // Show ad
+                    await AdService.shared.showInterstitialAd(
+                      onAdDismissed: () {
+                        if (!mounted) return;
+                        Navigator.of(context).pop(); // Close loading dialog
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const RetireSimulatorResultScreen(),
+                          ),
+                        );
+                      },
+                      onAdFailedToShow: () {
+                        // If ad fails, close loading dialog and proceed
+                        if (!mounted) return;
+                        Navigator.of(context).pop(); // Close loading dialog
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const RetireSimulatorResultScreen(),
+                          ),
+                        );
+                      },
+                    );
+                  }
+                : null,
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(vertical: 16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.gold.withValues(alpha: 0.6),
+                    AppColors.goldLight.withValues(alpha: 0.5),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppColors.gold.withValues(alpha: 0.6),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.gold.withValues(alpha: 0.4),
+                    blurRadius: 20,
+                    offset: Offset(0, 10),
                   ),
-                );
-
-                // Load ad settings
-                await AdService.shared.loadSettings();
-
-                if (!mounted) return;
-
-                // Show ad
-                await AdService.shared.showInterstitialAd(
-                  onAdDismissed: () {
-                    if (!mounted) return;
-                    Navigator.of(context).pop(); // Close loading dialog
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            const RetireSimulatorResultScreen(),
-                      ),
-                    );
-                  },
-                  onAdFailedToShow: () {
-                    // If ad fails, close loading dialog and proceed
-                    if (!mounted) return;
-                    Navigator.of(context).pop(); // Close loading dialog
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            const RetireSimulatorResultScreen(),
-                      ),
-                    );
-                  },
-                );
-              }
-            : null,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.gold,
-          foregroundColor: AppColors.navyDark,
-          padding: EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  allLoaded ? l10n.runSimulation : l10n.loadingAnnualReturn,
+                  style: AppTextStyles.buttonTextPrimary.copyWith(
+                    color: AppColors.navyDark,
+                  ),
+                ),
+              ),
+            ),
           ),
-        ),
-        child: Text(
-          allLoaded ? l10n.runSimulation : l10n.loadingAnnualReturn,
-          style: AppTextStyles.buttonTextPrimary,
         ),
       ),
     );

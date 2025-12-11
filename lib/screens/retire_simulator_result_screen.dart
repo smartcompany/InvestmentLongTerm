@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'dart:ui';
 import '../providers/retire_simulator_provider.dart';
 import '../providers/app_state_provider.dart';
 import '../providers/currency_provider.dart';
 import '../models/asset_option.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
+import '../widgets/liquid_glass.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/common_share_ui.dart';
 import '../services/ad_service.dart';
@@ -163,13 +165,16 @@ class _RetireSimulatorResultScreenState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 시나리오 및 인출 정보 표시
-              Container(
-                padding: EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppColors.navyMedium,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.slate700),
+              LiquidGlass(
+                blur: 10,
+                backgroundColor: Colors.white,
+                opacity: 0.1,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.18),
+                  width: 1.5,
                 ),
+                padding: EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -311,63 +316,128 @@ class _RetireSimulatorResultScreenState
               Row(
                 children: [
                   Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () async {
-                        final shareText = _buildShareText(
-                          provider,
-                          appProvider,
-                          summary,
-                          currencyFormat,
-                          localeCode,
-                          l10n,
-                        );
-                        await CommonShareUI.showShareOptionsDialog(
-                          context: context,
-                          shareText: shareText,
-                        );
-                      },
-                      icon: Icon(Icons.share, color: AppColors.navyDark),
-                      label: Text(
-                        l10n.share,
-                        style: AppTextStyles.buttonTextPrimary.copyWith(
-                          color: AppColors.navyDark,
-                          fontSize: 16,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.gold,
-                        padding: EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                        child: GestureDetector(
+                          onTap: () async {
+                            final shareText = _buildShareText(
+                              provider,
+                              appProvider,
+                              summary,
+                              currencyFormat,
+                              localeCode,
+                              l10n,
+                            );
+                            await CommonShareUI.showShareOptionsDialog(
+                              context: context,
+                              shareText: shareText,
+                            );
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(vertical: 14),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppColors.gold.withValues(alpha: 0.6),
+                                  AppColors.goldLight.withValues(alpha: 0.5),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: AppColors.gold.withValues(alpha: 0.6),
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.gold.withValues(alpha: 0.4),
+                                  blurRadius: 20,
+                                  offset: Offset(0, 10),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.share, color: AppColors.navyDark),
+                                SizedBox(width: 8),
+                                Text(
+                                  l10n.share,
+                                  style: AppTextStyles.buttonTextPrimary
+                                      .copyWith(
+                                        color: AppColors.navyDark,
+                                        fontSize: 16,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
                   SizedBox(width: 16),
                   Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        // 투자 시뮬레이션 화면으로 이동
-                        Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(
-                            builder: (context) => const HomeScreen(),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                        child: GestureDetector(
+                          onTap: () {
+                            // 투자 시뮬레이션 화면으로 이동
+                            Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                builder: (context) => const HomeScreen(),
+                              ),
+                              (route) => route.isFirst, // 홈 화면까지만 유지
+                            );
+                          },
+                          child: Container(
+                            padding: EdgeInsets.symmetric(vertical: 14),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppColors.gold.withValues(alpha: 0.6),
+                                  AppColors.goldLight.withValues(alpha: 0.5),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: AppColors.gold.withValues(alpha: 0.6),
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppColors.gold.withValues(alpha: 0.4),
+                                  blurRadius: 20,
+                                  offset: Offset(0, 10),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.arrow_back,
+                                  color: AppColors.navyDark,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  l10n.pastAssetSimulation,
+                                  style: AppTextStyles.buttonTextPrimary
+                                      .copyWith(
+                                        color: AppColors.navyDark,
+                                        fontSize: 16,
+                                      ),
+                                ),
+                              ],
+                            ),
                           ),
-                          (route) => route.isFirst, // 홈 화면까지만 유지
-                        );
-                      },
-                      icon: Icon(Icons.arrow_back, color: AppColors.navyDark),
-                      label: Text(
-                        l10n.pastAssetSimulation,
-                        style: AppTextStyles.buttonTextPrimary.copyWith(
-                          color: AppColors.navyDark,
-                          fontSize: 16,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.gold,
-                        padding: EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                     ),
@@ -461,109 +531,115 @@ class _RetireSimulatorResultScreenState
       children: [
         Text(l10n.assetValueTrend, style: AppTextStyles.chartSectionTitle),
         SizedBox(height: 20),
-        Container(
-          height: 350,
-          padding: EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.navyMedium,
-            borderRadius: BorderRadius.circular(20),
+        LiquidGlass(
+          blur: 10,
+          backgroundColor: Colors.white,
+          opacity: 0.1,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.18),
+            width: 1.5,
           ),
-          child: LineChart(
-            LineChartData(
-              minX: 0,
-              maxX: provider.simulationYears.toDouble(),
-              gridData: FlGridData(
-                show: true,
-                drawVerticalLine: false,
-                getDrawingHorizontalLine: (value) {
-                  return FlLine(color: AppColors.slate700, strokeWidth: 1);
-                },
-              ),
-              titlesData: FlTitlesData(
-                show: true,
-                rightTitles: AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
-                ),
-                topTitles: AxisTitles(
-                  sideTitles: SideTitles(showTitles: false),
-                ),
-                bottomTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 30,
-                    interval: provider.simulationYears / 5,
-                    getTitlesWidget: (value, meta) {
-                      final yearOffset = value.round();
-                      if (yearOffset >= 0 &&
-                          yearOffset <= provider.simulationYears) {
-                        // 5년 간격으로 표시하거나, 시작/끝 표시
-                        if (yearOffset == 0 ||
-                            yearOffset == provider.simulationYears ||
-                            yearOffset % 5 == 0) {
-                          final actualYear = 2025 + yearOffset;
-                          return Padding(
-                            padding: EdgeInsets.only(top: 8),
-                            child: Text(
-                              l10n.yearLabel(actualYear),
-                              style: TextStyle(
-                                color: AppColors.slate300,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          );
-                        }
-                      }
-                      return Text('');
-                    },
-                  ),
-                ),
-                leftTitles: AxisTitles(
-                  sideTitles: SideTitles(
-                    showTitles: true,
-                    reservedSize: 80,
-                    interval: _calculateYAxisInterval(totalSpots),
-                    getTitlesWidget: (value, meta) {
-                      if (value <= 0) return Text('');
-                      return Padding(
-                        padding: EdgeInsets.only(right: 8),
-                        child: Text(
-                          currencyFormat.format(value),
-                          style: TextStyle(
-                            color: AppColors.slate300,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          textAlign: TextAlign.right,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-              borderData: FlBorderData(show: false),
-              lineBarsData: lineBarsData,
-              lineTouchData: LineTouchData(
-                touchTooltipData: LineTouchTooltipData(
-                  getTooltipColor: (touchedSpot) => AppColors.navyMedium,
-                  tooltipPadding: EdgeInsets.all(12),
-                  tooltipMargin: 16,
-                  maxContentWidth: 200, // 툴팁 최대 너비 설정 (길면 자동 줄바꿈)
-                  getTooltipItems: (List<LineBarSpot> touchedSpots) {
-                    return touchedSpots.map((LineBarSpot touchedSpot) {
-                      final formattedValue = currencyFormat.format(
-                        touchedSpot.y,
-                      );
-                      return LineTooltipItem(
-                        formattedValue,
-                        TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      );
-                    }).toList();
+          child: Container(
+            height: 350,
+            padding: EdgeInsets.all(16),
+            child: LineChart(
+              LineChartData(
+                minX: 0,
+                maxX: provider.simulationYears.toDouble(),
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  getDrawingHorizontalLine: (value) {
+                    return FlLine(color: AppColors.slate700, strokeWidth: 1);
                   },
+                ),
+                titlesData: FlTitlesData(
+                  show: true,
+                  rightTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  topTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 30,
+                      interval: provider.simulationYears / 5,
+                      getTitlesWidget: (value, meta) {
+                        final yearOffset = value.round();
+                        if (yearOffset >= 0 &&
+                            yearOffset <= provider.simulationYears) {
+                          // 5년 간격으로 표시하거나, 시작/끝 표시
+                          if (yearOffset == 0 ||
+                              yearOffset == provider.simulationYears ||
+                              yearOffset % 5 == 0) {
+                            final actualYear = 2025 + yearOffset;
+                            return Padding(
+                              padding: EdgeInsets.only(top: 8),
+                              child: Text(
+                                l10n.yearLabel(actualYear),
+                                style: TextStyle(
+                                  color: AppColors.slate300,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            );
+                          }
+                        }
+                        return Text('');
+                      },
+                    ),
+                  ),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 80,
+                      interval: _calculateYAxisInterval(totalSpots),
+                      getTitlesWidget: (value, meta) {
+                        if (value <= 0) return Text('');
+                        return Padding(
+                          padding: EdgeInsets.only(right: 8),
+                          child: Text(
+                            currencyFormat.format(value),
+                            style: TextStyle(
+                              color: AppColors.slate300,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            textAlign: TextAlign.right,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                borderData: FlBorderData(show: false),
+                lineBarsData: lineBarsData,
+                lineTouchData: LineTouchData(
+                  touchTooltipData: LineTouchTooltipData(
+                    getTooltipColor: (touchedSpot) => AppColors.navyMedium,
+                    tooltipPadding: EdgeInsets.all(12),
+                    tooltipMargin: 16,
+                    maxContentWidth: 200, // 툴팁 최대 너비 설정 (길면 자동 줄바꿈)
+                    getTooltipItems: (List<LineBarSpot> touchedSpots) {
+                      return touchedSpots.map((LineBarSpot touchedSpot) {
+                        final formattedValue = currencyFormat.format(
+                          touchedSpot.y,
+                        );
+                        return LineTooltipItem(
+                          formattedValue,
+                          TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        );
+                      }).toList();
+                    },
+                  ),
                 ),
               ),
             ),
@@ -683,13 +759,16 @@ class _RetireSimulatorResultScreenState
       finalAssetText,
     );
 
-    return Container(
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.navyMedium,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.slate700),
+    return LiquidGlass(
+      blur: 10,
+      backgroundColor: Colors.white,
+      opacity: 0.1,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(
+        color: Colors.white.withValues(alpha: 0.18),
+        width: 1.5,
       ),
+      padding: EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -786,63 +865,72 @@ class _RetireSimulatorResultScreenState
         ? Colors.red
         : AppColors.gold;
 
-    return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.navyMedium,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: scenarioColor.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            l10n.detailedStatistics,
-            style: TextStyle(
-              color: scenarioColor,
-              fontSize: _simulationResultTitleFontSize,
-              fontWeight: FontWeight.bold,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          padding: EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: scenarioColor.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: scenarioColor.withValues(alpha: 0.4),
+              width: 1.5,
             ),
           ),
-          SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: _buildStatItem(
-                  l10n.finalAsset,
-                  currencyFormat.format(summary['finalAsset']),
+              Text(
+                l10n.detailedStatistics,
+                style: TextStyle(
+                  color: scenarioColor,
+                  fontSize: _simulationResultTitleFontSize,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(width: 16),
-              Expanded(
-                child: _buildStatItem(
-                  l10n.cumulativeReturn,
-                  '${(summary['cumulativeReturn'] * 100).toStringAsFixed(1)}%',
-                ),
+              SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: _buildStatItem(
+                      l10n.finalAsset,
+                      currencyFormat.format(summary['finalAsset']),
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: _buildStatItem(
+                      l10n.cumulativeReturn,
+                      '${(summary['cumulativeReturn'] * 100).toStringAsFixed(1)}%',
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: _buildStatItem(
+                      l10n.totalWithdrawn,
+                      currencyFormat.format(summary['totalWithdrawn']),
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: _buildStatItem(
+                      l10n.netProfit,
+                      currencyFormat.format(summary['totalReturn']),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-          SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: _buildStatItem(
-                  l10n.totalWithdrawn,
-                  currencyFormat.format(summary['totalWithdrawn']),
-                ),
-              ),
-              SizedBox(width: 16),
-              Expanded(
-                child: _buildStatItem(
-                  l10n.netProfit,
-                  currencyFormat.format(summary['totalReturn']),
-                ),
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -925,14 +1013,16 @@ class _RetireSimulatorResultScreenState
 
                 // 모든 월 표시
 
-                return Container(
-                  margin: EdgeInsets.only(bottom: 8),
-                  padding: EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.navyMedium,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.slate700, width: 1),
+                return LiquidGlass(
+                  blur: 8,
+                  backgroundColor: Colors.white,
+                  opacity: 0.08,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    width: 1,
                   ),
+                  padding: EdgeInsets.all(12),
                   child: Row(
                     children: [
                       // 월 정보

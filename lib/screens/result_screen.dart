@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'dart:ui';
 import '../l10n/app_localizations.dart';
 import '../models/calculation_result.dart';
 import '../models/investment_config.dart';
@@ -10,6 +11,7 @@ import '../utils/text_styles.dart';
 import '../widgets/common_share_ui.dart';
 import '../widgets/investment_chart.dart';
 import '../widgets/comparison_chart.dart';
+import '../widgets/liquid_glass.dart';
 import '../services/ad_service.dart';
 import '../services/app_review_service.dart';
 import '../utils/chart_image_utils.dart';
@@ -165,14 +167,16 @@ class _ResultScreenState extends State<ResultScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 투자 기간 정보
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.navyMedium,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.slate700),
+            LiquidGlass(
+              blur: 10,
+              backgroundColor: Colors.white,
+              opacity: 0.1,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.18),
+                width: 1.5,
               ),
+              padding: EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -247,19 +251,25 @@ class _ResultScreenState extends State<ResultScreen> {
             SizedBox(height: 20),
             RepaintBoundary(
               key: _chartKey,
-              child: Container(
-                height: 300,
-                padding: EdgeInsets.only(right: 16, top: 10, bottom: 10),
-                decoration: BoxDecoration(
-                  color: AppColors.navyMedium,
-                  borderRadius: BorderRadius.circular(20),
+              child: LiquidGlass(
+                blur: 10,
+                backgroundColor: Colors.white,
+                opacity: 0.1,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.18),
+                  width: 1.5,
                 ),
-                child: provider.config.type == InvestmentType.recurring
-                    ? _buildComparisonChart(comparisonSeries)
-                    : InvestmentChart(
-                        investedSpots: result.investedSpots,
-                        valueSpots: result.valueSpots,
-                      ),
+                child: Container(
+                  height: 300,
+                  padding: EdgeInsets.only(right: 16, top: 10, bottom: 10),
+                  child: provider.config.type == InvestmentType.recurring
+                      ? _buildComparisonChart(comparisonSeries)
+                      : InvestmentChart(
+                          investedSpots: result.investedSpots,
+                          valueSpots: result.valueSpots,
+                        ),
+                ),
               ),
             ),
             if (provider.config.type == InvestmentType.recurring &&
@@ -278,17 +288,34 @@ class _ResultScreenState extends State<ResultScreen> {
             SizedBox(height: 40),
 
             // Insight Message
-            Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                border: Border.all(color: AppColors.gold),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Text(
-                l10n.insightMessage,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.insightMessage,
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: AppColors.gold.withOpacity(0.15),
+                    border: Border.all(
+                      color: AppColors.gold.withOpacity(0.5),
+                      width: 1.5,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.gold.withOpacity(0.2),
+                        blurRadius: 20,
+                        offset: Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    l10n.insightMessage,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.insightMessage,
+                  ),
+                ),
               ),
             ),
 
@@ -298,69 +325,130 @@ class _ResultScreenState extends State<ResultScreen> {
             Row(
               children: [
                 Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () async {
-                      final shareText = _buildShareText(
-                        provider,
-                        localeCode,
-                        currencyFormat,
-                        percentFormat,
-                        strategySummaries,
-                        l10n,
-                      );
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: GestureDetector(
+                        onTap: () async {
+                          final shareText = _buildShareText(
+                            provider,
+                            localeCode,
+                            currencyFormat,
+                            percentFormat,
+                            strategySummaries,
+                            l10n,
+                          );
 
-                      // Convert chart to image
-                      final chartImageBytes =
-                          await ChartImageUtils.widgetToImage(_chartKey);
+                          // Convert chart to image
+                          final chartImageBytes =
+                              await ChartImageUtils.widgetToImage(_chartKey);
 
-                      await CommonShareUI.showShareOptionsDialog(
-                        context: context,
-                        shareText: shareText,
-                        chartImageBytes: chartImageBytes,
-                      );
-                    },
-                    icon: Icon(Icons.share, color: AppColors.navyDark),
-                    label: Text(
-                      l10n.share,
-                      style: AppTextStyles.buttonTextPrimary.copyWith(
-                        color: AppColors.navyDark,
-                        fontSize: 16,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.gold,
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                          await CommonShareUI.showShareOptionsDialog(
+                            context: context,
+                            shareText: shareText,
+                            chartImageBytes: chartImageBytes,
+                          );
+                        },
+                        child: Container(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppColors.gold.withValues(alpha: 0.6),
+                                AppColors.goldLight.withValues(alpha: 0.5),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: AppColors.gold.withValues(alpha: 0.6),
+                              width: 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.gold.withValues(alpha: 0.4),
+                                blurRadius: 20,
+                                offset: Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.share, color: AppColors.navyDark),
+                              SizedBox(width: 8),
+                              Text(
+                                l10n.share,
+                                style: AppTextStyles.buttonTextPrimary.copyWith(
+                                  color: AppColors.navyDark,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
                 SizedBox(width: 16),
                 Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      // 은퇴 시뮬레이터 입력 화면으로 이동
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(
-                          builder: (context) => const RetireSimulatorScreen(),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: GestureDetector(
+                        onTap: () {
+                          // 은퇴 시뮬레이터 입력 화면으로 이동
+                          Navigator.of(context).pushAndRemoveUntil(
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const RetireSimulatorScreen(),
+                            ),
+                            (route) => route.isFirst, // 홈 화면까지만 유지
+                          );
+                        },
+                        child: Container(
+                          padding: EdgeInsets.symmetric(vertical: 16),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppColors.gold.withValues(alpha: 0.6),
+                                AppColors.goldLight.withValues(alpha: 0.5),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: AppColors.gold.withValues(alpha: 0.6),
+                              width: 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.gold.withValues(alpha: 0.4),
+                                blurRadius: 20,
+                                offset: Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.arrow_back, color: AppColors.navyDark),
+                              SizedBox(width: 8),
+                              Text(
+                                l10n.retirementSimulation,
+                                style: AppTextStyles.buttonTextPrimary.copyWith(
+                                  color: AppColors.navyDark,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        (route) => route.isFirst, // 홈 화면까지만 유지
-                      );
-                    },
-                    icon: Icon(Icons.arrow_back, color: AppColors.navyDark),
-                    label: Text(
-                      l10n.retirementSimulation,
-                      style: AppTextStyles.buttonTextPrimary.copyWith(
-                        color: AppColors.navyDark,
-                        fontSize: 16,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.gold,
-                      padding: EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                   ),
@@ -401,160 +489,169 @@ class _ResultScreenState extends State<ResultScreen> {
         ? AppColors.navyDark.withValues(alpha: 0.7)
         : AppColors.slate300;
 
-    return Column(
+    final cardContent = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: summary.highlight
-                ? LinearGradient(
-                    colors: [AppColors.gold, AppColors.goldLight],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  )
-                : null,
-            color: summary.highlight ? null : AppColors.navyMedium,
-            borderRadius: BorderRadius.circular(24),
-            border: summary.highlight
-                ? null
-                : Border.all(color: AppColors.slate700),
-            boxShadow: summary.highlight
-                ? [
-                    BoxShadow(
-                      color: AppColors.gold.withValues(alpha: 0.35),
-                      blurRadius: 25,
-                      offset: Offset(0, 10),
-                    ),
-                  ]
-                : [],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Text(
+                summary.label,
+                style: AppTextStyles.resultCardTitle.copyWith(color: textColor),
+              ),
+            ),
+            if (summary.highlight) ...[
+              SizedBox(width: 8),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.navyDark.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(l10n.bestReturn, style: AppTextStyles.badgeText),
+              ),
+            ],
+          ],
+        ),
+        SizedBox(height: 18),
+        Wrap(
+          crossAxisAlignment: WrapCrossAlignment.end,
+          spacing: 12,
+          runSpacing: 4,
+          children: [
+            Text(
+              currencyFormat.format(result.finalValue),
+              style: AppTextStyles.resultCardValueBig.copyWith(
+                color: textColor,
+              ),
+            ),
+            Text(
+              "${result.yieldRate >= 0 ? '+' : ''}${percentFormat.format(result.yieldRate / 100)}",
+              style: AppTextStyles.resultCardYield.copyWith(
+                color: result.yieldRate >= 0
+                    ? AppColors.success
+                    : Colors.redAccent,
+              ),
+            ),
+          ],
+        ),
+        Divider(
+          color: summary.highlight
+              ? AppColors.navyDark.withValues(alpha: 0.1)
+              : AppColors.slate700,
+        ),
+        SizedBox(height: 14),
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Text(
-                      summary.label,
-                      style: AppTextStyles.resultCardTitle.copyWith(
-                        color: textColor,
-                      ),
-                    ),
-                  ),
-                  if (summary.highlight) ...[
-                    SizedBox(width: 8),
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.navyDark.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(
-                        l10n.bestReturn,
-                        style: AppTextStyles.badgeText,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-              SizedBox(height: 18),
-              Wrap(
-                crossAxisAlignment: WrapCrossAlignment.end,
-                spacing: 12,
-                runSpacing: 4,
-                children: [
-                  Text(
-                    currencyFormat.format(result.finalValue),
-                    style: AppTextStyles.resultCardValueBig.copyWith(
-                      color: textColor,
-                    ),
-                  ),
-                  Text(
-                    "${result.yieldRate >= 0 ? '+' : ''}${percentFormat.format(result.yieldRate / 100)}",
-                    style: AppTextStyles.resultCardYield.copyWith(
-                      color: result.yieldRate >= 0
-                          ? AppColors.success
-                          : Colors.redAccent,
-                    ),
-                  ),
-                ],
-              ),
-
-              Divider(
-                color: summary.highlight
-                    ? AppColors.navyDark.withValues(alpha: 0.1)
-                    : AppColors.slate700,
-              ),
-              SizedBox(height: 14),
-              IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(
-                      child: _buildStatTile(
-                        label: l10n.returnOnInvestment,
-                        value: gainText,
-                        textColor: textColor,
-                        secondaryTextColor: secondaryTextColor,
-                        highlight: summary.highlight,
-                        l10n: l10n,
-                      ),
-                    ),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: _buildStatTile(
-                        label: l10n.cagr,
-                        value:
-                            "${result.cagr >= 0 ? '+' : ''}${result.cagr.toStringAsFixed(1)}%",
-                        textColor: textColor,
-                        secondaryTextColor: secondaryTextColor,
-                        highlight: summary.highlight,
-                        l10n: l10n,
-                      ),
-                    ),
-                  ],
+              Expanded(
+                child: _buildStatTile(
+                  label: l10n.returnOnInvestment,
+                  value: gainText,
+                  textColor: textColor,
+                  secondaryTextColor: secondaryTextColor,
+                  highlight: summary.highlight,
+                  l10n: l10n,
                 ),
               ),
-              if (showTotalInvestment) ...[
-                SizedBox(height: 12),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.savings_outlined,
-                      color: summary.highlight
-                          ? AppColors.navyDark
-                          : AppColors.gold,
-                      size: 16,
-                    ),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _getInvestmentText(
-                          summary,
-                          totalInvestment,
-                          provider,
-                          currencyFormat,
-                          l10n,
-                        ),
-                        style: AppTextStyles.resultStatValue.copyWith(
-                          color: secondaryTextColor,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
+              SizedBox(width: 12),
+              Expanded(
+                child: _buildStatTile(
+                  label: l10n.cagr,
+                  value:
+                      "${result.cagr >= 0 ? '+' : ''}${result.cagr.toStringAsFixed(1)}%",
+                  textColor: textColor,
+                  secondaryTextColor: secondaryTextColor,
+                  highlight: summary.highlight,
+                  l10n: l10n,
                 ),
-              ],
+              ),
             ],
           ),
         ),
+        if (showTotalInvestment) ...[
+          SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.savings_outlined,
+                color: summary.highlight ? AppColors.navyDark : AppColors.gold,
+                size: 16,
+              ),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  _getInvestmentText(
+                    summary,
+                    totalInvestment,
+                    provider,
+                    currencyFormat,
+                    l10n,
+                  ),
+                  style: AppTextStyles.resultStatValue.copyWith(
+                    color: secondaryTextColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        summary.highlight
+            ? ClipRRect(
+                borderRadius: BorderRadius.circular(24),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppColors.gold.withValues(alpha: 0.6),
+                          AppColors.goldLight.withValues(alpha: 0.5),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: AppColors.gold.withValues(alpha: 0.5),
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.gold.withValues(alpha: 0.4),
+                          blurRadius: 30,
+                          offset: Offset(0, 15),
+                        ),
+                      ],
+                    ),
+                    child: cardContent,
+                  ),
+                ),
+              )
+            : LiquidGlass(
+                blur: 10,
+                backgroundColor: Colors.white,
+                opacity: 0.1,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.18),
+                  width: 1.5,
+                ),
+                padding: EdgeInsets.all(20),
+                child: cardContent,
+              ),
       ],
     );
   }

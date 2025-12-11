@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'dart:ui';
 import '../l10n/app_localizations.dart';
 import '../models/investment_config.dart';
 import '../providers/app_state_provider.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
+import '../widgets/liquid_glass.dart';
 import '../services/ad_service.dart';
 import 'result_screen.dart';
 
@@ -250,40 +252,63 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
               style: AppTextStyles.settingsSectionLabel,
             ),
             SizedBox(height: 10),
-            SizedBox(
-              width: double.infinity,
-              child: SegmentedButton<InvestmentType>(
-                segments: [
-                  ButtonSegment(
-                    value: InvestmentType.single,
-                    label: Text(l10n.singleInvestment),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  padding: EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      width: 1.5,
+                    ),
                   ),
-                  ButtonSegment(
-                    value: InvestmentType.recurring,
-                    label: Text(l10n.recurringInvestment),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: SegmentedButton<InvestmentType>(
+                      segments: [
+                        ButtonSegment(
+                          value: InvestmentType.single,
+                          label: Text(l10n.singleInvestment),
+                        ),
+                        ButtonSegment(
+                          value: InvestmentType.recurring,
+                          label: Text(l10n.recurringInvestment),
+                        ),
+                      ],
+                      selected: {config.type},
+                      onSelectionChanged: (Set<InvestmentType> newSelection) {
+                        provider.updateConfig(type: newSelection.first);
+                      },
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                          (states) {
+                            if (states.contains(WidgetState.selected)) {
+                              return AppColors.gold.withValues(alpha: 0.8);
+                            }
+                            return Colors.transparent;
+                          },
+                        ),
+                        foregroundColor: WidgetStateProperty.resolveWith<Color>(
+                          (states) {
+                            if (states.contains(WidgetState.selected)) {
+                              return AppColors.navyDark;
+                            }
+                            return Colors.white;
+                          },
+                        ),
+                        side: WidgetStateProperty.all(BorderSide.none),
+                        shape: WidgetStateProperty.all(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                ],
-                selected: {config.type},
-                onSelectionChanged: (Set<InvestmentType> newSelection) {
-                  provider.updateConfig(type: newSelection.first);
-                },
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.resolveWith<Color>((
-                    states,
-                  ) {
-                    if (states.contains(WidgetState.selected)) {
-                      return AppColors.gold;
-                    }
-                    return AppColors.navyMedium;
-                  }),
-                  foregroundColor: WidgetStateProperty.resolveWith<Color>((
-                    states,
-                  ) {
-                    if (states.contains(WidgetState.selected)) {
-                      return AppColors.navyDark;
-                    }
-                    return Colors.white;
-                  }),
                 ),
               ),
             ),
@@ -336,13 +361,16 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
             SizedBox(height: 40),
 
             // Summary Preview
-            Container(
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.navyMedium,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.slate700),
+            LiquidGlass(
+              blur: 10,
+              backgroundColor: Colors.white,
+              opacity: 0.25,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.3),
+                width: 1.5,
               ),
+              padding: EdgeInsets.all(16),
               child: Row(
                 children: [
                   Icon(Icons.info_outline, color: AppColors.gold),
@@ -363,19 +391,47 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
             SizedBox(
               width: double.infinity,
               height: 56,
-              child: ElevatedButton(
-                onPressed: _calculateAndNavigate,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.gold,
-                  foregroundColor: AppColors.navyDark,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: GestureDetector(
+                    onTap: _calculateAndNavigate,
+                    child: Container(
+                      width: double.infinity,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.gold.withValues(alpha: 0.6),
+                            AppColors.goldLight.withValues(alpha: 0.5),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: AppColors.gold.withValues(alpha: 0.6),
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.gold.withValues(alpha: 0.4),
+                            blurRadius: 20,
+                            offset: Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          l10n.viewResults,
+                          style: AppTextStyles.buttonTextPrimary.copyWith(
+                            color: AppColors.navyDark,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                  elevation: 0,
-                ),
-                child: Text(
-                  l10n.viewResults,
-                  style: AppTextStyles.buttonTextPrimary,
                 ),
               ),
             ),
@@ -394,46 +450,101 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
 
     return GestureDetector(
       onTap: () => provider.toggleFrequencySelection(value),
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? AppColors.gold : AppColors.slate700,
-          ),
-          color: isSelected
-              ? AppColors.gold.withValues(alpha: 0.08)
-              : AppColors.navyMedium,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 20,
-              height: 20,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(
-                  color: isSelected ? AppColors.gold : AppColors.slate400,
-                  width: 2,
+      child: isSelected
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.gold.withValues(alpha: 0.5),
+                        AppColors.goldLight.withValues(alpha: 0.4),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: AppColors.gold.withValues(alpha: 0.6),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.gold.withValues(alpha: 0.3),
+                        blurRadius: 20,
+                        offset: Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: AppColors.navyDark,
+                            width: 2,
+                          ),
+                          color: AppColors.navyDark,
+                        ),
+                        child: Icon(
+                          Icons.check,
+                          size: 14,
+                          color: AppColors.gold,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        label,
+                        style: TextStyle(
+                          color: AppColors.navyDark,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                color: isSelected ? AppColors.gold : Colors.transparent,
               ),
-              child: isSelected
-                  ? Icon(Icons.check, size: 14, color: AppColors.navyDark)
-                  : null,
-            ),
-            SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            )
+          : LiquidGlass(
+              blur: 10,
+              backgroundColor: Colors.white,
+              opacity: 0.18,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.25),
+                width: 1.5,
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(color: AppColors.slate400, width: 2),
+                      color: Colors.transparent,
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.normal,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
     );
   }
 

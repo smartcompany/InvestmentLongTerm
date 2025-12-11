@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import '../l10n/app_localizations.dart';
 import '../utils/colors.dart';
 import '../screens/home_screen.dart';
@@ -51,41 +52,50 @@ class TabNavigation extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Flexible(
-          child: Container(
-            padding: EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: AppColors.navyMedium,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.slate700),
-            ),
-            child: IntrinsicHeight(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Expanded(
-                    child: _TabButton(
-                      label: l10n.pastAssetSimulation,
-                      isSelected: isHomeScreen,
-                      onPressed: () {
-                        if (!isHomeScreen) {
-                          _navigateToHomeScreen(context);
-                        }
-                      },
-                    ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                padding: EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    width: 1.5,
                   ),
-                  SizedBox(width: 4),
-                  Expanded(
-                    child: _TabButton(
-                      label: l10n.retirementSimulation,
-                      isSelected: !isHomeScreen,
-                      onPressed: () {
-                        if (isHomeScreen) {
-                          _navigateToRetireSimulatorScreen(context);
-                        }
-                      },
-                    ),
+                ),
+                child: IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        child: _TabButton(
+                          label: l10n.pastAssetSimulation,
+                          isSelected: isHomeScreen,
+                          onPressed: () {
+                            if (!isHomeScreen) {
+                              _navigateToHomeScreen(context);
+                            }
+                          },
+                        ),
+                      ),
+                      SizedBox(width: 4),
+                      Expanded(
+                        child: _TabButton(
+                          label: l10n.retirementSimulation,
+                          isSelected: !isHomeScreen,
+                          onPressed: () {
+                            if (isHomeScreen) {
+                              _navigateToRetireSimulatorScreen(context);
+                            }
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -110,21 +120,55 @@ class _TabButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onPressed,
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.gold : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: isSelected ? AppColors.navyDark : AppColors.slate300,
-            fontSize: 14,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(
+            sigmaX: isSelected ? 8 : 0,
+            sigmaY: isSelected ? 8 : 0,
+          ),
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(vertical: 12),
+            decoration: BoxDecoration(
+              gradient: isSelected
+                  ? LinearGradient(
+                      colors: [
+                        AppColors.gold.withValues(alpha: 0.6),
+                        AppColors.goldLight.withValues(alpha: 0.5),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : null,
+              color: isSelected ? null : Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+              border: isSelected
+                  ? Border.all(
+                      color: AppColors.gold.withValues(alpha: 0.5),
+                      width: 1.5,
+                    )
+                  : null,
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: AppColors.gold.withValues(alpha: 0.3),
+                        blurRadius: 20,
+                        offset: Offset(0, 10),
+                      ),
+                    ]
+                  : null,
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: isSelected ? AppColors.navyDark : AppColors.slate300,
+                fontSize: 14,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              ),
+            ),
           ),
         ),
       ),

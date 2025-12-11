@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/currency_provider.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
+import '../widgets/liquid_glass.dart';
 import '../l10n/app_localizations.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -33,13 +34,16 @@ class SettingsScreen extends StatelessWidget {
           children: [
             Text(l10n.currencySettings, style: AppTextStyles.chartSectionTitle),
             SizedBox(height: 16),
-            Container(
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: AppColors.navyMedium,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.slate700),
+            LiquidGlass(
+              blur: 10,
+              backgroundColor: Colors.white,
+              opacity: 0.1,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.18),
+                width: 1.5,
               ),
+              padding: EdgeInsets.all(16),
               child: _buildCurrencyDropdown(
                 context,
                 currencyProvider,

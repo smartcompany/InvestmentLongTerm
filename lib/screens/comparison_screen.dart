@@ -7,6 +7,7 @@ import '../providers/app_state_provider.dart';
 import '../utils/calculator.dart';
 import '../utils/colors.dart';
 import '../widgets/comparison_chart.dart';
+import '../widgets/liquid_glass.dart';
 
 class ComparisonScreen extends StatelessWidget {
   const ComparisonScreen({super.key});
@@ -84,14 +85,20 @@ class ComparisonScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: 20),
-            Container(
-              height: 300,
-              padding: EdgeInsets.only(right: 16, top: 10, bottom: 10),
-              decoration: BoxDecoration(
-                color: AppColors.navyMedium,
-                borderRadius: BorderRadius.circular(20),
+            LiquidGlass(
+              blur: 10,
+              backgroundColor: Colors.white,
+              opacity: 0.1,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.18),
+                width: 1.5,
               ),
-              child: ComparisonChart(series: chartSeries),
+              child: Container(
+                height: 300,
+                padding: EdgeInsets.only(right: 16, top: 10, bottom: 10),
+                child: ComparisonChart(series: chartSeries),
+              ),
             ),
             SizedBox(height: 20),
             Row(
@@ -156,13 +163,13 @@ class ComparisonScreen extends StatelessWidget {
   ) {
     final percentFormat = NumberFormat.decimalPercentPattern(decimalDigits: 1);
 
-    return Container(
+    return LiquidGlass(
+      blur: 10,
+      backgroundColor: Colors.white,
+      opacity: 0.1,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: color.withValues(alpha: 0.4), width: 1.5),
       padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.navyMedium,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
