@@ -89,7 +89,8 @@ class LiquidGlassButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final defaultSelectedColor = selectedColor ?? const Color(0xFFFBBF24);
+    final defaultSelectedColor =
+        selectedColor ?? const Color.fromARGB(255, 245, 230, 191);
     final defaultBorderRadius = borderRadius ?? BorderRadius.circular(22);
 
     if (isSelected) {

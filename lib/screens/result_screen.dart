@@ -529,9 +529,13 @@ class _ResultScreenState extends State<ResultScreen> {
             Text(
               "${result.yieldRate >= 0 ? '+' : ''}${percentFormat.format(result.yieldRate / 100)}",
               style: AppTextStyles.resultCardYield.copyWith(
-                color: result.yieldRate >= 0
-                    ? AppColors.success
-                    : Colors.redAccent,
+                color: summary.highlight
+                    ? (result.yieldRate >= 0
+                          ? Colors.lightGreenAccent.withValues(alpha: 0.9)
+                          : Colors.red.shade800)
+                    : (result.yieldRate >= 0
+                          ? AppColors.success
+                          : Colors.redAccent),
               ),
             ),
           ],
@@ -696,6 +700,14 @@ class _ResultScreenState extends State<ResultScreen> {
     required bool highlight,
     required AppLocalizations l10n,
   }) {
+    // value가 양수(+)인지 확인
+    final isPositive = value.startsWith('+');
+    final valueColor = highlight
+        ? (isPositive
+              ? AppColors.navyDark.withValues(alpha: 0.9)
+              : Colors.red.shade800)
+        : (isPositive ? AppColors.success : Colors.redAccent);
+
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
@@ -717,7 +729,7 @@ class _ResultScreenState extends State<ResultScreen> {
           SizedBox(height: 6),
           Text(
             value,
-            style: AppTextStyles.resultStatValue.copyWith(color: textColor),
+            style: AppTextStyles.resultStatValue.copyWith(color: valueColor),
           ),
         ],
       ),
