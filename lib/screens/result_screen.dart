@@ -162,7 +162,12 @@ class _ResultScreenState extends State<ResultScreen> {
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(24),
+        padding: EdgeInsets.only(
+          top: 24,
+          left: 24,
+          right: 24,
+          bottom: MediaQuery.of(context).padding.bottom + 24,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -376,14 +381,21 @@ class _ResultScreenState extends State<ResultScreen> {
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(Icons.share, color: AppColors.navyDark),
                               SizedBox(width: 8),
-                              Text(
-                                l10n.share,
-                                style: AppTextStyles.buttonTextPrimary.copyWith(
-                                  color: AppColors.navyDark,
-                                  fontSize: 16,
+                              Flexible(
+                                child: Text(
+                                  l10n.share,
+                                  style: AppTextStyles.buttonTextPrimary
+                                      .copyWith(
+                                        color: AppColors.navyDark,
+                                        fontSize: 16,
+                                      ),
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.visible,
                                 ),
                               ),
                             ],
@@ -436,14 +448,21 @@ class _ResultScreenState extends State<ResultScreen> {
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(Icons.arrow_back, color: AppColors.navyDark),
                               SizedBox(width: 8),
-                              Text(
-                                l10n.retirementSimulation,
-                                style: AppTextStyles.buttonTextPrimary.copyWith(
-                                  color: AppColors.navyDark,
-                                  fontSize: 16,
+                              Flexible(
+                                child: Text(
+                                  l10n.retirementSimulation,
+                                  style: AppTextStyles.buttonTextPrimary
+                                      .copyWith(
+                                        color: AppColors.navyDark,
+                                        fontSize: 16,
+                                      ),
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.visible,
                                 ),
                               ),
                             ],
