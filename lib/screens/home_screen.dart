@@ -101,105 +101,106 @@ class _HomeScreenState extends State<HomeScreen>
             end: Alignment.bottomCenter,
           ),
         ),
-        child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 30,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final padding = MediaQuery.of(context).padding;
+            return SingleChildScrollView(
+              padding: EdgeInsets.only(
+                top: padding.top + 20,
+                bottom: padding.bottom + 30,
+                left: 24,
+                right: 24,
+              ),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight - 60,
                 ),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: constraints.maxHeight - 60,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // 탭 버튼 (투자 시뮬레이션 / 은퇴 자산 시뮬레이션)
-                      TabNavigation(isHomeScreen: true),
-                      SizedBox(height: 24),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _buildAnimatedIcon(Icons.trending_up, 0.0),
-                          SizedBox(width: 16),
-                          _buildAnimatedIcon(Icons.calendar_today, 0.3),
-                          SizedBox(width: 16),
-                          _buildAnimatedIcon(Icons.bar_chart, 0.6),
-                        ],
-                      ),
-                      SizedBox(height: 32),
-                      Text(
-                        l10n.homeQuestionPart1(provider.config.yearsAgo),
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.homeMainQuestion.copyWith(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Text(
-                        l10n.homeQuestionPart2(selectedAssetName),
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.homeMainQuestion.copyWith(
-                          color: AppColors.gold,
-                          fontSize: 30,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      SizedBox(height: 16),
-                      Text(
-                        l10n.homeDescription,
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.homeSubDescription,
-                      ),
-                      SizedBox(height: 36),
-                      if (provider.isAssetsLoading && provider.assets.isEmpty)
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 40),
-                            child: CircularProgressIndicator(
-                              color: AppColors.gold,
-                            ),
-                          ),
-                        )
-                      else if (provider.assetsError != null &&
-                          provider.assets.isEmpty)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Column(
-                            children: [
-                              Text(
-                                l10n.failedToLoadAssetList,
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              SizedBox(height: 12),
-                              OutlinedButton(
-                                onPressed: () => provider.loadAssets(),
-                                style: OutlinedButton.styleFrom(
-                                  side: BorderSide(color: AppColors.gold),
-                                ),
-                                child: Text(
-                                  l10n.retry,
-                                  style: TextStyle(color: AppColors.gold),
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      else
-                        _buildAssetButtons(provider, localeCode, l10n),
-                      // 디버그 모드일 때 공유하기 테스트 버튼
-                      if (kDebugMode) ...[
-                        SizedBox(height: 40),
-                        _buildDebugShareTestButton(context, l10n),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // 탭 버튼 (투자 시뮬레이션 / 은퇴 자산 시뮬레이션)
+                    TabNavigation(isHomeScreen: true),
+                    SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _buildAnimatedIcon(Icons.trending_up, 0.0),
+                        SizedBox(width: 16),
+                        _buildAnimatedIcon(Icons.calendar_today, 0.3),
+                        SizedBox(width: 16),
+                        _buildAnimatedIcon(Icons.bar_chart, 0.6),
                       ],
+                    ),
+                    SizedBox(height: 32),
+                    Text(
+                      l10n.homeQuestionPart1(provider.config.yearsAgo),
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.homeMainQuestion.copyWith(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      l10n.homeQuestionPart2(selectedAssetName),
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.homeMainQuestion.copyWith(
+                        color: AppColors.gold,
+                        fontSize: 30,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      l10n.homeDescription,
+                      textAlign: TextAlign.center,
+                      style: AppTextStyles.homeSubDescription,
+                    ),
+                    SizedBox(height: 36),
+                    if (provider.isAssetsLoading && provider.assets.isEmpty)
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 40),
+                          child: CircularProgressIndicator(
+                            color: AppColors.gold,
+                          ),
+                        ),
+                      )
+                    else if (provider.assetsError != null &&
+                        provider.assets.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Column(
+                          children: [
+                            Text(
+                              l10n.failedToLoadAssetList,
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            SizedBox(height: 12),
+                            OutlinedButton(
+                              onPressed: () => provider.loadAssets(),
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(color: AppColors.gold),
+                              ),
+                              child: Text(
+                                l10n.retry,
+                                style: TextStyle(color: AppColors.gold),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      _buildAssetButtons(provider, localeCode, l10n),
+                    // 디버그 모드일 때 공유하기 테스트 버튼
+                    if (kDebugMode) ...[
+                      SizedBox(height: 40),
+                      _buildDebugShareTestButton(context, l10n),
                     ],
-                  ),
+                  ],
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -294,7 +295,7 @@ class _HomeScreenState extends State<HomeScreen>
     AppLocalizations l10n,
   ) {
     final widgets = <Widget>[];
-    
+
     // 자산을 타입별로 그룹화
     final Map<String, List<AssetOption>> assetsByType = {};
     for (final asset in provider.assets) {
@@ -302,16 +303,17 @@ class _HomeScreenState extends State<HomeScreen>
     }
 
     // 타입별로 정렬된 순서대로 처리
-    final sortedTypes = assetsByType.keys.toList()..sort((a, b) {
-      // 타입 순서: crypto, stock, commodity, cash
-      final order = {'crypto': 0, 'stock': 1, 'commodity': 2, 'cash': 3};
-      return (order[a] ?? 99).compareTo(order[b] ?? 99);
-    });
+    final sortedTypes = assetsByType.keys.toList()
+      ..sort((a, b) {
+        // 타입 순서: crypto, stock, commodity, cash
+        final order = {'crypto': 0, 'stock': 1, 'commodity': 2, 'cash': 3};
+        return (order[a] ?? 99).compareTo(order[b] ?? 99);
+      });
 
     for (final type in sortedTypes) {
       final assets = assetsByType[type]!;
       final isExpanded = _expandedTypes[type] ?? false;
-      
+
       // 타입 제목 추가
       widgets.add(
         Padding(
@@ -333,8 +335,10 @@ class _HomeScreenState extends State<HomeScreen>
       );
 
       // 처음 2개만 항상 표시
-      final visibleCount = isExpanded ? assets.length : (assets.length > 2 ? 2 : assets.length);
-      
+      final visibleCount = isExpanded
+          ? assets.length
+          : (assets.length > 2 ? 2 : assets.length);
+
       for (int i = 0; i < visibleCount; i++) {
         final asset = assets[i];
         widgets.add(

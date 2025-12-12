@@ -156,18 +156,16 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
           icon: Icon(Icons.arrow_back_ios, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
+        title: Text(
+          l10n.investmentSettingsTitle(assetName),
+          style: AppTextStyles.appBarTitle,
+        ),
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              l10n.investmentSettingsTitle(assetName),
-              style: AppTextStyles.settingsAssetTitle,
-            ),
-            SizedBox(height: 40),
-
             // Years Slider
             Text(
               l10n.investmentStartDate(

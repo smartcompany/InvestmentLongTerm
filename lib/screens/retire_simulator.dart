@@ -153,42 +153,44 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
             end: Alignment.bottomCenter,
           ),
         ),
-        child: SafeArea(
-          child: GestureDetector(
-            onTap: () {
-              // 텍스트 필드 외부 클릭 시 포커스 해제 및 키보드 닫기
-              FocusScope.of(context).unfocus();
-            },
-            behavior: HitTestBehavior.opaque,
-            child: SingleChildScrollView(
-              physics: AlwaysScrollableScrollPhysics(),
-              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 30),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // 탭 버튼 (투자 시뮬레이션 / 은퇴 자산 시뮬레이션)
-                  TabNavigation(isHomeScreen: false),
-                  SizedBox(height: 24),
-                  // 서술형 질문 섹션 (입력 필드 포함)
-                  _buildQuestionSection(provider, currencyFormat, l10n),
-                  SizedBox(height: 36),
-                  // 입력 영역 (시나리오 선택만)
-                  _buildInputSection(provider, currencyFormat, l10n),
-                  SizedBox(height: 32),
-                  // 자산 포트폴리오
-                  _buildPortfolioSection(
-                    provider,
-                    appProvider,
-                    l10n,
-                    currencyFormat,
-                  ),
-                  SizedBox(height: 32),
-                  // 시뮬레이션 실행 버튼
-                  if (provider.assets.isNotEmpty &&
-                      provider.totalAllocation > 0)
-                    _buildRunButton(provider, l10n),
-                ],
-              ),
+        child: GestureDetector(
+          onTap: () {
+            // 텍스트 필드 외부 클릭 시 포커스 해제 및 키보드 닫기
+            FocusScope.of(context).unfocus();
+          },
+          behavior: HitTestBehavior.opaque,
+          child: SingleChildScrollView(
+            physics: AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + 20,
+              bottom: MediaQuery.of(context).padding.bottom + 30,
+              left: 24,
+              right: 24,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // 탭 버튼 (투자 시뮬레이션 / 은퇴 자산 시뮬레이션)
+                TabNavigation(isHomeScreen: false),
+                SizedBox(height: 24),
+                // 서술형 질문 섹션 (입력 필드 포함)
+                _buildQuestionSection(provider, currencyFormat, l10n),
+                SizedBox(height: 36),
+                // 입력 영역 (시나리오 선택만)
+                _buildInputSection(provider, currencyFormat, l10n),
+                SizedBox(height: 32),
+                // 자산 포트폴리오
+                _buildPortfolioSection(
+                  provider,
+                  appProvider,
+                  l10n,
+                  currencyFormat,
+                ),
+                SizedBox(height: 32),
+                // 시뮬레이션 실행 버튼
+                if (provider.assets.isNotEmpty && provider.totalAllocation > 0)
+                  _buildRunButton(provider, l10n),
+              ],
             ),
           ),
         ),
@@ -1034,48 +1036,88 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
                 fontSize: _sectionTitleFontSize,
               ),
             ),
-            PopupMenuButton<AssetOption>(
-              color: AppColors.navyMedium,
-              requestFocus: false,
-              onOpened: () {
+            GestureDetector(
+              onTap: () {
                 FocusScope.of(context).unfocus();
-              },
-              onSelected: (assetOption) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (mounted) {
-                    FocusScope.of(context).unfocus();
-                  }
-                });
-                provider.addAsset(assetOption.id);
-              },
-              onCanceled: () {
-                FocusScope.of(context).unfocus();
-              },
-              itemBuilder: (context) {
-                return availableAssets
+                final availableAssetsList = availableAssets
                     .where((asset) => !selectedAssetIds.contains(asset.id))
-                    .map((asset) {
-                      return PopupMenuItem<AssetOption>(
-                        value: asset,
-                        child: Row(
-                          children: [
-                            Text(
-                              asset.icon,
-                              style: TextStyle(fontSize: _assetIconFontSize),
+                    .toList();
+
+                if (availableAssetsList.isEmpty) return;
+
+                showModalBottomSheet(
+                  context: context,
+                  backgroundColor: Colors.transparent,
+                  isScrollControlled: true,
+                  builder: (context) {
+                    return ClipRRect(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(20),
                             ),
-                            SizedBox(width: 12),
-                            Text(
-                              asset.displayName(localeCode),
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: _assetNameFontSize,
+                            border: Border(
+                              top: BorderSide(
+                                color: Colors.white.withValues(alpha: 0.2),
+                                width: 1.5,
                               ),
                             ),
-                          ],
+                          ),
+                          child: SafeArea(
+                            child: Container(
+                              constraints: BoxConstraints(
+                                maxHeight:
+                                    MediaQuery.of(context).size.height * 0.6,
+                              ),
+                              child: ListView(
+                                shrinkWrap: true,
+                                padding: EdgeInsets.symmetric(vertical: 8),
+                                children: availableAssetsList.map((asset) {
+                                  return InkWell(
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      provider.addAsset(asset.id);
+                                    },
+                                    child: Padding(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 12,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Text(
+                                            asset.icon,
+                                            style: TextStyle(
+                                              fontSize: _assetIconFontSize,
+                                            ),
+                                          ),
+                                          SizedBox(width: 12),
+                                          Text(
+                                            asset.displayName(localeCode),
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: _assetNameFontSize,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          ),
                         ),
-                      );
-                    })
-                    .toList();
+                      ),
+                    );
+                  },
+                );
               },
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),

@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:share_lib/share_lib.dart';
 import '../l10n/app_localizations.dart';
@@ -97,115 +98,130 @@ class CommonShareUI {
           constraints: BoxConstraints(
             maxHeight: MediaQuery.of(context).size.height * 0.7,
           ),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: const BoxDecoration(
-              color: AppColors.navyMedium,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.white24,
-                      borderRadius: BorderRadius.circular(999),
+          child: ClipRRect(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+                  border: Border(
+                    top: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      width: 1.5,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    l10n.shareResults,
-                    style: AppTextStyles.buttonTextPrimary,
-                  ),
-                  const SizedBox(height: 20),
-                  _ShareOptionTile(
-                    icon: Icons.chat_bubble_outline,
-                    title: l10n.kakaoTalk,
-                    subtitle: l10n.shareWithKakaoTalk,
-                    onTap: () async {
-                      final navigator = Navigator.of(context);
-                      final messenger = ScaffoldMessenger.of(context);
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.white24,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        l10n.shareResults,
+                        style: AppTextStyles.buttonTextPrimary,
+                      ),
+                      const SizedBox(height: 20),
+                      _ShareOptionTile(
+                        icon: Icons.chat_bubble_outline,
+                        title: l10n.kakaoTalk,
+                        subtitle: l10n.shareWithKakaoTalk,
+                        onTap: () async {
+                          final navigator = Navigator.of(context);
+                          final messenger = ScaffoldMessenger.of(context);
 
-                      await ShareService.shareToKakao(
-                        shareText,
-                        onSuccess: () {
-                          messenger.showSnackBar(
-                            SnackBar(
-                              content: Text(l10n.sharedToKakaoTalk),
-                              backgroundColor: Colors.green,
-                            ),
+                          await ShareService.shareToKakao(
+                            shareText,
+                            onSuccess: () {
+                              messenger.showSnackBar(
+                                SnackBar(
+                                  content: Text(l10n.sharedToKakaoTalk),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            },
+                            onError: (error) {
+                              messenger.showSnackBar(
+                                SnackBar(
+                                  content: Text('카카오톡 공유 실패: $error'),
+                                  backgroundColor: Colors.red,
+                                  duration: Duration(seconds: 3),
+                                ),
+                              );
+                            },
+                            onKakaoNotInstalled: () {
+                              messenger.showSnackBar(
+                                SnackBar(
+                                  content: Text('카카오톡이 설치되어 있지 않습니다'),
+                                  backgroundColor: Colors.orange,
+                                ),
+                              );
+                            },
                           );
-                        },
-                        onError: (error) {
-                          messenger.showSnackBar(
-                            SnackBar(
-                              content: Text('카카오톡 공유 실패: $error'),
-                              backgroundColor: Colors.red,
-                              duration: Duration(seconds: 3),
-                            ),
-                          );
-                        },
-                        onKakaoNotInstalled: () {
-                          messenger.showSnackBar(
-                            SnackBar(
-                              content: Text('카카오톡이 설치되어 있지 않습니다'),
-                              backgroundColor: Colors.orange,
-                            ),
-                          );
-                        },
-                      );
 
-                      if (context.mounted) navigator.pop();
-                    },
-                  ),
-                  _ShareOptionTile(
-                    icon: Icons.copy_outlined,
-                    title: l10n.copyText,
-                    subtitle: l10n.copyToClipboard,
-                    onTap: () async {
-                      final messenger = ScaffoldMessenger.of(context);
-
-                      await ShareService.copyToClipboard(
-                        shareText,
-                        onSuccess: () {
-                          messenger.showSnackBar(
-                            SnackBar(content: Text(l10n.copiedToClipboard)),
-                          );
+                          if (context.mounted) navigator.pop();
                         },
-                      );
+                      ),
+                      _ShareOptionTile(
+                        icon: Icons.copy_outlined,
+                        title: l10n.copyText,
+                        subtitle: l10n.copyToClipboard,
+                        onTap: () async {
+                          final messenger = ScaffoldMessenger.of(context);
 
-                      if (context.mounted) Navigator.pop(context);
-                    },
+                          await ShareService.copyToClipboard(
+                            shareText,
+                            onSuccess: () {
+                              messenger.showSnackBar(
+                                SnackBar(content: Text(l10n.copiedToClipboard)),
+                              );
+                            },
+                          );
+
+                          if (context.mounted) Navigator.pop(context);
+                        },
+                      ),
+                      _ShareOptionTile(
+                        icon: Icons.share_outlined,
+                        title: l10n.basicShare,
+                        subtitle: chartImageBytes != null
+                            ? l10n.shareWithTextAndChart
+                            : l10n.basicShareDesc,
+                        onTap: () async {
+                          if (chartImageBytes != null) {
+                            await ShareService.shareWithImage(
+                              shareText,
+                              chartImageBytes,
+                              subject: 'Time Capital 계산 결과',
+                            );
+                          } else {
+                            await ShareService.shareText(shareText);
+                          }
+                          if (context.mounted) Navigator.pop(context);
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: Text(
+                          l10n.close,
+                          style: AppTextStyles.chartLegend,
+                        ),
+                      ),
+                      SizedBox(height: MediaQuery.of(context).padding.bottom),
+                    ],
                   ),
-                  _ShareOptionTile(
-                    icon: Icons.share_outlined,
-                    title: l10n.basicShare,
-                    subtitle: chartImageBytes != null
-                        ? l10n.shareWithTextAndChart
-                        : l10n.basicShareDesc,
-                    onTap: () async {
-                      if (chartImageBytes != null) {
-                        await ShareService.shareWithImage(
-                          shareText,
-                          chartImageBytes,
-                          subject: 'Time Capital 계산 결과',
-                        );
-                      } else {
-                        await ShareService.shareText(shareText);
-                      }
-                      if (context.mounted) Navigator.pop(context);
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(l10n.close, style: AppTextStyles.chartLegend),
-                  ),
-                  SizedBox(height: MediaQuery.of(context).padding.bottom),
-                ],
+                ),
               ),
             ),
           ),
@@ -230,29 +246,43 @@ class _ShareOptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white12),
-      ),
-      child: ListTile(
-        onTap: onTap,
-        leading: Container(
-          padding: const EdgeInsets.all(10),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: AppColors.gold.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(12),
+            color: Colors.white.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.15),
+              width: 1.5,
+            ),
           ),
-          child: Icon(icon, color: AppColors.gold),
+          child: ListTile(
+            onTap: onTap,
+            leading: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.gold.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: AppColors.gold),
+            ),
+            title: Text(
+              title,
+              style: AppTextStyles.resultCardTitle.copyWith(
+                color: Colors.white,
+              ),
+            ),
+            subtitle: Text(subtitle, style: AppTextStyles.chartLegend),
+            trailing: const Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.white54,
+            ),
+          ),
         ),
-        title: Text(
-          title,
-          style: AppTextStyles.resultCardTitle.copyWith(color: Colors.white),
-        ),
-        subtitle: Text(subtitle, style: AppTextStyles.chartLegend),
-        trailing: const Icon(Icons.arrow_forward_ios, color: Colors.white54),
       ),
     );
   }
