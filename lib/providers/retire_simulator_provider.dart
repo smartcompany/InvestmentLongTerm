@@ -136,15 +136,27 @@ class RetireSimulatorProvider with ChangeNotifier {
       _assets.add(newAsset);
     }
 
+    // UI 업데이트 (자산 추가 반영)
+    notifyListeners();
+
     // 현금 자산이 아닌 경우에만 API 호출
     if (assetId != 'cash') {
-      _loadCagrForAsset(assetId);
+      // 다음 프레임에서 CAGR 로드 시작 (UI 업데이트 후 실행되도록)
+      // 이렇게 하면 자산이 UI에 먼저 표시되고, 그 다음에 로딩 상태가 표시됨
+      Future.microtask(() {
+        _loadCagrForAsset(assetId).catchError((error) {
+          debugPrint('CAGR 로드 실패 ($assetId): $error');
+          // 에러 발생 시 로딩 상태 해제
+          _loadingCagr[assetId] = false;
+          notifyListeners();
+        });
+      });
     } else {
       // 현금 자산은 캐시에 저장하고 로딩 상태 설정
       _cagrCache[assetId] = 0.021;
       _loadingCagr[assetId] = false;
+      notifyListeners();
     }
-    notifyListeners();
   }
 
   void updateAsset(int index, Asset asset) {
@@ -233,9 +245,24 @@ class RetireSimulatorProvider with ChangeNotifier {
   // 특정 자산의 CAGR을 API에서 가져오기 (5년 기준, 보수적 조정 적용)
   Future<void> _loadCagrForAsset(String assetId, {bool isRetry = false}) async {
     // 재시도가 아닌 경우에만 중복 체크
-    if (!isRetry &&
-        (_cagrCache.containsKey(assetId) || _loadingCagr[assetId] == true)) {
-      return; // 이미 로드되었거나 로딩 중
+    // 캐시에 이미 있으면 스킵, 로딩 중이면 재시도가 아닌 경우에만 스킵
+    if (!isRetry) {
+      if (_cagrCache.containsKey(assetId)) {
+        // 캐시에 있으면 자산의 annualReturn도 업데이트
+        final cachedCagr = _cagrCache[assetId]!;
+        final assetIndex = _assets.indexWhere((a) => a.assetId == assetId);
+        if (assetIndex >= 0 && _assets[assetIndex].annualReturn == null) {
+          _assets[assetIndex] = _assets[assetIndex].copyWith(
+            annualReturn: cachedCagr,
+          );
+          notifyListeners();
+        }
+        return; // 이미 로드됨
+      }
+      // 로딩 중이면 스킵 (재시도가 아닌 경우에만)
+      if (_loadingCagr[assetId] == true) {
+        return; // 이미 로딩 중
+      }
     }
 
     // 현금 자산은 금리 2.1%로 고정

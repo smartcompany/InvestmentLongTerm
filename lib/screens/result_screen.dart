@@ -174,12 +174,13 @@ class _ResultScreenState extends State<ResultScreen> {
             // 투자 기간 정보
             LiquidGlass(
               blur: 10,
-              backgroundColor: Colors.white,
-              opacity: 0.1,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.18),
-                width: 1.5,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.18),
+                  width: 1.5,
+                ),
               ),
               padding: EdgeInsets.all(16),
               child: Column(
@@ -258,12 +259,13 @@ class _ResultScreenState extends State<ResultScreen> {
               key: _chartKey,
               child: LiquidGlass(
                 blur: 10,
-                backgroundColor: Colors.white,
-                opacity: 0.1,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.18),
-                  width: 1.5,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.18),
+                    width: 1.5,
+                  ),
                 ),
                 child: Container(
                   height: 300,
@@ -357,27 +359,8 @@ class _ResultScreenState extends State<ResultScreen> {
                         },
                         child: Container(
                           padding: EdgeInsets.symmetric(vertical: 16),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                AppColors.gold.withValues(alpha: 0.6),
-                                AppColors.goldLight.withValues(alpha: 0.5),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: AppColors.gold.withValues(alpha: 0.6),
-                              width: 1.5,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.gold.withValues(alpha: 0.4),
-                                blurRadius: 20,
-                                offset: Offset(0, 10),
-                              ),
-                            ],
+                          decoration: SelectedButtonStyle.solidBoxDecoration(
+                            BorderRadius.circular(12),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -424,27 +407,8 @@ class _ResultScreenState extends State<ResultScreen> {
                         },
                         child: Container(
                           padding: EdgeInsets.symmetric(vertical: 16),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                AppColors.gold.withValues(alpha: 0.6),
-                                AppColors.goldLight.withValues(alpha: 0.5),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: AppColors.gold.withValues(alpha: 0.6),
-                              width: 1.5,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.gold.withValues(alpha: 0.4),
-                                blurRadius: 20,
-                                offset: Offset(0, 10),
-                              ),
-                            ],
+                          decoration: SelectedButtonStyle.solidBoxDecoration(
+                            BorderRadius.circular(12),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -524,9 +488,8 @@ class _ResultScreenState extends State<ResultScreen> {
               SizedBox(width: 8),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.navyDark.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(999),
+                decoration: SelectedButtonStyle.solidBoxDecoration(
+                  BorderRadius.circular(999),
                 ),
                 child: Text(l10n.bestReturn, style: AppTextStyles.badgeText),
               ),
@@ -637,27 +600,8 @@ class _ResultScreenState extends State<ResultScreen> {
                   child: Container(
                     width: double.infinity,
                     padding: EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          AppColors.gold.withValues(alpha: 0.6),
-                          AppColors.goldLight.withValues(alpha: 0.5),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: AppColors.gold.withValues(alpha: 0.5),
-                        width: 1.5,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.gold.withValues(alpha: 0.4),
-                          blurRadius: 30,
-                          offset: Offset(0, 15),
-                        ),
-                      ],
+                    decoration: SelectedButtonStyle.solidBoxDecoration(
+                      BorderRadius.circular(24),
                     ),
                     child: cardContent,
                   ),
@@ -665,12 +609,13 @@ class _ResultScreenState extends State<ResultScreen> {
               )
             : LiquidGlass(
                 blur: 10,
-                backgroundColor: Colors.white,
-                opacity: 0.1,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.18),
-                  width: 1.5,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.18),
+                    width: 1.5,
+                  ),
                 ),
                 padding: EdgeInsets.all(20),
                 child: cardContent,
@@ -729,12 +674,12 @@ class _ResultScreenState extends State<ResultScreen> {
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: highlight
-            ? AppColors.navyDark.withValues(alpha: 0.08)
-            : AppColors.navyDark.withValues(alpha: 0.4),
-        borderRadius: BorderRadius.circular(16),
-      ),
+      decoration: highlight
+          ? SelectedButtonStyle.solidBoxDecoration(BorderRadius.circular(16))
+          : BoxDecoration(
+              color: AppColors.navyDark.withValues(alpha: 0.4),
+              borderRadius: BorderRadius.circular(16),
+            ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,

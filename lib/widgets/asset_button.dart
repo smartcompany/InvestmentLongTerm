@@ -59,7 +59,6 @@ class AssetButton extends StatelessWidget {
 
     return LiquidGlassButton(
       isSelected: isSelected,
-      selectedColor: color ?? AppColors.gold,
       borderRadius: BorderRadius.circular(22),
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       onTap: onTap,

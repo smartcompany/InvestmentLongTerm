@@ -379,12 +379,13 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
         SizedBox(height: 12),
         LiquidGlass(
           blur: 10,
-          backgroundColor: Colors.white,
-          opacity: 0.1,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.2),
-            width: 1.5,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.2),
+              width: 1.5,
+            ),
           ),
           padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Row(
@@ -411,27 +412,8 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
                   filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          AppColors.gold.withValues(alpha: 0.4),
-                          AppColors.goldLight.withValues(alpha: 0.3),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: AppColors.gold.withValues(alpha: 0.6),
-                        width: 1.5,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.gold.withValues(alpha: 0.3),
-                          blurRadius: 15,
-                          offset: Offset(0, 8),
-                        ),
-                      ],
+                    decoration: SelectedButtonStyle.solidBoxDecoration(
+                      BorderRadius.circular(8),
                     ),
                     child: Text(
                       '${(provider.inflationRate * 100).toStringAsFixed(1)}%',
@@ -982,12 +964,13 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
       },
       child: LiquidGlass(
         blur: 10,
-        backgroundColor: Colors.white,
-        opacity: 0.1,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.18),
-          width: 1.5,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.18),
+            width: 1.5,
+          ),
         ),
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         child: Row(
@@ -1276,27 +1259,8 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
                   filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          AppColors.gold.withValues(alpha: 0.6),
-                          AppColors.goldLight.withValues(alpha: 0.5),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: AppColors.gold.withValues(alpha: 0.6),
-                        width: 1.5,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.gold.withValues(alpha: 0.4),
-                          blurRadius: 20,
-                          offset: Offset(0, 10),
-                        ),
-                      ],
+                    decoration: SelectedButtonStyle.solidBoxDecoration(
+                      BorderRadius.circular(8),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -1327,12 +1291,13 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
         if (provider.assets.isEmpty)
           LiquidGlass(
             blur: 10,
-            backgroundColor: Colors.white,
-            opacity: 0.1,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.18),
-              width: 1.5,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.18),
+                width: 1.5,
+              ),
             ),
             padding: EdgeInsets.all(20),
             child: Center(
@@ -1481,27 +1446,8 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
             child: Container(
               width: double.infinity,
               padding: EdgeInsets.symmetric(vertical: 16),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.gold.withValues(alpha: 0.6),
-                    AppColors.goldLight.withValues(alpha: 0.5),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: AppColors.gold.withValues(alpha: 0.6),
-                  width: 1.5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.gold.withValues(alpha: 0.4),
-                    blurRadius: 20,
-                    offset: Offset(0, 10),
-                  ),
-                ],
+              decoration: SelectedButtonStyle.solidBoxDecoration(
+                BorderRadius.circular(12),
               ),
               child: Center(
                 child: Text(

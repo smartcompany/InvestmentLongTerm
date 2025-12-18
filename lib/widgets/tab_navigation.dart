@@ -5,6 +5,7 @@ import '../utils/colors.dart';
 import '../screens/home_screen.dart';
 import '../screens/retire_simulator.dart';
 import '../screens/settings_screen.dart';
+import 'liquid_glass.dart';
 
 class TabNavigation extends StatelessWidget {
   final bool isHomeScreen;
@@ -130,35 +131,14 @@ class _TabButton extends StatelessWidget {
           child: Container(
             width: double.infinity,
             padding: EdgeInsets.symmetric(vertical: 12),
-            decoration: BoxDecoration(
-              gradient: isSelected
-                  ? LinearGradient(
-                      colors: [
-                        AppColors.gold.withValues(alpha: 0.6),
-                        AppColors.goldLight.withValues(alpha: 0.5),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    )
-                  : null,
-              color: isSelected ? null : Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
-              border: isSelected
-                  ? Border.all(
-                      color: AppColors.gold.withValues(alpha: 0.5),
-                      width: 1.5,
-                    )
-                  : null,
-              boxShadow: isSelected
-                  ? [
-                      BoxShadow(
-                        color: AppColors.gold.withValues(alpha: 0.3),
-                        blurRadius: 20,
-                        offset: Offset(0, 10),
-                      ),
-                    ]
-                  : null,
-            ),
+            decoration: isSelected
+                ? SelectedButtonStyle.solidBoxDecoration(
+                    BorderRadius.circular(8),
+                  )
+                : BoxDecoration(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
             alignment: Alignment.center,
             child: Text(
               label,

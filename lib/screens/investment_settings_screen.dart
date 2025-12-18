@@ -177,12 +177,13 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
             SizedBox(height: 10),
             LiquidGlass(
               blur: 10,
-              backgroundColor: Colors.white,
-              opacity: 0.1,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.2),
-                width: 1.5,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  width: 1.5,
+                ),
               ),
               padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: SliderTheme(
@@ -275,48 +276,30 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
                       width: 1.5,
                     ),
                   ),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: SegmentedButton<InvestmentType>(
-                      segments: [
-                        ButtonSegment(
-                          value: InvestmentType.single,
-                          label: Text(l10n.singleInvestment),
-                        ),
-                        ButtonSegment(
-                          value: InvestmentType.recurring,
-                          label: Text(l10n.recurringInvestment),
-                        ),
-                      ],
-                      selected: {config.type},
-                      onSelectionChanged: (Set<InvestmentType> newSelection) {
-                        provider.updateConfig(type: newSelection.first);
-                      },
-                      style: ButtonStyle(
-                        backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                          (states) {
-                            if (states.contains(WidgetState.selected)) {
-                              return AppColors.gold.withValues(alpha: 0.8);
-                            }
-                            return Colors.transparent;
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _buildInvestmentTypeButton(
+                          label: l10n.singleInvestment,
+                          isSelected: config.type == InvestmentType.single,
+                          onTap: () {
+                            provider.updateConfig(type: InvestmentType.single);
                           },
-                        ),
-                        foregroundColor: WidgetStateProperty.resolveWith<Color>(
-                          (states) {
-                            if (states.contains(WidgetState.selected)) {
-                              return AppColors.navyDark;
-                            }
-                            return Colors.white;
-                          },
-                        ),
-                        side: WidgetStateProperty.all(BorderSide.none),
-                        shape: WidgetStateProperty.all(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
                         ),
                       ),
-                    ),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: _buildInvestmentTypeButton(
+                          label: l10n.recurringInvestment,
+                          isSelected: config.type == InvestmentType.recurring,
+                          onTap: () {
+                            provider.updateConfig(
+                              type: InvestmentType.recurring,
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -372,12 +355,13 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
             // Summary Preview
             LiquidGlass(
               blur: 10,
-              backgroundColor: Colors.white,
-              opacity: 0.25,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.3),
-                width: 1.5,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.25),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.3),
+                  width: 1.5,
+                ),
               ),
               padding: EdgeInsets.all(16),
               child: Row(
@@ -409,27 +393,8 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
                     child: Container(
                       width: double.infinity,
                       height: 56,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            AppColors.gold.withValues(alpha: 0.6),
-                            AppColors.goldLight.withValues(alpha: 0.5),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: AppColors.gold.withValues(alpha: 0.6),
-                          width: 1.5,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.gold.withValues(alpha: 0.4),
-                            blurRadius: 20,
-                            offset: Offset(0, 10),
-                          ),
-                        ],
+                      decoration: SelectedButtonStyle.solidBoxDecoration(
+                        BorderRadius.circular(16),
                       ),
                       child: Center(
                         child: Text(
@@ -442,6 +407,51 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
                     ),
                   ),
                 ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInvestmentTypeButton({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 12),
+        decoration: isSelected
+            ? SelectedButtonStyle.solidBoxDecoration(BorderRadius.circular(8))
+            : BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(8),
+              ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (isSelected) ...[
+              Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: AppColors.navyDark, width: 2),
+                  color: AppColors.navyDark,
+                ),
+                child: Icon(Icons.check, size: 14, color: AppColors.gold),
+              ),
+              SizedBox(width: 8),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? AppColors.navyDark : Colors.white,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
           ],
@@ -466,27 +476,8 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
                 filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppColors.gold.withValues(alpha: 0.5),
-                        AppColors.goldLight.withValues(alpha: 0.4),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppColors.gold.withValues(alpha: 0.6),
-                      width: 1.5,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.gold.withValues(alpha: 0.3),
-                        blurRadius: 20,
-                        offset: Offset(0, 10),
-                      ),
-                    ],
+                  decoration: SelectedButtonStyle.solidBoxDecoration(
+                    BorderRadius.circular(12),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -523,12 +514,13 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
             )
           : LiquidGlass(
               blur: 10,
-              backgroundColor: Colors.white,
-              opacity: 0.18,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.25),
-                width: 1.5,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.18),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.25),
+                  width: 1.5,
+                ),
               ),
               padding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               child: Row(

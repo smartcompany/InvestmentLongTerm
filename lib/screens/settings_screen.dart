@@ -36,12 +36,13 @@ class SettingsScreen extends StatelessWidget {
             SizedBox(height: 16),
             LiquidGlass(
               blur: 10,
-              backgroundColor: Colors.white,
-              opacity: 0.1,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.18),
-                width: 1.5,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.18),
+                  width: 1.5,
+                ),
               ),
               padding: EdgeInsets.all(16),
               child: _buildCurrencyDropdown(

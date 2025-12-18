@@ -46,15 +46,17 @@ class AssetInputCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final localeCode = Localizations.localeOf(context).languageCode;
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Container(
       margin: EdgeInsets.only(bottom: 16),
       child: LiquidGlass(
         blur: 10,
-        backgroundColor: Colors.white,
-        opacity: 0.1,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.18), width: 1.5),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white.withOpacity(0.18), width: 1.5),
+        ),
         padding: EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -197,7 +199,7 @@ class AssetInputCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       l10n?.allocation ?? '비중',
@@ -206,28 +208,38 @@ class AssetInputCard extends StatelessWidget {
                         fontSize: _allocationLabelFontSize,
                       ),
                     ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          '${(asset.allocation * 100).toStringAsFixed(1)}%',
-                          style: TextStyle(
-                            color: AppColors.gold,
-                            fontSize: _allocationValueFontSize,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        if (initialAsset != null && currencyFormat != null) ...[
-                          SizedBox(width: 8),
+                    Expanded(
+                      child: Wrap(
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        alignment: WrapAlignment.end,
+                        spacing: 8,
+                        children: [
                           Text(
-                            '(${currencyFormat!.format((initialAsset! * asset.allocation).toInt())})',
+                            '${(asset.allocation * 100).toStringAsFixed(1)}%',
                             style: TextStyle(
-                              color: AppColors.slate300,
-                              fontSize: _allocationValueFontSize - 2,
+                              color: AppColors.gold,
+                              fontSize: _allocationValueFontSize,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
+                          if (initialAsset != null && currencyFormat != null)
+                            ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxWidth: screenWidth * 0.4,
+                              ),
+                              child: Text(
+                                '(${currencyFormat!.format((initialAsset! * asset.allocation).toInt())})',
+                                style: TextStyle(
+                                  color: AppColors.slate300,
+                                  fontSize: _allocationValueFontSize - 2,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.visible,
+                                softWrap: true,
+                              ),
+                            ),
                         ],
-                      ],
+                      ),
                     ),
                   ],
                 ),

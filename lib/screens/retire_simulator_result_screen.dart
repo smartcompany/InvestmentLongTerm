@@ -167,12 +167,13 @@ class _RetireSimulatorResultScreenState
               // 시나리오 및 인출 정보 표시
               LiquidGlass(
                 blur: 10,
-                backgroundColor: Colors.white,
-                opacity: 0.1,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.18),
-                  width: 1.5,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.18),
+                    width: 1.5,
+                  ),
                 ),
                 padding: EdgeInsets.all(16),
                 child: Column(
@@ -337,40 +338,26 @@ class _RetireSimulatorResultScreenState
                           },
                           child: Container(
                             padding: EdgeInsets.symmetric(vertical: 14),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  AppColors.gold.withValues(alpha: 0.6),
-                                  AppColors.goldLight.withValues(alpha: 0.5),
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: AppColors.gold.withValues(alpha: 0.6),
-                                width: 1.5,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.gold.withValues(alpha: 0.4),
-                                  blurRadius: 20,
-                                  offset: Offset(0, 10),
-                                ),
-                              ],
+                            decoration: SelectedButtonStyle.solidBoxDecoration(
+                              BorderRadius.circular(12),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(Icons.share, color: AppColors.navyDark),
                                 SizedBox(width: 8),
-                                Text(
-                                  l10n.share,
-                                  style: AppTextStyles.buttonTextPrimary
-                                      .copyWith(
-                                        color: AppColors.navyDark,
-                                        fontSize: 16,
-                                      ),
+                                Flexible(
+                                  child: Text(
+                                    l10n.share,
+                                    style: AppTextStyles.buttonTextPrimary
+                                        .copyWith(
+                                          color: AppColors.navyDark,
+                                          fontSize: 16,
+                                        ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.visible,
+                                    textAlign: TextAlign.center,
+                                  ),
                                 ),
                               ],
                             ),
@@ -397,27 +384,8 @@ class _RetireSimulatorResultScreenState
                           },
                           child: Container(
                             padding: EdgeInsets.symmetric(vertical: 14),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  AppColors.gold.withValues(alpha: 0.6),
-                                  AppColors.goldLight.withValues(alpha: 0.5),
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: AppColors.gold.withValues(alpha: 0.6),
-                                width: 1.5,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.gold.withValues(alpha: 0.4),
-                                  blurRadius: 20,
-                                  offset: Offset(0, 10),
-                                ),
-                              ],
+                            decoration: SelectedButtonStyle.solidBoxDecoration(
+                              BorderRadius.circular(12),
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -427,13 +395,18 @@ class _RetireSimulatorResultScreenState
                                   color: AppColors.navyDark,
                                 ),
                                 SizedBox(width: 8),
-                                Text(
-                                  l10n.pastAssetSimulation,
-                                  style: AppTextStyles.buttonTextPrimary
-                                      .copyWith(
-                                        color: AppColors.navyDark,
-                                        fontSize: 16,
-                                      ),
+                                Flexible(
+                                  child: Text(
+                                    l10n.pastAssetSimulation,
+                                    style: AppTextStyles.buttonTextPrimary
+                                        .copyWith(
+                                          color: AppColors.navyDark,
+                                          fontSize: 16,
+                                        ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.visible,
+                                    textAlign: TextAlign.center,
+                                  ),
                                 ),
                               ],
                             ),
@@ -533,12 +506,13 @@ class _RetireSimulatorResultScreenState
         SizedBox(height: 20),
         LiquidGlass(
           blur: 10,
-          backgroundColor: Colors.white,
-          opacity: 0.1,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.18),
-            width: 1.5,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.18),
+              width: 1.5,
+            ),
           ),
           child: Container(
             height: 350,
@@ -761,12 +735,13 @@ class _RetireSimulatorResultScreenState
 
     return LiquidGlass(
       blur: 10,
-      backgroundColor: Colors.white,
-      opacity: 0.1,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(
-        color: Colors.white.withValues(alpha: 0.18),
-        width: 1.5,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.18),
+          width: 1.5,
+        ),
       ),
       padding: EdgeInsets.all(20),
       child: Column(
@@ -1015,12 +990,13 @@ class _RetireSimulatorResultScreenState
 
                 return LiquidGlass(
                   blur: 8,
-                  backgroundColor: Colors.white,
-                  opacity: 0.08,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    width: 1,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      width: 1,
+                    ),
                   ),
                   padding: EdgeInsets.all(12),
                   child: Row(

@@ -1,64 +1,105 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import '../utils/colors.dart';
+
+/// 선택된 버튼/카드의 공통 스타일 설정
+class SelectedButtonStyle {
+  /// 선택된 버튼의 배경색
+  static const Color backgroundColor = AppColors.goldLight;
+
+  /// 선택된 버튼의 투명도
+  static const double opacity = 0.6;
+
+  /// 선택된 버튼의 테두리 색상
+  static Color get borderColor => AppColors.gold.withValues(alpha: 0.7);
+
+  /// 선택된 버튼의 테두리 두께
+  static const double borderWidth = 2.0;
+
+  /// 선택된 버튼의 그라디언트 색상
+  static List<Color> get gradientColors => [
+    AppColors.gold.withValues(alpha: 0.6),
+    AppColors.goldLight.withValues(alpha: 0.5),
+  ];
+
+  /// 선택된 버튼의 그라디언트 (LiquidGlass용)
+  static LinearGradient get gradient => LinearGradient(
+    colors: gradientColors,
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  /// 선택된 버튼의 그라디언트 (Container용 - 더 불투명)
+  static LinearGradient get solidGradient => LinearGradient(
+    colors: [
+      AppColors.gold.withOpacity(0.9),
+      AppColors.goldLight.withOpacity(0.85),
+    ],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  /// 선택된 버튼의 테두리
+  static Border get border =>
+      Border.all(color: borderColor, width: borderWidth);
+
+  /// 선택된 버튼의 그림자
+  static List<BoxShadow> get boxShadow => [
+    BoxShadow(
+      color: AppColors.gold.withValues(alpha: 0.4),
+      blurRadius: 20,
+      offset: Offset(0, 10),
+    ),
+  ];
+
+  /// 선택된 버튼의 BoxDecoration (더 불투명한 그라디언트 사용)
+  static BoxDecoration solidBoxDecoration([BorderRadius? borderRadius]) {
+    final gradient = LinearGradient(
+      colors: [
+        AppColors.gold.withOpacity(0.9),
+        AppColors.goldLight.withOpacity(0.85),
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+
+    return BoxDecoration(
+      gradient: gradient,
+      borderRadius: borderRadius ?? BorderRadius.circular(12),
+      border: border,
+      boxShadow: boxShadow,
+    );
+  }
+}
 
 /// Liquid Glass 효과를 제공하는 위젯
 /// iOS 18+ 스타일의 glass morphism 효과를 구현합니다.
 class LiquidGlass extends StatelessWidget {
   final Widget child;
   final double? blur;
-  final Color? backgroundColor;
-  final BorderRadius? borderRadius;
-  final Border? border;
-  final List<BoxShadow>? boxShadow;
+  final BoxDecoration decoration;
   final EdgeInsetsGeometry? padding;
-  final double? opacity;
 
   const LiquidGlass({
     super.key,
     required this.child,
     this.blur = 10.0,
-    this.backgroundColor,
-    this.borderRadius,
-    this.border,
-    this.boxShadow,
+    required this.decoration,
     this.padding,
-    this.opacity = 0.25,
   });
 
   @override
   Widget build(BuildContext context) {
-    final defaultBackgroundColor = backgroundColor ?? Colors.white;
-    final defaultBorderRadius = borderRadius ?? BorderRadius.circular(20);
-    final defaultBorder =
-        border ??
-        Border.all(color: Colors.white.withValues(alpha: 0.3), width: 1.5);
-    final defaultBoxShadow =
-        boxShadow ??
-        [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 20,
-            offset: Offset(0, 10),
-          ),
-          BoxShadow(
-            color: Colors.white.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: Offset(0, -5),
-          ),
-        ];
+    final borderRadius =
+        decoration.borderRadius as BorderRadius? ?? BorderRadius.circular(20);
 
     return ClipRRect(
-      borderRadius: defaultBorderRadius,
+      borderRadius: borderRadius,
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: blur!, sigmaY: blur!),
         child: Container(
           padding: padding,
-          decoration: BoxDecoration(
-            color: defaultBackgroundColor.withValues(alpha: opacity!),
-            borderRadius: defaultBorderRadius,
-            border: defaultBorder,
-            boxShadow: defaultBoxShadow,
-          ),
+          decoration: decoration,
           child: child,
         ),
       ),
@@ -71,7 +112,6 @@ class LiquidGlassButton extends StatelessWidget {
   final Widget child;
   final VoidCallback? onTap;
   final bool isSelected;
-  final Color? selectedColor;
   final double? blur;
   final BorderRadius? borderRadius;
   final EdgeInsetsGeometry? padding;
@@ -81,77 +121,39 @@ class LiquidGlassButton extends StatelessWidget {
     required this.child,
     this.onTap,
     this.isSelected = false,
-    this.selectedColor,
-    this.blur = 12.0,
+    this.blur = 30.0,
     this.borderRadius,
     this.padding,
   });
 
   @override
   Widget build(BuildContext context) {
-    final defaultSelectedColor =
-        selectedColor ?? const Color.fromARGB(255, 245, 230, 191);
     final defaultBorderRadius = borderRadius ?? BorderRadius.circular(22);
 
-    if (isSelected) {
-      return GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: ClipRRect(
-          borderRadius: defaultBorderRadius,
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: blur!, sigmaY: blur!),
-            child: Container(
-              padding: padding,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    defaultSelectedColor.withValues(alpha: 0.5),
-                    defaultSelectedColor.withValues(alpha: 0.4),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: defaultBorderRadius,
-                border: Border.all(
-                  color: defaultSelectedColor.withValues(alpha: 0.7),
-                  width: 2,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: defaultSelectedColor.withValues(alpha: 0.5),
-                    blurRadius: 30,
-                    offset: Offset(0, 15),
-                  ),
-                  BoxShadow(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    blurRadius: 10,
-                    offset: Offset(0, -5),
-                  ),
-                ],
-              ),
-              child: child,
-            ),
-          ),
-        ),
-      );
-    } else {
-      return GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: LiquidGlass(
-          blur: blur,
-          borderRadius: defaultBorderRadius,
-          padding: padding,
-          backgroundColor: Colors.white,
-          opacity: 0.18,
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.25),
-            width: 1.5,
-          ),
-          child: child,
-        ),
-      );
-    }
+    // isSelected에 따라 공통 스타일 또는 기본 스타일 사용
+    final borderColor = isSelected
+        ? SelectedButtonStyle.borderColor
+        : Colors.white.withValues(alpha: 0.25);
+
+    final borderWidth = isSelected ? SelectedButtonStyle.borderWidth : 1.5;
+
+    final decoration = isSelected
+        ? SelectedButtonStyle.solidBoxDecoration(defaultBorderRadius)
+        : BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.2),
+            borderRadius: defaultBorderRadius,
+            border: Border.all(color: borderColor, width: borderWidth),
+          );
+
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: LiquidGlass(
+        blur: blur,
+        decoration: decoration,
+        padding: padding,
+        child: child,
+      ),
+    );
   }
 }

@@ -20,69 +20,44 @@ class SummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isHighlight) {
-      // Highlight 카드는 그라디언트 + Liquid Glass 효과
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            padding: EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  AppColors.gold.withOpacity(0.6),
-                  AppColors.goldLight.withOpacity(0.5),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+      // Highlight 카드는 공통 선택된 스타일 사용
+      return Container(
+        padding: EdgeInsets.all(20),
+        decoration: SelectedButtonStyle.solidBoxDecoration(
+          BorderRadius.circular(20),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                color: AppColors.navyDark.withValues(alpha: 0.8),
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
               ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: AppColors.gold.withOpacity(0.5),
-                width: 1.5,
+            ),
+            SizedBox(height: 8),
+            Text(
+              value,
+              style: TextStyle(
+                color: AppColors.navyDark,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.gold.withOpacity(0.4),
-                  blurRadius: 25,
-                  offset: Offset(0, 12),
-                ),
-              ],
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    color: AppColors.navyDark.withValues(alpha: 0.8),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
+            if (subtitle != null) ...[
+              SizedBox(height: 4),
+              Text(
+                subtitle!,
+                style: TextStyle(
+                  color: AppColors.success,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
                 ),
-                SizedBox(height: 8),
-                Text(
-                  value,
-                  style: TextStyle(
-                    color: AppColors.navyDark,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                if (subtitle != null) ...[
-                  SizedBox(height: 4),
-                  Text(
-                    subtitle!,
-                    style: TextStyle(
-                      color: AppColors.success,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
+              ),
+            ],
+          ],
         ),
       );
     }
@@ -90,10 +65,11 @@ class SummaryCard extends StatelessWidget {
     // 일반 카드는 Liquid Glass 효과 적용
     return LiquidGlass(
       blur: 10,
-      backgroundColor: Colors.white,
-      opacity: 0.1,
-      borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: Colors.white.withOpacity(0.18), width: 1.5),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.18), width: 1.5),
+      ),
       padding: EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -87,12 +87,13 @@ class ComparisonScreen extends StatelessWidget {
             SizedBox(height: 20),
             LiquidGlass(
               blur: 10,
-              backgroundColor: Colors.white,
-              opacity: 0.1,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.18),
-                width: 1.5,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.18),
+                  width: 1.5,
+                ),
               ),
               child: Container(
                 height: 300,
@@ -165,10 +166,11 @@ class ComparisonScreen extends StatelessWidget {
 
     return LiquidGlass(
       blur: 10,
-      backgroundColor: Colors.white,
-      opacity: 0.1,
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(color: color.withValues(alpha: 0.4), width: 1.5),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.4), width: 1.5),
+      ),
       padding: EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
