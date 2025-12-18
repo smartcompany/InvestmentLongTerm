@@ -14,6 +14,7 @@ class RetireSimulatorProvider with ChangeNotifier {
   final List<Asset> _assets = [];
   final Map<String, double> _cagrCache = {}; // assetId -> CAGR 캐시
   final Map<String, bool> _loadingCagr = {}; // assetId -> 로딩 상태
+  final Map<String, int> _cagrRetryCount = {}; // assetId -> 재시도 횟수
 
   double get initialAsset => _initialAsset;
   double get monthlyWithdrawal => _monthlyWithdrawal;
@@ -230,8 +231,10 @@ class RetireSimulatorProvider with ChangeNotifier {
   }
 
   // 특정 자산의 CAGR을 API에서 가져오기 (5년 기준, 보수적 조정 적용)
-  Future<void> _loadCagrForAsset(String assetId) async {
-    if (_cagrCache.containsKey(assetId) || _loadingCagr[assetId] == true) {
+  Future<void> _loadCagrForAsset(String assetId, {bool isRetry = false}) async {
+    // 재시도가 아닌 경우에만 중복 체크
+    if (!isRetry &&
+        (_cagrCache.containsKey(assetId) || _loadingCagr[assetId] == true)) {
       return; // 이미 로드되었거나 로딩 중
     }
 
@@ -323,7 +326,26 @@ class RetireSimulatorProvider with ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Failed to load CAGR for $assetId: $e');
-      // 실패 시 기본값 사용하지 않음 (null 유지)
+      // 실패 시 재시도 (최대 2번)
+      if (!_cagrRetryCount.containsKey(assetId)) {
+        _cagrRetryCount[assetId] = 0;
+      }
+
+      if (_cagrRetryCount[assetId]! < 2) {
+        _cagrRetryCount[assetId] = _cagrRetryCount[assetId]! + 1;
+        debugPrint('CAGR 로드 재시도 ($assetId): ${_cagrRetryCount[assetId]}번째');
+
+        // 2초 후 재시도
+        await Future.delayed(Duration(seconds: 2));
+        // 재시도 전에 로딩 상태를 false로 설정하여 재시도 가능하도록 함
+        _loadingCagr[assetId] = false;
+        _loadCagrForAsset(assetId, isRetry: true);
+        return;
+      } else {
+        // 최대 재시도 횟수 초과 시 null 유지
+        debugPrint('CAGR 로드 최종 실패 ($assetId): 재시도 횟수 초과');
+        _cagrRetryCount[assetId] = 0; // 재시도 카운트 리셋
+      }
     } finally {
       _loadingCagr[assetId] = false;
       notifyListeners();

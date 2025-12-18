@@ -137,12 +137,21 @@ class AssetInputCard extends StatelessWidget {
                   color: Colors.red.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(
-                  '연수익률을 불러올 수 없습니다',
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontSize: _cagrErrorFontSize,
-                  ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.error_outline, color: Colors.red, size: 18),
+                    SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        '연수익률을 불러올 수 없습니다',
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontSize: _cagrErrorFontSize,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             SizedBox(height: 16),

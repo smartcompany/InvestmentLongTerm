@@ -883,6 +883,8 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
   ) {
     return GestureDetector(
       onTap: () {
+        // 키보드 포커스 제거
+        FocusScope.of(context).unfocus();
         _showYearsPicker(context, provider, l10n);
       },
       child: LiquidGlass(
@@ -946,6 +948,8 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.navyMedium,
+      isDismissible: true,
+      enableDrag: true,
       builder: (BuildContext context) {
         return Container(
           height: 250,
@@ -971,7 +975,15 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
                     ),
                     TextButton(
                       onPressed: () {
+                        // 키보드 포커스 제거
+                        FocusScope.of(context).unfocus();
                         Navigator.pop(context);
+                        // 모달이 닫힌 후에도 포커스가 다시 생기지 않도록
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (context.mounted) {
+                            FocusScope.of(context).unfocus();
+                          }
+                        });
                         provider.setSimulationYears(selectedYear);
                       },
                       child: Text(
@@ -1011,7 +1023,12 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
           ),
         );
       },
-    );
+    ).then((_) {
+      // 모달이 닫힌 후에도 포커스 제거 보장
+      if (mounted) {
+        FocusScope.of(context).unfocus();
+      }
+    });
   }
 
   Widget _buildPortfolioSection(
@@ -1038,78 +1055,102 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
             ),
             GestureDetector(
               onTap: () {
+                // 포커스 제거를 먼저 수행
                 FocusScope.of(context).unfocus();
+
                 final availableAssetsList = availableAssets
                     .where((asset) => !selectedAssetIds.contains(asset.id))
                     .toList();
 
                 if (availableAssetsList.isEmpty) return;
 
+                // 모달이 닫힐 때 포커스 제거를 보장하기 위해
                 showModalBottomSheet(
                   context: context,
                   backgroundColor: Colors.transparent,
                   isScrollControlled: true,
+                  isDismissible: true,
+                  enableDrag: true,
+                  barrierColor: Colors.black.withValues(alpha: 0.5),
                   builder: (context) {
-                    return ClipRRect(
-                      borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(20),
-                      ),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(20),
-                            ),
-                            border: Border(
-                              top: BorderSide(
-                                color: Colors.white.withValues(alpha: 0.2),
-                                width: 1.5,
+                    // 모달 내부에서 barrier 탭을 감지하여 포커스 제거
+                    return WillPopScope(
+                      onWillPop: () async {
+                        FocusScope.of(context).unfocus();
+                        return true;
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(20),
+                        ),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(20),
+                              ),
+                              border: Border(
+                                top: BorderSide(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                  width: 1.5,
+                                ),
                               ),
                             ),
-                          ),
-                          child: SafeArea(
-                            child: Container(
-                              constraints: BoxConstraints(
-                                maxHeight:
-                                    MediaQuery.of(context).size.height * 0.6,
-                              ),
-                              child: ListView(
-                                shrinkWrap: true,
-                                padding: EdgeInsets.symmetric(vertical: 8),
-                                children: availableAssetsList.map((asset) {
-                                  return InkWell(
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                      provider.addAsset(asset.id);
-                                    },
-                                    child: Padding(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 12,
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Text(
-                                            asset.icon,
-                                            style: TextStyle(
-                                              fontSize: _assetIconFontSize,
+                            child: SafeArea(
+                              child: Container(
+                                constraints: BoxConstraints(
+                                  maxHeight:
+                                      MediaQuery.of(context).size.height * 0.6,
+                                ),
+                                child: ListView(
+                                  shrinkWrap: true,
+                                  padding: EdgeInsets.symmetric(vertical: 8),
+                                  children: availableAssetsList.map((asset) {
+                                    return InkWell(
+                                      onTap: () {
+                                        // 키보드 포커스 제거
+                                        FocusScope.of(context).unfocus();
+                                        Navigator.pop(context);
+                                        // 자산 추가 후에도 포커스가 다시 생기지 않도록
+                                        WidgetsBinding.instance
+                                            .addPostFrameCallback((_) {
+                                              if (context.mounted) {
+                                                FocusScope.of(
+                                                  context,
+                                                ).unfocus();
+                                              }
+                                            });
+                                        provider.addAsset(asset.id);
+                                      },
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 12,
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Text(
+                                              asset.icon,
+                                              style: TextStyle(
+                                                fontSize: _assetIconFontSize,
+                                              ),
                                             ),
-                                          ),
-                                          SizedBox(width: 12),
-                                          Text(
-                                            asset.displayName(localeCode),
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: _assetNameFontSize,
+                                            SizedBox(width: 12),
+                                            Text(
+                                              asset.displayName(localeCode),
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: _assetNameFontSize,
+                                              ),
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  );
-                                }).toList(),
+                                    );
+                                  }).toList(),
+                                ),
                               ),
                             ),
                           ),
@@ -1117,7 +1158,24 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
                       ),
                     );
                   },
-                );
+                ).then((_) {
+                  // 모달이 닫힌 후에도 포커스 제거 보장 (드래그로 닫거나 외부 탭으로 닫을 때)
+                  // barrier 탭이 뒤로 전파되어 포커스가 생기는 것을 방지하기 위해
+                  // 여러 프레임에 걸쳐 포커스를 확인하고 제거
+                  if (mounted) {
+                    // 즉시 포커스 제거
+                    FocusScope.of(context).unfocus();
+
+                    // barrier 탭 이벤트가 완전히 처리될 때까지 여러 번 포커스 제거
+                    for (int i = 0; i < 3; i++) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted) {
+                          FocusScope.of(context).unfocus();
+                        }
+                      });
+                    }
+                  }
+                });
               },
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
