@@ -494,10 +494,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get retirementQuestionEnd => 'monthly?';
 
   @override
-  String get inflationRate => '연간 인플레이션율';
+  String get inflationRate => 'Annual Inflation Rate';
 
   @override
-  String get inflationRateDesc => '매년 생활비가 증가하는 비율을 설정하세요';
+  String get inflationRateDesc =>
+      'Set the rate at which living expenses increase annually';
 
   @override
   String inflationRatePercent(double rate) {

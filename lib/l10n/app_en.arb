@@ -197,6 +197,8 @@
   "retirementQuestionMiddle": ",",
   "retirementQuestionMonthlyPrefix": "can I play and eat for",
   "retirementQuestionSuffix": "years by spending",
-  "retirementQuestionEnd": "monthly?"
+  "retirementQuestionEnd": "monthly?",
+  "inflationRate": "Annual Inflation Rate",
+  "inflationRateDesc": "Set the rate at which living expenses increase annually"
 }
 

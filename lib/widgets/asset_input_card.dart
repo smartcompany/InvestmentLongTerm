@@ -13,6 +13,7 @@ class AssetInputCard extends StatelessWidget {
   final Function(double) onAllocationChanged; // 슬라이더 변경 시 호출
   final VoidCallback onDelete;
   final bool isLoadingCagr;
+  final VoidCallback? onRetryLoadCagr; // CAGR 재시도 콜백
 
   // 폰트 크기 상수
   static const double _assetIconFontSize = 24.0; // 자산 아이콘 크기 (비트코인, 테슬라 등 이모지)
@@ -36,6 +37,7 @@ class AssetInputCard extends StatelessWidget {
     required this.onAllocationChanged,
     required this.onDelete,
     this.isLoadingCagr = false,
+    this.onRetryLoadCagr,
     this.l10n,
     this.initialAsset,
     this.currencyFormat,
@@ -132,7 +134,7 @@ class AssetInputCard extends StatelessWidget {
               )
             else
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.red.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
@@ -151,6 +153,41 @@ class AssetInputCard extends StatelessWidget {
                         ),
                       ),
                     ),
+                    if (onRetryLoadCagr != null) ...[
+                      SizedBox(width: 8),
+                      GestureDetector(
+                        onTap: onRetryLoadCagr,
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: Colors.red.withValues(alpha: 0.5),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.refresh, color: Colors.red, size: 16),
+                              SizedBox(width: 4),
+                              Text(
+                                '재시도',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),

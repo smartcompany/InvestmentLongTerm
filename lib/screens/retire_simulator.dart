@@ -174,7 +174,12 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
                 TabNavigation(isHomeScreen: false),
                 SizedBox(height: 24),
                 // 서술형 질문 섹션 (입력 필드 포함)
-                _buildQuestionSection(provider, currencyFormat, l10n),
+                _buildQuestionSection(
+                  provider,
+                  appProvider,
+                  currencyFormat,
+                  l10n,
+                ),
                 SizedBox(height: 36),
                 // 입력 영역 (시나리오 선택만)
                 _buildInputSection(provider, currencyFormat, l10n),
@@ -200,6 +205,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
 
   Widget _buildQuestionSection(
     RetireSimulatorProvider provider,
+    AppStateProvider appProvider,
     NumberFormat currencyFormat,
     AppLocalizations l10n,
   ) {
@@ -224,6 +230,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
           provider: provider,
           currencyUnit: currencyUnit,
           l10n: l10n,
+          appProvider: appProvider,
           isLargeText: false,
         ),
       ],
@@ -448,6 +455,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
     required RetireSimulatorProvider provider,
     required String currencyUnit,
     required AppLocalizations l10n,
+    required AppStateProvider appProvider,
     bool isLargeText = false,
   }) {
     final localeCode = Localizations.localeOf(context).languageCode;
@@ -455,20 +463,35 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
     final textWeight = isLargeText ? FontWeight.w800 : FontWeight.w500;
     final textColor = isLargeText ? AppColors.gold : Colors.white;
 
-    // 한국어, 일본어, 중국어: "내 자산 [금액]원으로 매월 [금액]원 [년]년 놀고 먹을 수 있을까?"
-    // 영어: "With my assets of [amount], can I play and eat for [years] years by withdrawing [amount] monthly?"
+    // 선택된 자산 목록 가져오기
+    final selectedAssetIds = provider.assets.map((a) => a.assetId).toList();
+    final availableAssets = appProvider.assets;
+    final selectedAssetNames = selectedAssetIds.map((id) {
+      try {
+        final assetOption = availableAssets.firstWhere((a) => a.id == id);
+        return assetOption.displayName(localeCode);
+      } catch (e) {
+        return id; // 자산 옵션을 찾을 수 없으면 ID 사용
+      }
+    }).toList();
+    final assetListText = selectedAssetNames.isEmpty
+        ? ''
+        : selectedAssetNames.join(', ');
+
+    // 한국어, 일본어, 중국어: "내 돈 [금액] 으로 자산 [비트코인, 이더리움] 을 보유하고 매월 [금액]원 [년]년 놀고 먹을 수 있을까?"
+    // 영어: "With my money [amount], holding assets [Bitcoin, Ethereum], can I play and eat for [years] years by spending [amount] monthly?"
     if (localeCode == 'en') {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // "With my assets of [amount],"
+          // 첫 번째 줄: "With my money [amount],"
           Wrap(
             crossAxisAlignment: WrapCrossAlignment.center,
             spacing: 8,
             runSpacing: 8,
             children: [
               Text(
-                l10n.retirementQuestionPrefix,
+                'With my money ',
                 style: TextStyle(
                   color: textColor,
                   fontSize: textSize,
@@ -484,7 +507,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
                 isLarge: isLargeText,
               ),
               Text(
-                l10n.retirementQuestionMiddle,
+                ',',
                 style: TextStyle(
                   color: textColor,
                   fontSize: textSize,
@@ -494,14 +517,48 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
             ],
           ),
           SizedBox(height: 8),
-          // 두 번째 줄: "can I play and eat for [years] years by withdrawing [amount]"
+          // 두 번째 줄: "holding assets [Bitcoin, Ethereum],"
+          if (assetListText.isNotEmpty)
+            Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                Text(
+                  'holding assets ',
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: textSize,
+                    fontWeight: textWeight,
+                  ),
+                ),
+                Text(
+                  assetListText,
+                  style: TextStyle(
+                    color: AppColors.gold,
+                    fontSize: textSize,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  ',',
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: textSize,
+                    fontWeight: textWeight,
+                  ),
+                ),
+              ],
+            ),
+          if (assetListText.isNotEmpty) SizedBox(height: 8),
+          // 세 번째 줄: "can I play and eat for [years] years by spending [amount]"
           Wrap(
             crossAxisAlignment: WrapCrossAlignment.center,
             spacing: 8,
             runSpacing: 8,
             children: [
               Text(
-                l10n.retirementQuestionMonthlyPrefix,
+                'can I play and eat for ',
                 style: TextStyle(
                   color: textColor,
                   fontSize: textSize,
@@ -510,7 +567,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
               ),
               _buildInlineYearPicker(provider, l10n, isLarge: isLargeText),
               Text(
-                l10n.retirementQuestionSuffix,
+                ' by spending ',
                 style: TextStyle(
                   color: textColor,
                   fontSize: textSize,
@@ -528,13 +585,13 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
             ],
           ),
           SizedBox(height: 8),
-          // 세 번째 줄: "monthly?" + 통화 설정 버튼
+          // 네 번째 줄: "monthly?" + 통화 설정 버튼
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Flexible(
                 child: Text(
-                  l10n.retirementQuestionEnd,
+                  'monthly?',
                   style: TextStyle(
                     color: textColor,
                     fontSize: textSize,
@@ -569,13 +626,13 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // "내 자산 [금액]원으로 매월"까지 한 줄
+          // 첫 번째 줄: "내 돈 [금액] 으로"
           Row(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Text(
-                l10n.retirementQuestionPrefix,
+                '내 돈 ', // "내 자산" 대신 "내 돈" 사용
                 style: TextStyle(
                   color: textColor,
                   fontSize: textSize,
@@ -593,7 +650,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
               ),
               SizedBox(width: 8),
               Text(
-                l10n.retirementQuestionMiddle,
+                ' 으로',
                 style: TextStyle(
                   color: textColor,
                   fontSize: textSize,
@@ -603,7 +660,43 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
             ],
           ),
           SizedBox(height: 8),
-          // 두 번째 줄: "매월" + [월 인출 금액 입력] + "으로"
+          // 두 번째 줄: "자산 [비트코인, 이더리움] 을 보유하고"
+          if (assetListText.isNotEmpty)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  '자산 ',
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: textSize,
+                    fontWeight: textWeight,
+                  ),
+                ),
+                Flexible(
+                  child: Text(
+                    assetListText,
+                    style: TextStyle(
+                      color: AppColors.gold,
+                      fontSize: textSize,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8),
+                Text(
+                  ' 을 보유하고',
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: textSize,
+                    fontWeight: textWeight,
+                  ),
+                ),
+              ],
+            ),
+          if (assetListText.isNotEmpty) SizedBox(height: 8),
+          // 세 번째 줄: "매월" + [월 인출 금액 입력] + "을 쓰면서"
           Row(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -637,7 +730,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
             ],
           ),
           SizedBox(height: 8),
-          // 세 번째 줄: [년 선택] + "동안 놀고 먹을 수 있을까?" + 통화 설정 버튼
+          // 네 번째 줄: [년 선택] + "동안 놀고 먹을 수 있을까?" + 통화 설정 버튼
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -1267,6 +1360,9 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
               assetOption: assetOption,
               index: entry.key,
               isLoadingCagr: provider.isLoadingCagr(entry.value.assetId),
+              onRetryLoadCagr: () {
+                provider.retryLoadCagr(entry.value.assetId);
+              },
               l10n: l10n,
               initialAsset: provider.initialAsset,
               currencyFormat: currencyFormat,

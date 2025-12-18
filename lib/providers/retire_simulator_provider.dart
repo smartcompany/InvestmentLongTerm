@@ -356,6 +356,17 @@ class RetireSimulatorProvider with ChangeNotifier {
     return _loadingCagr[assetId] == true;
   }
 
+  // CAGR 수동 재시도 메서드
+  Future<void> retryLoadCagr(String assetId) async {
+    // 캐시와 재시도 카운트 초기화
+    _cagrCache.remove(assetId);
+    _cagrRetryCount[assetId] = 0;
+    _loadingCagr[assetId] = false;
+
+    // 재시도
+    await _loadCagrForAsset(assetId);
+  }
+
   // 비중 합계 확인
   double get totalAllocation {
     return _assets.fold(0.0, (sum, asset) => sum + asset.allocation);
