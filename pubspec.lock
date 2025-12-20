@@ -656,7 +656,7 @@ packages:
   share_lib:
     dependency: "direct main"
     description:
-      path: "../packages/share_lib"
+      path: "../../flutter_share_lib"
       relative: true
     source: path
     version: "1.0.0"

@@ -141,19 +141,19 @@ class LiquidGlassButton extends StatelessWidget {
         ? SelectedButtonStyle.solidBoxDecoration(defaultBorderRadius)
         : BoxDecoration(
             color: Colors.white.withValues(alpha: 0.2),
-            borderRadius: defaultBorderRadius,
+          borderRadius: defaultBorderRadius,
             border: Border.all(color: borderColor, width: borderWidth),
-          );
+      );
 
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: LiquidGlass(
-        blur: blur,
+      return GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: LiquidGlass(
+          blur: blur,
         decoration: decoration,
-        padding: padding,
-        child: child,
-      ),
-    );
+          padding: padding,
+          child: child,
+        ),
+      );
   }
 }

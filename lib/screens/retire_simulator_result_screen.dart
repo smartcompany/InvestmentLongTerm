@@ -260,15 +260,21 @@ class _RetireSimulatorResultScreenState
                                       size: 16,
                                     ),
                                     SizedBox(width: 4),
-                                    Text(
-                                      l10n.inflationRateApplied(
-                                        provider.inflationRate * 100,
-                                      ),
-                                      style: TextStyle(
-                                        color: AppColors.gold,
-                                        fontSize:
-                                            _simulationResultValueFontSize,
-                                        fontWeight: FontWeight.w600,
+                                    Flexible(
+                                      child: Text(
+                                        l10n.inflationRateApplied(
+                                          double.parse(
+                                            (provider.inflationRate * 100)
+                                                .toStringAsFixed(1),
+                                          ),
+                                        ),
+                                        style: TextStyle(
+                                          color: AppColors.gold,
+                                          fontSize:
+                                              _simulationResultValueFontSize,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                   ],

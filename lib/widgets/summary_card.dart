@@ -22,42 +22,42 @@ class SummaryCard extends StatelessWidget {
     if (isHighlight) {
       // Highlight 카드는 공통 선택된 스타일 사용
       return Container(
-        padding: EdgeInsets.all(20),
+            padding: EdgeInsets.all(20),
         decoration: SelectedButtonStyle.solidBoxDecoration(
           BorderRadius.circular(20),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                color: AppColors.navyDark.withValues(alpha: 0.8),
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
             ),
-            SizedBox(height: 8),
-            Text(
-              value,
-              style: TextStyle(
-                color: AppColors.navyDark,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            if (subtitle != null) ...[
-              SizedBox(height: 4),
-              Text(
-                subtitle!,
-                style: TextStyle(
-                  color: AppColors.success,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: AppColors.navyDark.withValues(alpha: 0.8),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-            ],
-          ],
+                SizedBox(height: 8),
+                Text(
+                  value,
+                  style: TextStyle(
+                    color: AppColors.navyDark,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (subtitle != null) ...[
+                  SizedBox(height: 4),
+                  Text(
+                    subtitle!,
+                    style: TextStyle(
+                      color: AppColors.success,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ],
         ),
       );
     }
@@ -67,8 +67,8 @@ class SummaryCard extends StatelessWidget {
       blur: 10,
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.18), width: 1.5),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: Colors.white.withOpacity(0.18), width: 1.5),
       ),
       padding: EdgeInsets.all(20),
       child: Column(
