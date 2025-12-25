@@ -9,7 +9,7 @@
   "singleInvestment": "Lump Sum",
   "recurringInvestment": "Recurring",
   "investmentDurationLabel": "Duration",
-  "viewResults": "View Results",
+  "viewResults": "Watch Ad & View Results",
   "enterInvestmentAmount": "Please enter investment amount",
   "yearsAgo": "{count} years ago",
   "investmentSummary": "If you invested {amount} in {assetName} via {type}?",
@@ -170,7 +170,7 @@
   "addAsset": "Add Asset",
   "pleaseAddAssets": "Please add assets",
   "totalAllocation": "Total Allocation",
-  "runSimulation": "Run Simulation",
+  "runSimulation": "Watch Ad & Run Simulation",
   "loadingAnnualReturn": "Loading annual return...",
   "pastAnnualReturn": "Past Annual Average Return (CAGR)",
   "allocation": "Allocation",
@@ -199,6 +199,7 @@
   "retirementQuestionSuffix": "years by spending",
   "retirementQuestionEnd": "monthly?",
   "inflationRate": "Annual Inflation Rate",
-  "inflationRateDesc": "Set the rate at which living expenses increase annually"
+  "inflationRateDesc": "Set the rate at which living expenses increase annually",
+  "adWillBeShown": "An ad will be shown before viewing results"
 }
 

@@ -41,7 +41,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get investmentDurationLabel => '投資期間';
 
   @override
-  String get viewResults => '結果を見る';
+  String get viewResults => '広告を見て結果を見る';
 
   @override
   String get enterInvestmentAmount => '投資額を入力してください';
@@ -405,7 +405,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get totalAllocation => '総配分';
 
   @override
-  String get runSimulation => 'シミュレーション実行';
+  String get runSimulation => '広告を見てシミュレーション実行';
 
   @override
   String get loadingAnnualReturn => '年間収益率を読み込み中...';
@@ -498,4 +498,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String inflationRatePercent(double rate) {
     return '$rate%';
   }
+
+  @override
+  String get adWillBeShown => '結果を見る前に広告が表示されます';
 }

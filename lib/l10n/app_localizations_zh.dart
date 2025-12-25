@@ -41,7 +41,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get investmentDurationLabel => '投资期限';
 
   @override
-  String get viewResults => '查看结果';
+  String get viewResults => '观看广告并查看结果';
 
   @override
   String get enterInvestmentAmount => '请输入投资金额';
@@ -405,7 +405,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get totalAllocation => '总分配';
 
   @override
-  String get runSimulation => '运行模拟';
+  String get runSimulation => '观看广告并运行模拟';
 
   @override
   String get loadingAnnualReturn => '正在加载年收益率...';
@@ -498,4 +498,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String inflationRatePercent(double rate) {
     return '$rate%';
   }
+
+  @override
+  String get adWillBeShown => '查看结果前将显示广告';
 }

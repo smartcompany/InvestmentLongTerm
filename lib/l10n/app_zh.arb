@@ -9,7 +9,7 @@
   "singleInvestment": "单次投资",
   "recurringInvestment": "定投",
   "investmentDurationLabel": "投资期限",
-  "viewResults": "查看结果",
+  "viewResults": "观看广告并查看结果",
   "enterInvestmentAmount": "请输入投资金额",
   "yearsAgo": "{count}年前",
   "investmentSummary": "如果您以{type}方式在{assetName}投资{amount}？",
@@ -170,7 +170,7 @@
   "addAsset": "添加资产",
   "pleaseAddAssets": "请添加资产",
   "totalAllocation": "总分配",
-  "runSimulation": "运行模拟",
+  "runSimulation": "观看广告并运行模拟",
   "loadingAnnualReturn": "正在加载年收益率...",
   "pastAnnualReturn": "过去年平均收益率 (CAGR)",
   "allocation": "分配",
@@ -197,6 +197,7 @@
   "retirementQuestionMiddle": "，",
   "retirementQuestionMonthlyPrefix": "每月",
   "retirementQuestionSuffix": "在使用",
-  "retirementQuestionEnd": "期间能玩多久、吃多久？"
+  "retirementQuestionEnd": "期间能玩多久、吃多久？",
+  "adWillBeShown": "查看结果前将显示广告"
 }
 

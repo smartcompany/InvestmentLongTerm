@@ -25,11 +25,11 @@ class AdService {
     return await share_lib.AdService.shared.loadSettings();
   }
 
-  Future<void> showInterstitialAd({
+  Future<void> showFullScreenAd({
     required VoidCallback onAdDismissed,
     VoidCallback? onAdFailedToShow,
   }) async {
-    return await share_lib.AdService.shared.showInterstitialAd(
+    return await share_lib.AdService.shared.showAd(
       onAdDismissed: onAdDismissed,
       onAdFailedToShow: onAdFailedToShow,
     );

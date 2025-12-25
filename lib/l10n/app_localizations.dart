@@ -165,7 +165,7 @@ abstract class AppLocalizations {
   /// No description provided for @viewResults.
   ///
   /// In ko, this message translates to:
-  /// **'결과 보기'**
+  /// **'광고 보고 결과 보기'**
   String get viewResults;
 
   /// No description provided for @enterInvestmentAmount.
@@ -797,7 +797,7 @@ abstract class AppLocalizations {
   /// No description provided for @runSimulation.
   ///
   /// In ko, this message translates to:
-  /// **'시뮬레이션 실행'**
+  /// **'광고 보고 시뮬레이션 실행'**
   String get runSimulation;
 
   /// No description provided for @loadingAnnualReturn.
@@ -979,6 +979,12 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'{rate}%'**
   String inflationRatePercent(double rate);
+
+  /// No description provided for @adWillBeShown.
+  ///
+  /// In ko, this message translates to:
+  /// **'결과 보기 전에 광고가 표시됩니다'**
+  String get adWillBeShown;
 }
 
 class _AppLocalizationsDelegate

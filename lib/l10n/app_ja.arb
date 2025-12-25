@@ -9,7 +9,7 @@
   "singleInvestment": "一括投資",
   "recurringInvestment": "積立投資",
   "investmentDurationLabel": "投資期間",
-  "viewResults": "結果を見る",
+  "viewResults": "広告を見て結果を見る",
   "enterInvestmentAmount": "投資額を入力してください",
   "yearsAgo": "{count}年前",
   "investmentSummary": "{assetName}に{amount}を{type}で投資したら？",
@@ -170,7 +170,7 @@
   "addAsset": "資産を追加",
   "pleaseAddAssets": "資産を追加してください",
   "totalAllocation": "総配分",
-  "runSimulation": "シミュレーション実行",
+  "runSimulation": "広告を見てシミュレーション実行",
   "loadingAnnualReturn": "年間収益率を読み込み中...",
   "pastAnnualReturn": "過去年平均収益率 (CAGR)",
   "allocation": "配分",
@@ -197,6 +197,7 @@
   "retirementQuestionMiddle": "で",
   "retirementQuestionMonthlyPrefix": "毎月",
   "retirementQuestionSuffix": "を使いながら",
-  "retirementQuestionEnd": "間遊んで食べられる？"
+  "retirementQuestionEnd": "間遊んで食べられる？",
+  "adWillBeShown": "結果を見る前に広告が表示されます"
 }
 

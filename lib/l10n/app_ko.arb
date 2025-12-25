@@ -9,7 +9,7 @@
   "singleInvestment": "단일 투자",
   "recurringInvestment": "정기 투자",
   "investmentDurationLabel": "투자 기간",
-  "viewResults": "결과 보기",
+  "viewResults": "광고 보고 결과 보기",
   "enterInvestmentAmount": "투자 금액을 입력해주세요",
   "yearsAgo": "{count}년 전",
   "investmentSummary": "{assetName}에 {amount}를 {type}로 투자했다면?",
@@ -170,7 +170,7 @@
   "addAsset": "자산 추가",
   "pleaseAddAssets": "자산을 추가해주세요",
   "totalAllocation": "총 비중",
-  "runSimulation": "시뮬레이션 실행",
+  "runSimulation": "광고 보고 시뮬레이션 실행",
   "loadingAnnualReturn": "연수익률 로딩 중...",
   "pastAnnualReturn": "과거 연평균 수익률 (CAGR)",
   "allocation": "비중",
@@ -207,6 +207,7 @@
         "type": "double"
       }
     }
-  }
+  },
+  "adWillBeShown": "결과 보기 전에 광고가 표시됩니다"
 }
 

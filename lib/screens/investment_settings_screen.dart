@@ -104,7 +104,7 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
       if (!mounted) return;
 
       // Show ad (keep loading dialog open until ad is shown or failed)
-      await AdService.shared.showInterstitialAd(
+      await AdService.shared.showFullScreenAd(
         onAdDismissed: () {
           if (!mounted) return;
           Navigator.of(context).pop(); // Close loading dialog

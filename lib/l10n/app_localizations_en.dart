@@ -41,7 +41,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get investmentDurationLabel => 'Duration';
 
   @override
-  String get viewResults => 'View Results';
+  String get viewResults => 'Watch Ad & View Results';
 
   @override
   String get enterInvestmentAmount => 'Please enter investment amount';
@@ -410,7 +410,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get totalAllocation => 'Total Allocation';
 
   @override
-  String get runSimulation => 'Run Simulation';
+  String get runSimulation => 'Watch Ad & Run Simulation';
 
   @override
   String get loadingAnnualReturn => 'Loading annual return...';
@@ -504,4 +504,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String inflationRatePercent(double rate) {
     return '$rate%';
   }
+
+  @override
+  String get adWillBeShown => 'An ad will be shown before viewing results';
 }

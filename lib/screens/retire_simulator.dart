@@ -1418,7 +1418,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
                     if (!mounted) return;
 
                     // Show ad
-                    await AdService.shared.showInterstitialAd(
+                    await AdService.shared.showFullScreenAd(
                       onAdDismissed: () {
                         if (!mounted) return;
                         Navigator.of(context).pop(); // Close loading dialog

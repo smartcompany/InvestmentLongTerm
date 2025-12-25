@@ -41,7 +41,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get investmentDurationLabel => '투자 기간';
 
   @override
-  String get viewResults => '결과 보기';
+  String get viewResults => '광고 보고 결과 보기';
 
   @override
   String get enterInvestmentAmount => '투자 금액을 입력해주세요';
@@ -405,7 +405,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get totalAllocation => '총 비중';
 
   @override
-  String get runSimulation => '시뮬레이션 실행';
+  String get runSimulation => '광고 보고 시뮬레이션 실행';
 
   @override
   String get loadingAnnualReturn => '연수익률 로딩 중...';
@@ -498,4 +498,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String inflationRatePercent(double rate) {
     return '$rate%';
   }
+
+  @override
+  String get adWillBeShown => '결과 보기 전에 광고가 표시됩니다';
 }
