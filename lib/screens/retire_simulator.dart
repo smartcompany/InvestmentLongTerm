@@ -13,6 +13,7 @@ import '../utils/text_styles.dart';
 import '../widgets/asset_input_card.dart';
 import '../widgets/liquid_glass.dart';
 import '../widgets/tab_navigation.dart';
+import '../widgets/retirement_setup_dialog.dart';
 import '../l10n/app_localizations.dart';
 import '../services/ad_service.dart';
 import 'retire_simulator_result_screen.dart';
@@ -59,12 +60,35 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
       duration: Duration(seconds: 2),
       vsync: this,
     )..repeat(reverse: true);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final provider = context.read<RetireSimulatorProvider>();
       final currencyProvider = context.read<CurrencyProvider>();
       final localeCode = Localizations.localeOf(context).languageCode;
       final currencySymbol = currencyProvider.getCurrencySymbol(localeCode);
       _lastCurrencySymbol = currencySymbol;
-      _updateCurrencyBasedDefaults();
+
+      // 저장된 설정 로드
+      await provider.loadSettings();
+
+      // 저장된 설정이 없으면 단계별 입력 다이얼로그 표시
+      final hasSetup = await provider.hasSavedSettings();
+      if (!hasSetup && mounted) {
+        final currencyUnit = _getCurrencyUnit(currencySymbol);
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => RetirementSetupDialog(
+            currencySymbol: currencySymbol,
+            currencyUnit: currencyUnit,
+          ),
+        );
+        // 다이얼로그가 닫힌 후 입력 필드 업데이트
+        if (mounted) {
+          _updateCurrencyBasedDefaults();
+        }
+      } else {
+        _updateCurrencyBasedDefaults();
+      }
     });
   }
 

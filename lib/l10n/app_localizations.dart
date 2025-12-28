@@ -381,7 +381,7 @@ abstract class AppLocalizations {
   /// No description provided for @retirementSimulation.
   ///
   /// In ko, this message translates to:
-  /// **'내 돈으로?'**
+  /// **'은퇴 가능할까?'**
   String get retirementSimulation;
 
   /// No description provided for @crypto.

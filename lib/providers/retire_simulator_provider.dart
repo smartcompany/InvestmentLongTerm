@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/asset.dart';
 import '../models/investment_config.dart';
 import '../services/api_service.dart';
@@ -23,6 +24,51 @@ class RetireSimulatorProvider with ChangeNotifier {
   double get inflationRate => _inflationRate;
   List<Asset> get assets => List.unmodifiable(_assets);
   Map<String, double> get cagrCache => Map.unmodifiable(_cagrCache);
+
+  // SharedPreferences 키
+  static const String _keyInitialAsset = 'retire_initial_asset';
+  static const String _keyMonthlyWithdrawal = 'retire_monthly_withdrawal';
+  static const String _keySimulationYears = 'retire_simulation_years';
+  static const String _keyHasSetup = 'retire_has_setup';
+
+  // 저장된 설정이 있는지 확인
+  Future<bool> hasSavedSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_keyHasSetup) ?? false;
+  }
+
+  // 설정 저장
+  Future<void> saveSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_keyInitialAsset, _initialAsset);
+    await prefs.setDouble(_keyMonthlyWithdrawal, _monthlyWithdrawal);
+    await prefs.setInt(_keySimulationYears, _simulationYears);
+    await prefs.setBool(_keyHasSetup, true);
+  }
+
+  // 설정 로드
+  Future<void> loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasSetup = prefs.getBool(_keyHasSetup) ?? false;
+
+    if (hasSetup) {
+      final savedInitialAsset = prefs.getDouble(_keyInitialAsset);
+      final savedMonthlyWithdrawal = prefs.getDouble(_keyMonthlyWithdrawal);
+      final savedSimulationYears = prefs.getInt(_keySimulationYears);
+
+      if (savedInitialAsset != null) {
+        _initialAsset = savedInitialAsset;
+      }
+      if (savedMonthlyWithdrawal != null) {
+        _monthlyWithdrawal = savedMonthlyWithdrawal;
+      }
+      if (savedSimulationYears != null) {
+        _simulationYears = savedSimulationYears;
+      }
+
+      notifyListeners();
+    }
+  }
 
   void setInitialAsset(double value) {
     _initialAsset = value;

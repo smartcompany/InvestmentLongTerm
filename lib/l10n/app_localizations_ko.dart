@@ -167,7 +167,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get pastAssetSimulation => '그때 샀다면?';
 
   @override
-  String get retirementSimulation => '내 돈으로?';
+  String get retirementSimulation => '은퇴 가능할까?';
 
   @override
   String get crypto => '암호화폐';

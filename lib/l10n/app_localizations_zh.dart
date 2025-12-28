@@ -167,7 +167,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pastAssetSimulation => '如果那时买了？';
 
   @override
-  String get retirementSimulation => '用我的钱？';
+  String get retirementSimulation => '能退休吗？';
 
   @override
   String get crypto => '加密货币';

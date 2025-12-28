@@ -167,7 +167,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get pastAssetSimulation => 'あの時買っていたら？';
 
   @override
-  String get retirementSimulation => '私のお金で？';
+  String get retirementSimulation => '退職できる？';
 
   @override
   String get crypto => '暗号資産';

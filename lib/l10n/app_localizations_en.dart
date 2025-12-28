@@ -170,7 +170,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pastAssetSimulation => 'If I bought it then?';
 
   @override
-  String get retirementSimulation => 'With my money?';
+  String get retirementSimulation => 'Can I retire?';
 
   @override
   String get crypto => 'Cryptocurrency';
