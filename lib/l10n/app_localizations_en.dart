@@ -510,4 +510,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adWillBeShown => 'An ad will be shown before viewing results';
+
+  @override
+  String get myAssets => 'My Assets';
+
+  @override
+  String get viewMyAssetsStatus => 'Watch Ad & Manage My Assets';
+
+  @override
+  String get myAssetsSubtitle =>
+      'Thinking about retirement?\nPlease enter your expected assets at retirement';
+
+  @override
+  String get retirementSetupSubtitle =>
+      'Thinking about retirement?\nPlease enter your expected assets at retirement';
+
+  @override
+  String get noAssetsRegistered => 'No assets registered';
+
+  @override
+  String get addAssetToTrack => 'Add an asset to start tracking';
+
+  @override
+  String get registeredDate => 'Registered Date';
+
+  @override
+  String get initialAmount => 'Initial Amount';
+
+  @override
+  String get currentValue => 'Current Value';
+
+  @override
+  String get returnRate => 'Return Rate';
+
+  @override
+  String get loadingPrice => 'Loading price...';
+
+  @override
+  String get deleteAsset => 'Delete Asset';
+
+  @override
+  String get deleteAssetConfirm =>
+      'Are you sure you want to delete this asset?';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get noPriceData => 'No price data available';
 }

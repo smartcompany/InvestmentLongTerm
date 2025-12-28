@@ -12,7 +12,6 @@ import '../utils/colors.dart';
 import '../utils/text_styles.dart';
 import '../widgets/asset_input_card.dart';
 import '../widgets/liquid_glass.dart';
-import '../widgets/tab_navigation.dart';
 import '../widgets/retirement_setup_dialog.dart';
 import '../l10n/app_localizations.dart';
 import '../services/ad_service.dart';
@@ -20,7 +19,9 @@ import 'retire_simulator_result_screen.dart';
 import 'settings_screen.dart';
 
 class RetireSimulatorScreen extends StatefulWidget {
-  const RetireSimulatorScreen({super.key});
+  final bool isVisible;
+
+  const RetireSimulatorScreen({super.key, this.isVisible = false});
 
   @override
   State<RetireSimulatorScreen> createState() => _RetireSimulatorScreenState();
@@ -33,6 +34,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
       TextEditingController();
   late AnimationController _iconController;
   String? _lastCurrencySymbol;
+  bool _hasShownSetupDialog = false; // 다이얼로그 표시 여부 추적
 
   // 폰트 크기 상수
   static const double _sectionTitleFontSize =
@@ -70,26 +72,20 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
       // 저장된 설정 로드
       await provider.loadSettings();
 
-      // 저장된 설정이 없으면 단계별 입력 다이얼로그 표시
-      final hasSetup = await provider.hasSavedSettings();
-      if (!hasSetup && mounted) {
-        final currencyUnit = _getCurrencyUnit(currencySymbol);
-        await showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => RetirementSetupDialog(
-            currencySymbol: currencySymbol,
-            currencyUnit: currencyUnit,
-          ),
-        );
-        // 다이얼로그가 닫힌 후 입력 필드 업데이트
-        if (mounted) {
-          _updateCurrencyBasedDefaults();
-        }
-      } else {
-        _updateCurrencyBasedDefaults();
-      }
+      // 화면이 보일 때만 다이얼로그 표시 (initState에서는 표시하지 않음)
+      _updateCurrencyBasedDefaults();
     });
+  }
+
+  @override
+  void didUpdateWidget(RetireSimulatorScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 화면이 보이게 되었을 때만 다이얼로그 표시
+    if (widget.isVisible && !oldWidget.isVisible && !_hasShownSetupDialog) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _checkAndShowSetupDialog();
+      });
+    }
   }
 
   @override
@@ -98,6 +94,35 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
     _initialAssetController.dispose();
     _monthlyWithdrawalController.dispose();
     super.dispose();
+  }
+
+  Future<void> _checkAndShowSetupDialog() async {
+    if (_hasShownSetupDialog || !mounted) return;
+
+    final provider = context.read<RetireSimulatorProvider>();
+    final currencyProvider = context.read<CurrencyProvider>();
+    final localeCode = Localizations.localeOf(context).languageCode;
+    final currencySymbol = currencyProvider.getCurrencySymbol(localeCode);
+    _lastCurrencySymbol = currencySymbol;
+
+    // 저장된 설정이 없으면 단계별 입력 다이얼로그 표시
+    final hasSetup = await provider.hasSavedSettings();
+    if (!hasSetup && mounted) {
+      _hasShownSetupDialog = true;
+      final currencyUnit = _getCurrencyUnit(currencySymbol);
+      await showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => RetirementSetupDialog(
+          currencySymbol: currencySymbol,
+          currencyUnit: currencyUnit,
+        ),
+      );
+      // 다이얼로그가 닫힌 후 입력 필드 업데이트
+      if (mounted) {
+        _updateCurrencyBasedDefaults();
+      }
+    }
   }
 
   double _parseCurrency(String text) {
@@ -194,8 +219,6 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // 탭 버튼 (투자 시뮬레이션 / 은퇴 자산 시뮬레이션)
-                TabNavigation(isHomeScreen: false),
                 SizedBox(height: 24),
                 // 서술형 질문 섹션 (입력 필드 포함)
                 _buildQuestionSection(

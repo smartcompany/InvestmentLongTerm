@@ -504,4 +504,49 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get adWillBeShown => '결과 보기 전에 광고가 표시됩니다';
+
+  @override
+  String get myAssets => '지금 내 자산';
+
+  @override
+  String get viewMyAssetsStatus => '광고 보고 내 자산 관리';
+
+  @override
+  String get myAssetsSubtitle => '은퇴를 고민하나요?\n은퇴시 나의 예상 자산을 입력해 주세요';
+
+  @override
+  String get retirementSetupSubtitle => '은퇴를 고민하나요?\n은퇴시 나의 예상 자산을 입력해 주세요';
+
+  @override
+  String get noAssetsRegistered => '등록된 자산이 없습니다';
+
+  @override
+  String get addAssetToTrack => '자산을 추가하여 추적을 시작하세요';
+
+  @override
+  String get registeredDate => '등록일';
+
+  @override
+  String get initialAmount => '초기 금액';
+
+  @override
+  String get currentValue => '현재 가치';
+
+  @override
+  String get returnRate => '수익률';
+
+  @override
+  String get loadingPrice => '가격 로딩 중...';
+
+  @override
+  String get deleteAsset => '자산 삭제';
+
+  @override
+  String get deleteAssetConfirm => '이 자산을 삭제하시겠습니까?';
+
+  @override
+  String get cancel => '취소';
+
+  @override
+  String get noPriceData => '가격 데이터가 없습니다';
 }

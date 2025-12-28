@@ -30,6 +30,8 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
   final TextEditingController _initialAssetController = TextEditingController();
   final TextEditingController _monthlyWithdrawalController =
       TextEditingController();
+  final FocusNode _initialAssetFocusNode = FocusNode();
+  final FocusNode _monthlyWithdrawalFocusNode = FocusNode();
   int _selectedYears = 5;
 
   @override
@@ -48,6 +50,8 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
     _animationController.dispose();
     _initialAssetController.dispose();
     _monthlyWithdrawalController.dispose();
+    _initialAssetFocusNode.dispose();
+    _monthlyWithdrawalFocusNode.dispose();
     super.dispose();
   }
 
@@ -57,6 +61,9 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
 
   void _nextStep() {
     if (_currentStep < 2) {
+      // 현재 포커스 해제
+      FocusScope.of(context).unfocus();
+
       _animationController.forward().then((_) {
         _pageController.nextPage(
           duration: Duration(milliseconds: 300),
@@ -66,6 +73,15 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
         setState(() {
           _currentStep++;
         });
+
+        // Step 2로 이동했을 때 매월 인출 금액 필드에 포커스
+        if (_currentStep == 1) {
+          Future.delayed(Duration(milliseconds: 100), () {
+            if (mounted) {
+              _monthlyWithdrawalFocusNode.requestFocus();
+            }
+          });
+        }
       });
     } else {
       _complete();
@@ -151,9 +167,20 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
             fontWeight: FontWeight.bold,
           ),
         ),
+        SizedBox(height: 12),
+        Text(
+          l10n.retirementSetupSubtitle,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.7),
+            fontSize: 16,
+            height: 1.5,
+          ),
+        ),
         SizedBox(height: 24),
         TextField(
           controller: _initialAssetController,
+          focusNode: _initialAssetFocusNode,
           decoration: InputDecoration(
             hintText: '0',
             hintStyle: TextStyle(color: AppColors.slate400),
@@ -212,6 +239,7 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
         SizedBox(height: 24),
         TextField(
           controller: _monthlyWithdrawalController,
+          focusNode: _monthlyWithdrawalFocusNode,
           decoration: InputDecoration(
             hintText: '0',
             hintStyle: TextStyle(color: AppColors.slate400),

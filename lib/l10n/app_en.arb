@@ -201,6 +201,22 @@
   "retirementQuestionEnd": "monthly?",
   "inflationRate": "Annual Inflation Rate",
   "inflationRateDesc": "Set the rate at which living expenses increase annually",
-  "adWillBeShown": "An ad will be shown before viewing results"
+  "adWillBeShown": "An ad will be shown before viewing results",
+  "myAssets": "My Assets",
+  "viewMyAssetsStatus": "Watch Ad & Manage My Assets",
+  "myAssetsSubtitle": "Thinking about retirement?\nPlease enter your expected assets at retirement",
+  "retirementSetupSubtitle": "Thinking about retirement?\nPlease enter your expected assets at retirement",
+  "addAsset": "Add Asset",
+  "noAssetsRegistered": "No assets registered",
+  "addAssetToTrack": "Add an asset to start tracking",
+  "registeredDate": "Registered Date",
+  "initialAmount": "Initial Amount",
+  "currentValue": "Current Value",
+  "returnRate": "Return Rate",
+  "loadingPrice": "Loading price...",
+  "deleteAsset": "Delete Asset",
+  "deleteAssetConfirm": "Are you sure you want to delete this asset?",
+  "cancel": "Cancel",
+  "noPriceData": "No price data available"
 }
 

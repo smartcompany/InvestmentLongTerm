@@ -504,4 +504,49 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get adWillBeShown => '查看结果前将显示广告';
+
+  @override
+  String get myAssets => '我的资产';
+
+  @override
+  String get viewMyAssetsStatus => '观看广告并管理我的资产';
+
+  @override
+  String get myAssetsSubtitle => '考虑退休吗？\n请输入您退休时的预期资产';
+
+  @override
+  String get retirementSetupSubtitle => '考虑退休吗？\n请输入您退休时的预期资产';
+
+  @override
+  String get noAssetsRegistered => '未注册资产';
+
+  @override
+  String get addAssetToTrack => '添加资产以开始跟踪';
+
+  @override
+  String get registeredDate => '注册日期';
+
+  @override
+  String get initialAmount => '初始金额';
+
+  @override
+  String get currentValue => '当前价值';
+
+  @override
+  String get returnRate => '收益率';
+
+  @override
+  String get loadingPrice => '加载价格中...';
+
+  @override
+  String get deleteAsset => '删除资产';
+
+  @override
+  String get deleteAssetConfirm => '确定要删除此资产吗？';
+
+  @override
+  String get cancel => '取消';
+
+  @override
+  String get noPriceData => '无价格数据';
 }

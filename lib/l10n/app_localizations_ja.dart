@@ -399,7 +399,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get assetPortfolio => '資産ポートフォリオ';
 
   @override
-  String get addAsset => '資産を追加';
+  String get addAsset => '資産追加';
 
   @override
   String get pleaseAddAssets => '資産を追加してください';
@@ -504,4 +504,49 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get adWillBeShown => '結果を見る前に広告が表示されます';
+
+  @override
+  String get myAssets => '現在の資産';
+
+  @override
+  String get viewMyAssetsStatus => '広告を見て資産管理';
+
+  @override
+  String get myAssetsSubtitle => '退職を考えていますか？\n退職時の予想資産を入力してください';
+
+  @override
+  String get retirementSetupSubtitle => '退職を考えていますか？\n退職時の予想資産を入力してください';
+
+  @override
+  String get noAssetsRegistered => '登録された資産がありません';
+
+  @override
+  String get addAssetToTrack => '資産を追加して追跡を開始してください';
+
+  @override
+  String get registeredDate => '登録日';
+
+  @override
+  String get initialAmount => '初期金額';
+
+  @override
+  String get currentValue => '現在価値';
+
+  @override
+  String get returnRate => '収益率';
+
+  @override
+  String get loadingPrice => '価格読み込み中...';
+
+  @override
+  String get deleteAsset => '資産削除';
+
+  @override
+  String get deleteAssetConfirm => 'この資産を削除しますか？';
+
+  @override
+  String get cancel => 'キャンセル';
+
+  @override
+  String get noPriceData => '価格データがありません';
 }

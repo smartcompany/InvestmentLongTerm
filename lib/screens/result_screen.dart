@@ -16,7 +16,7 @@ import '../services/ad_service.dart';
 import '../services/app_review_service.dart';
 import '../utils/chart_image_utils.dart';
 import 'package:flutter/rendering.dart';
-import 'retire_simulator.dart';
+import 'main_tab_screen.dart';
 
 class ResultScreen extends StatefulWidget {
   const ResultScreen({super.key});
@@ -396,11 +396,11 @@ class _ResultScreenState extends State<ResultScreen> {
                       filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                       child: GestureDetector(
                         onTap: () {
-                          // 은퇴 시뮬레이터 입력 화면으로 이동
+                          // MainTabScreen의 은퇴 시뮬레이터 탭으로 이동 (인덱스 1)
                           Navigator.of(context).pushAndRemoveUntil(
                             MaterialPageRoute(
                               builder: (context) =>
-                                  const RetireSimulatorScreen(),
+                                  const MainTabScreen(initialIndex: 1),
                             ),
                             (route) => route.isFirst, // 홈 화면까지만 유지
                           );

@@ -991,6 +991,96 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'결과 보기 전에 광고가 표시됩니다'**
   String get adWillBeShown;
+
+  /// No description provided for @myAssets.
+  ///
+  /// In ko, this message translates to:
+  /// **'지금 내 자산'**
+  String get myAssets;
+
+  /// No description provided for @viewMyAssetsStatus.
+  ///
+  /// In ko, this message translates to:
+  /// **'광고 보고 내 자산 관리'**
+  String get viewMyAssetsStatus;
+
+  /// No description provided for @myAssetsSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'은퇴를 고민하나요?\n은퇴시 나의 예상 자산을 입력해 주세요'**
+  String get myAssetsSubtitle;
+
+  /// No description provided for @retirementSetupSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'은퇴를 고민하나요?\n은퇴시 나의 예상 자산을 입력해 주세요'**
+  String get retirementSetupSubtitle;
+
+  /// No description provided for @noAssetsRegistered.
+  ///
+  /// In ko, this message translates to:
+  /// **'등록된 자산이 없습니다'**
+  String get noAssetsRegistered;
+
+  /// No description provided for @addAssetToTrack.
+  ///
+  /// In ko, this message translates to:
+  /// **'자산을 추가하여 추적을 시작하세요'**
+  String get addAssetToTrack;
+
+  /// No description provided for @registeredDate.
+  ///
+  /// In ko, this message translates to:
+  /// **'등록일'**
+  String get registeredDate;
+
+  /// No description provided for @initialAmount.
+  ///
+  /// In ko, this message translates to:
+  /// **'초기 금액'**
+  String get initialAmount;
+
+  /// No description provided for @currentValue.
+  ///
+  /// In ko, this message translates to:
+  /// **'현재 가치'**
+  String get currentValue;
+
+  /// No description provided for @returnRate.
+  ///
+  /// In ko, this message translates to:
+  /// **'수익률'**
+  String get returnRate;
+
+  /// No description provided for @loadingPrice.
+  ///
+  /// In ko, this message translates to:
+  /// **'가격 로딩 중...'**
+  String get loadingPrice;
+
+  /// No description provided for @deleteAsset.
+  ///
+  /// In ko, this message translates to:
+  /// **'자산 삭제'**
+  String get deleteAsset;
+
+  /// No description provided for @deleteAssetConfirm.
+  ///
+  /// In ko, this message translates to:
+  /// **'이 자산을 삭제하시겠습니까?'**
+  String get deleteAssetConfirm;
+
+  /// No description provided for @cancel.
+  ///
+  /// In ko, this message translates to:
+  /// **'취소'**
+  String get cancel;
+
+  /// No description provided for @noPriceData.
+  ///
+  /// In ko, this message translates to:
+  /// **'가격 데이터가 없습니다'**
+  String get noPriceData;
 }
 
 class _AppLocalizationsDelegate

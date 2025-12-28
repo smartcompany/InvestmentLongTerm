@@ -12,7 +12,8 @@ import 'l10n/app_localizations.dart';
 import 'providers/app_state_provider.dart';
 import 'providers/retire_simulator_provider.dart';
 import 'providers/currency_provider.dart';
-import 'screens/home_screen.dart';
+import 'screens/main_tab_screen.dart';
+import 'providers/my_assets_provider.dart';
 import 'utils/colors.dart';
 
 void main() async {
@@ -61,6 +62,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AppStateProvider()),
         ChangeNotifierProvider(create: (_) => RetireSimulatorProvider()),
         ChangeNotifierProvider(create: (_) => CurrencyProvider()),
+        ChangeNotifierProvider(create: (_) => MyAssetsProvider()),
       ],
       child: MyApp(),
     ),
@@ -98,7 +100,7 @@ class MyApp extends StatelessWidget {
           elevation: 0,
         ),
       ),
-      home: HomeScreen(),
+      home: MainTabScreen(),
       debugShowCheckedModeBanner: false,
       builder: (context, child) {
         return MediaQuery(

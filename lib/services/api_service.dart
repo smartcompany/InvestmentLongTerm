@@ -72,4 +72,32 @@ class ApiService {
       throw Exception('Failed to calculate: $e');
     }
   }
+
+  // 일봉 가격 데이터 가져오기
+  static Future<List<Map<String, dynamic>>> fetchDailyPrices(
+    String assetId,
+    int days,
+  ) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/prices'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'assetId': assetId,
+          'days': days,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as List;
+        return data
+            .map((item) => item as Map<String, dynamic>)
+            .toList();
+      } else {
+        throw Exception('Server error: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Failed to fetch daily prices: $e');
+    }
+  }
 }

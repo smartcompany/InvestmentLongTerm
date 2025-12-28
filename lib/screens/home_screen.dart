@@ -118,8 +118,6 @@ class _HomeScreenState extends State<HomeScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // 탭 버튼 (투자 시뮬레이션 / 은퇴 자산 시뮬레이션)
-                    TabNavigation(isHomeScreen: true),
                     SizedBox(height: 24),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,

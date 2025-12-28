@@ -15,7 +15,7 @@ import '../l10n/app_localizations.dart';
 import '../widgets/common_share_ui.dart';
 import '../services/ad_service.dart';
 import '../services/app_review_service.dart';
-import 'home_screen.dart';
+import 'main_tab_screen.dart';
 
 class RetireSimulatorResultScreen extends StatefulWidget {
   const RetireSimulatorResultScreen({super.key});
@@ -380,10 +380,11 @@ class _RetireSimulatorResultScreenState
                         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                         child: GestureDetector(
                           onTap: () {
-                            // 투자 시뮬레이션 화면으로 이동
+                            // MainTabScreen의 홈 탭으로 이동 (인덱스 0)
                             Navigator.of(context).pushAndRemoveUntil(
                               MaterialPageRoute(
-                                builder: (context) => const HomeScreen(),
+                                builder: (context) =>
+                                    const MainTabScreen(initialIndex: 0),
                               ),
                               (route) => route.isFirst, // 홈 화면까지만 유지
                             );
