@@ -39,12 +39,14 @@ class _MainTabScreenState extends State<MainTabScreen> {
     // 앱 실행 중 한 번만 버튼 표시 (광고 없이)
     if (!_hasShownAdButtonThisSession) {
       setState(() {
+        _currentIndex = 2; // 탭 인덱스 즉시 업데이트
         _showMyAssetsButton = true;
       });
     } else {
       // 이미 본 경우 바로 페이지로 이동
       setState(() {
         _currentIndex = 2;
+        _showMyAssetsButton = false;
       });
     }
   }
@@ -101,9 +103,9 @@ class _MainTabScreenState extends State<MainTabScreen> {
         children: [
           IndexedStack(index: _currentIndex, children: _screens),
           // 첫 진입 시 "내 자산 상태 보기" 버튼 오버레이
-          if (_showMyAssetsButton && _currentIndex != 2)
+          if (_showMyAssetsButton)
             Container(
-              color: Colors.black.withOpacity(0.7),
+              color: Colors.black,
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -214,46 +216,51 @@ class _MainTabScreenState extends State<MainTabScreen> {
   }) {
     final isSelected = _currentIndex == index;
     return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          if (index == 2) {
-            // "지금 내 자산" 탭 클릭 시
-            _handleMyAssetsTabTap();
-          } else {
-            setState(() {
-              _currentIndex = index;
-              _showMyAssetsButton = false;
-            });
-          }
-        },
-        child: Container(
-          padding: EdgeInsets.symmetric(vertical: 4),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                color: isSelected ? AppColors.gold : AppColors.slate400,
-                size: 22,
-              ),
-              SizedBox(height: 2),
-              Flexible(
-                child: Text(
-                  label,
-                  style: TextStyle(
-                    color: isSelected ? AppColors.gold : AppColors.slate400,
-                    fontSize: 10,
-                    fontWeight: isSelected
-                        ? FontWeight.bold
-                        : FontWeight.normal,
-                  ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          onTap: () {
+            if (index == 2) {
+              // "지금 내 자산" 탭 클릭 시
+              _handleMyAssetsTabTap();
+            } else {
+              setState(() {
+                _currentIndex = index;
+                _showMyAssetsButton = false;
+              });
+            }
+          },
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 4),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
+                  color: isSelected ? AppColors.gold : AppColors.slate400,
+                  size: 22,
                 ),
-              ),
-            ],
+                SizedBox(height: 2),
+                Flexible(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: isSelected ? AppColors.gold : AppColors.slate400,
+                      fontSize: 10,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
