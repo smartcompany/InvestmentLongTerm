@@ -48,6 +48,7 @@
   "retirementSimulation": "退職できる？",
   "crypto": "暗号資産",
   "stock": "米国株",
+  "koreanStock": "韓国株",
   "cash": "現金",
   "commodity": "商品",
   "failedToLoadAssetList": "資産リストの読み込みに失敗しました。",

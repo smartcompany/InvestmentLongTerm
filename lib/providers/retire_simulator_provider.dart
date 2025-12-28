@@ -378,9 +378,22 @@ class RetireSimulatorProvider with ChangeNotifier {
       }
 
       // 최종적으로 5년 CAGR의 80%~100% 범위로 제한 (과도한 추정 방지)
-      final minCagr = cagr5y * 0.8;
-      final maxCagr = cagr5y;
-      adjustedCagr = adjustedCagr.clamp(minCagr, maxCagr);
+      // 음수 CAGR의 경우 clamp 순서 주의 (음수에서는 절댓값이 작을수록 더 큰 값)
+      if (cagr5y >= 0) {
+        // 양수: min < max
+        final minCagr = cagr5y * 0.8;
+        final maxCagr = cagr5y;
+        adjustedCagr = adjustedCagr.clamp(minCagr, maxCagr);
+      } else {
+        // 음수: 절댓값이 작을수록 더 큰 값이므로 max < min
+        // 예: -0.04 (80%) > -0.05 (100%)
+        final maxCagr = cagr5y * 0.8; // 더 작은 손실 (더 큰 값)
+        final minCagr = cagr5y; // 더 큰 손실 (더 작은 값)
+        adjustedCagr = adjustedCagr.clamp(minCagr, maxCagr);
+      }
+
+      // CAGR이 -1보다 작으면 (100% 이상 손실) -0.99로 제한 (pow 계산 안전성)
+      adjustedCagr = adjustedCagr.clamp(-0.99, double.infinity);
 
       debugPrint(
         'CAGR 계산 ($assetId): 5년=${(cagr5y * 100).toStringAsFixed(2)}%, '
@@ -399,6 +412,8 @@ class RetireSimulatorProvider with ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Failed to load CAGR for $assetId: $e');
+      debugPrint('Error details: ${e.toString()}');
+
       // 실패 시 재시도 (최대 2번)
       if (!_cagrRetryCount.containsKey(assetId)) {
         _cagrRetryCount[assetId] = 0;
@@ -412,12 +427,14 @@ class RetireSimulatorProvider with ChangeNotifier {
         await Future.delayed(Duration(seconds: 2));
         // 재시도 전에 로딩 상태를 false로 설정하여 재시도 가능하도록 함
         _loadingCagr[assetId] = false;
-        _loadCagrForAsset(assetId, isRetry: true);
+        await _loadCagrForAsset(assetId, isRetry: true);
         return;
       } else {
         // 최대 재시도 횟수 초과 시 null 유지
-        debugPrint('CAGR 로드 최종 실패 ($assetId): 재시도 횟수 초과');
+        debugPrint('CAGR 로드 최종 실패 ($assetId): 재시도 횟수 초과. 에러: $e');
         _cagrRetryCount[assetId] = 0; // 재시도 카운트 리셋
+        // 에러 발생 시 로딩 상태를 명시적으로 false로 설정
+        _loadingCagr[assetId] = false;
       }
     } finally {
       _loadingCagr[assetId] = false;

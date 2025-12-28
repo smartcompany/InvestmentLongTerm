@@ -176,6 +176,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get stock => '美股';
 
   @override
+  String get koreanStock => '韩国股票';
+
+  @override
   String get cash => '现金';
 
   @override

@@ -176,6 +176,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get stock => '米国株';
 
   @override
+  String get koreanStock => '韓国株';
+
+  @override
   String get cash => '現金';
 
   @override

@@ -48,6 +48,7 @@
   "retirementSimulation": "은퇴 가능할까?",
   "crypto": "암호화폐",
   "stock": "미국 주식",
+  "koreanStock": "한국 주식",
   "cash": "현금",
   "commodity": "원자재",
   "failedToLoadAssetList": "자산 목록을 불러오지 못했습니다.",

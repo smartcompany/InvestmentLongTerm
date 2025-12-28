@@ -16,7 +16,9 @@ class Asset {
   // 월 복리 수익률 계산: (1 + r)^(1/12) - 1
   double get monthlyReturn {
     if (annualReturn == null) return 0.0;
-    return math.pow(1 + annualReturn!, 1 / 12).toDouble() - 1;
+    // -1보다 작으면 pow 계산 에러 방지를 위해 -0.99로 제한
+    final safeReturn = annualReturn!.clamp(-0.99, double.infinity);
+    return math.pow(1 + safeReturn, 1 / 12).toDouble() - 1;
   }
 
   // 시나리오별 수익률 조정
@@ -34,8 +36,10 @@ class Asset {
         adjustedReturn = annualReturn! * 0.8; // -20%
         break;
     }
+    // -1보다 작으면 pow 계산 에러 방지를 위해 -0.99로 제한
+    final safeReturn = adjustedReturn.clamp(-0.99, double.infinity);
     // 월 복리 수익률: (1 + r)^(1/12) - 1
-    return math.pow(1 + adjustedReturn, 1 / 12).toDouble() - 1;
+    return math.pow(1 + safeReturn, 1 / 12).toDouble() - 1;
   }
 
   Asset copyWith({

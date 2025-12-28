@@ -48,6 +48,7 @@
   "retirementSimulation": "Can I retire?",
   "crypto": "Cryptocurrency",
   "stock": "US Stock",
+  "koreanStock": "Korean Stock",
   "cash": "Cash",
   "commodity": "Commodity",
   "failedToLoadAssetList": "Failed to load asset list.",

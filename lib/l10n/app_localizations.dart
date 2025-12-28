@@ -396,6 +396,12 @@ abstract class AppLocalizations {
   /// **'미국 주식'**
   String get stock;
 
+  /// No description provided for @koreanStock.
+  ///
+  /// In ko, this message translates to:
+  /// **'한국 주식'**
+  String get koreanStock;
+
   /// No description provided for @cash.
   ///
   /// In ko, this message translates to:

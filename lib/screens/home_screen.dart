@@ -305,8 +305,14 @@ class _HomeScreenState extends State<HomeScreen>
     // 타입별로 정렬된 순서대로 처리
     final sortedTypes = assetsByType.keys.toList()
       ..sort((a, b) {
-        // 타입 순서: crypto, stock, commodity, cash
-        final order = {'crypto': 0, 'stock': 1, 'commodity': 2, 'cash': 3};
+        // 타입 순서: crypto, stock, korean_stock, commodity, cash
+        final order = {
+          'crypto': 0,
+          'stock': 1,
+          'korean_stock': 2,
+          'commodity': 3,
+          'cash': 4,
+        };
         return (order[a] ?? 99).compareTo(order[b] ?? 99);
       });
 
@@ -327,6 +333,8 @@ class _HomeScreenState extends State<HomeScreen>
                   ? l10n.cash
                   : type == 'commodity'
                   ? l10n.commodity
+                  : type == 'korean_stock'
+                  ? l10n.koreanStock
                   : l10n.stock,
               style: AppTextStyles.chartSectionTitle,
             ),
