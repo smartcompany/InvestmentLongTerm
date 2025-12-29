@@ -512,7 +512,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get viewMyAssetsStatus => '观看广告并管理我的资产';
 
   @override
-  String get myAssetsSubtitle => '考虑退休吗？\n请输入您退休时的预期资产';
+  String get myAssetsSubtitle => '记录您的资产\n并追踪其变化\n除非重启应用，否则广告只会显示一次';
 
   @override
   String get retirementSetupSubtitle => '考虑退休吗？\n请输入您退休时的预期资产';
@@ -524,16 +524,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get addAssetToTrack => '添加资产以开始跟踪';
 
   @override
-  String get registeredDate => '注册日期';
+  String get registeredDate => '购买日期';
 
   @override
-  String get initialAmount => '初始金额';
+  String get initialAmount => '购买金额';
 
   @override
   String get currentValue => '当前价值';
 
   @override
   String get returnRate => '收益率';
+
+  @override
+  String get totalPurchaseAmount => '总购买金额';
+
+  @override
+  String get totalReturnRate => '总收益率';
 
   @override
   String get loadingPrice => '加载价格中...';

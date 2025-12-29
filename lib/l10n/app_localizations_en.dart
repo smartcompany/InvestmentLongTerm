@@ -519,7 +519,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get myAssetsSubtitle =>
-      'Thinking about retirement?\nPlease enter your expected assets at retirement';
+      'Record your assets\nand track their changes\nAds will only be shown once unless the app is restarted.';
 
   @override
   String get retirementSetupSubtitle =>
@@ -532,16 +532,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addAssetToTrack => 'Add an asset to start tracking';
 
   @override
-  String get registeredDate => 'Registered Date';
+  String get registeredDate => 'Purchase Date';
 
   @override
-  String get initialAmount => 'Initial Amount';
+  String get initialAmount => 'Purchase Amount';
 
   @override
   String get currentValue => 'Current Value';
 
   @override
   String get returnRate => 'Return Rate';
+
+  @override
+  String get totalPurchaseAmount => 'Total Purchase Amount';
+
+  @override
+  String get totalReturnRate => 'Total Return Rate';
 
   @override
   String get loadingPrice => 'Loading price...';

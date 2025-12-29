@@ -21,6 +21,32 @@ class MyAssetsProvider with ChangeNotifier {
   DateTime? get portfolioStartDate => _portfolioStartDate;
   DateTime? get portfolioEndDate => _portfolioEndDate;
 
+  // 총 매수 금액
+  double get totalPurchaseAmount {
+    return _assets.fold<double>(
+      0,
+      (sum, asset) => sum + asset.initialAmount,
+    );
+  }
+
+  // 총 현재 가치
+  double? get totalCurrentValue {
+    final values = _assets
+        .where((asset) => asset.currentValue != null)
+        .map((asset) => asset.currentValue!)
+        .toList();
+    if (values.isEmpty) return null;
+    return values.fold<double>(0, (sum, value) => sum + value);
+  }
+
+  // 총 수익률
+  double? get totalReturnRate {
+    if (totalPurchaseAmount == 0) return null;
+    final currentValue = totalCurrentValue;
+    if (currentValue == null) return null;
+    return ((currentValue / totalPurchaseAmount) - 1) * 100;
+  }
+
   static const String _keyAssets = 'my_assets_list';
 
   Future<void> loadAssets() async {

@@ -512,7 +512,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get viewMyAssetsStatus => '広告を見て資産管理';
 
   @override
-  String get myAssetsSubtitle => '退職を考えていますか？\n退職時の予想資産を入力してください';
+  String get myAssetsSubtitle =>
+      '保有資産を記録し\n変動推移を確認してください\nアプリを再起動しない限り、広告は1回だけ表示されます';
 
   @override
   String get retirementSetupSubtitle => '退職を考えていますか？\n退職時の予想資産を入力してください';
@@ -524,16 +525,22 @@ class AppLocalizationsJa extends AppLocalizations {
   String get addAssetToTrack => '資産を追加して追跡を開始してください';
 
   @override
-  String get registeredDate => '登録日';
+  String get registeredDate => '購入日';
 
   @override
-  String get initialAmount => '初期金額';
+  String get initialAmount => '購入金額';
 
   @override
   String get currentValue => '現在価値';
 
   @override
   String get returnRate => '収益率';
+
+  @override
+  String get totalPurchaseAmount => '総購入金額';
+
+  @override
+  String get totalReturnRate => '総収益率';
 
   @override
   String get loadingPrice => '価格読み込み中...';

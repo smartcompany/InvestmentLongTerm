@@ -23,7 +23,7 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
   final TextEditingController _amountController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
   final Map<String, bool> _expandedTypes = {};
-  int _currentStep = 0; // 0: 자산 선택, 1: 초기 금액 및 등록일
+  int _currentStep = 0; // 0: 자산 선택, 1: 매수 금액 및 매수일
 
   @override
   void dispose() {

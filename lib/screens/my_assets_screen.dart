@@ -219,6 +219,53 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
                         )
                       : SizedBox.shrink(),
                 ),
+              // 통계 카드 (자산이 있을 때만 표시)
+              if (provider.assets.isNotEmpty)
+                Container(
+                  margin: EdgeInsets.only(bottom: 24),
+                  child: LiquidGlass(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.18),
+                        width: 1.5,
+                      ),
+                    ),
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${l10n.totalPurchaseAmount}: ${NumberFormat('#,###').format(provider.totalPurchaseAmount)}',
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                        SizedBox(height: 12),
+                        Text(
+                          provider.totalCurrentValue != null
+                              ? '${l10n.currentValue}: ${NumberFormat('#,###').format(provider.totalCurrentValue!)}'
+                              : '${l10n.currentValue}: ${l10n.loadingPrice}',
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                        SizedBox(height: 12),
+                        Text(
+                          provider.totalReturnRate != null
+                              ? '${l10n.totalReturnRate}: ${provider.totalReturnRate!.toStringAsFixed(2)}%'
+                              : '${l10n.totalReturnRate}: -',
+                          style: TextStyle(
+                            color:
+                                provider.totalReturnRate != null &&
+                                    provider.totalReturnRate! >= 0
+                                ? AppColors.success
+                                : Colors.red,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               // 자산 카드 목록
               ...provider.assets.map((asset) {
                 return _buildAssetCard(context, asset, provider, l10n);

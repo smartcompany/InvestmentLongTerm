@@ -513,7 +513,12 @@ class _ResultScreenState extends State<ResultScreen> {
               style: AppTextStyles.resultCardYield.copyWith(
                 color: summary.highlight
                     ? (result.yieldRate >= 0
-                          ? Colors.lightGreenAccent.withValues(alpha: 0.9)
+                          ? const Color.fromARGB(
+                              255,
+                              210,
+                              55,
+                              73,
+                            ).withValues(alpha: 0.9)
                           : Colors.red.shade800)
                     : (result.yieldRate >= 0
                           ? AppColors.success

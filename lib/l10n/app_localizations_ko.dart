@@ -512,7 +512,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get viewMyAssetsStatus => '광고 보고 내 자산 관리';
 
   @override
-  String get myAssetsSubtitle => '은퇴를 고민하나요?\n은퇴시 나의 예상 자산을 입력해 주세요';
+  String get myAssetsSubtitle =>
+      '보유 자산을 기록하고\n변동 추이를 확인하세요\n앱을 재시작 하지 않으면 광고는 한번만 봅니다.';
 
   @override
   String get retirementSetupSubtitle => '은퇴를 고민하나요?\n은퇴시 나의 예상 자산을 입력해 주세요';
@@ -524,16 +525,22 @@ class AppLocalizationsKo extends AppLocalizations {
   String get addAssetToTrack => '자산을 추가하여 추적을 시작하세요';
 
   @override
-  String get registeredDate => '등록일';
+  String get registeredDate => '매수일';
 
   @override
-  String get initialAmount => '초기 금액';
+  String get initialAmount => '매수 금액';
 
   @override
   String get currentValue => '현재 가치';
 
   @override
   String get returnRate => '수익률';
+
+  @override
+  String get totalPurchaseAmount => '총 매수 금액';
+
+  @override
+  String get totalReturnRate => '총 수익률';
 
   @override
   String get loadingPrice => '가격 로딩 중...';

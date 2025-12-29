@@ -1007,7 +1007,7 @@ abstract class AppLocalizations {
   /// No description provided for @myAssetsSubtitle.
   ///
   /// In ko, this message translates to:
-  /// **'은퇴를 고민하나요?\n은퇴시 나의 예상 자산을 입력해 주세요'**
+  /// **'보유 자산을 기록하고\n변동 추이를 확인하세요\n앱을 재시작 하지 않으면 광고는 한번만 봅니다.'**
   String get myAssetsSubtitle;
 
   /// No description provided for @retirementSetupSubtitle.
@@ -1031,13 +1031,13 @@ abstract class AppLocalizations {
   /// No description provided for @registeredDate.
   ///
   /// In ko, this message translates to:
-  /// **'등록일'**
+  /// **'매수일'**
   String get registeredDate;
 
   /// No description provided for @initialAmount.
   ///
   /// In ko, this message translates to:
-  /// **'초기 금액'**
+  /// **'매수 금액'**
   String get initialAmount;
 
   /// No description provided for @currentValue.
@@ -1051,6 +1051,18 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'수익률'**
   String get returnRate;
+
+  /// No description provided for @totalPurchaseAmount.
+  ///
+  /// In ko, this message translates to:
+  /// **'총 매수 금액'**
+  String get totalPurchaseAmount;
+
+  /// No description provided for @totalReturnRate.
+  ///
+  /// In ko, this message translates to:
+  /// **'총 수익률'**
+  String get totalReturnRate;
 
   /// No description provided for @loadingPrice.
   ///
