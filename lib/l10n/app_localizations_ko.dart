@@ -528,16 +528,22 @@ class AppLocalizationsKo extends AppLocalizations {
   String get registeredDate => '매수일';
 
   @override
-  String get initialAmount => '매수 금액';
+  String get initialAmount => '투자 원금';
+
+  @override
+  String get currentValuationAmount => '현재 평가 금액';
 
   @override
   String get currentValue => '현재 가치';
 
   @override
+  String get currentPrice => '현재가';
+
+  @override
   String get returnRate => '수익률';
 
   @override
-  String get totalPurchaseAmount => '총 매수 금액';
+  String get totalPurchaseAmount => '총 투자 원금';
 
   @override
   String get totalReturnRate => '총 수익률';
@@ -556,4 +562,10 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get noPriceData => '가격 데이터가 없습니다';
+
+  @override
+  String get quantity => '수량';
+
+  @override
+  String get averagePurchasePrice => '평균 매수가';
 }

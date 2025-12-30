@@ -82,22 +82,38 @@ class ApiService {
       final response = await http.post(
         Uri.parse('$baseUrl/api/prices'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'assetId': assetId,
-          'days': days,
-        }),
+        body: jsonEncode({'assetId': assetId, 'days': days}),
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as List;
-        return data
-            .map((item) => item as Map<String, dynamic>)
-            .toList();
+        return data.map((item) => item as Map<String, dynamic>).toList();
       } else {
         throw Exception('Server error: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Failed to fetch daily prices: $e');
+    }
+  }
+
+  static Future<Map<String, double>> fetchExchangeRates() async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/api/exchange-rates'));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final rates = data['rates'] as Map<String, dynamic>;
+        return {
+          'KRW': (rates['KRW'] as num).toDouble(),
+          'JPY': (rates['JPY'] as num).toDouble(),
+          'CNY': (rates['CNY'] as num).toDouble(),
+        };
+      } else {
+        throw Exception(
+          'Failed to load exchange rates: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      throw Exception('Failed to load exchange rates: $e');
     }
   }
 }

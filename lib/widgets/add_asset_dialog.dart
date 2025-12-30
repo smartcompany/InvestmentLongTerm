@@ -10,6 +10,7 @@ import '../models/asset_option.dart';
 import '../utils/colors.dart';
 import '../widgets/liquid_glass.dart';
 import '../widgets/asset_button.dart';
+import '../services/api_service.dart';
 
 class AddAssetDialog extends StatefulWidget {
   const AddAssetDialog({super.key});
@@ -20,72 +21,119 @@ class AddAssetDialog extends StatefulWidget {
 
 class _AddAssetDialogState extends State<AddAssetDialog> {
   String? _selectedAssetId;
-  final TextEditingController _amountController = TextEditingController();
-  DateTime _selectedDate = DateTime.now();
+  final TextEditingController _principalController = TextEditingController();
+  final TextEditingController _quantityController = TextEditingController();
   final Map<String, bool> _expandedTypes = {};
-  int _currentStep = 0; // 0: 자산 선택, 1: 매수 금액 및 매수일
+  int _currentStep = 0; // 0: 자산 선택, 1: 투자 원금 및 보유 갯수
+  bool _isLoading = false;
 
   @override
   void dispose() {
-    _amountController.dispose();
+    _principalController.dispose();
+    _quantityController.dispose();
     super.dispose();
-  }
-
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime.now(),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.dark(
-              primary: AppColors.gold,
-              onPrimary: AppColors.navyDark,
-              surface: AppColors.navyMedium,
-              onSurface: Colors.white,
-            ),
-          ),
-          child: child!,
-        );
-      },
-    );
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
   }
 
   double _parseCurrency(String text) {
     return double.tryParse(text.replaceAll(RegExp(r'[^\d]'), '')) ?? 0.0;
   }
 
-  void _submit() {
+  double _parseQuantity(String text) {
+    // 수량은 소수점 포함 가능
+    return double.tryParse(text.replaceAll(',', '')) ?? 0.0;
+  }
+
+  Future<void> _submit() async {
     if (_selectedAssetId == null ||
-        _parseCurrency(_amountController.text) == 0) {
+        _parseCurrency(_principalController.text) == 0 ||
+        _parseQuantity(_quantityController.text) == 0 ||
+        _isLoading) {
       return;
     }
 
-    final appProvider = context.read<AppStateProvider>();
-    final myAssetsProvider = context.read<MyAssetsProvider>();
-    final localeCode = Localizations.localeOf(context).languageCode;
+    setState(() {
+      _isLoading = true;
+    });
 
-    final asset = appProvider.assets.firstWhere(
-      (a) => a.id == _selectedAssetId!,
-    );
-    final assetName = asset.displayName(localeCode);
-    final amount = _parseCurrency(_amountController.text);
+    try {
+      final appProvider = context.read<AppStateProvider>();
+      final myAssetsProvider = context.read<MyAssetsProvider>();
+      final localeCode = Localizations.localeOf(context).languageCode;
 
-    myAssetsProvider.addAsset(
-      assetId: _selectedAssetId!,
-      assetName: assetName,
-      initialAmount: amount,
-      registeredDate: _selectedDate,
-    );
+      final asset = appProvider.assets.firstWhere(
+        (a) => a.id == _selectedAssetId!,
+      );
+      final assetName = asset.displayName(localeCode);
+      final principal = _parseCurrency(_principalController.text);
+      final quantity = _parseQuantity(_quantityController.text);
 
-    Navigator.of(context).pop();
+      // 현재 가격 가져오기
+      double? currentPrice;
+      try {
+        final priceData = await ApiService.fetchDailyPrices(
+          _selectedAssetId!,
+          1,
+        );
+        if (priceData.isNotEmpty) {
+          currentPrice = (priceData.last['price'] as num?)?.toDouble();
+        }
+      } catch (e) {
+        // 가격을 가져올 수 없으면 에러 표시
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('현재 가격을 가져올 수 없습니다. 다시 시도해주세요.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      if (currentPrice == null || currentPrice <= 0) {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('유효한 현재 가격을 가져올 수 없습니다.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+
+      // 현재 평가 금액 계산: 수량 * 현재 가격
+      // (이 값은 addAsset 내부에서 _updateCurrentValue에서 다시 계산되므로 여기서는 참고용)
+      await myAssetsProvider.addAsset(
+        assetId: _selectedAssetId!,
+        assetName: assetName,
+        initialAmount: principal,
+        registeredDate: DateTime.now(), // 현재 시점을 기준으로 설정
+        quantity: quantity,
+      );
+
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('자산 추가 중 오류가 발생했습니다. 다시 시도해주세요.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildStepIndicator(int step, String label) {
@@ -164,7 +212,8 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
         ),
         SizedBox(height: 12),
         TextField(
-          controller: _amountController,
+          controller: _principalController,
+          enabled: !_isLoading,
           onChanged: (value) {
             setState(() {});
           },
@@ -209,7 +258,7 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
         ),
         SizedBox(height: 24),
         Text(
-          l10n.registeredDate,
+          l10n.quantity,
           style: TextStyle(
             color: AppColors.slate300,
             fontSize: 16,
@@ -217,26 +266,66 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
           ),
         ),
         SizedBox(height: 12),
-        GestureDetector(
-          onTap: () => _selectDate(context),
-          child: Container(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            decoration: BoxDecoration(
-              color: AppColors.slate800.withOpacity(0.5),
+        TextField(
+          controller: _quantityController,
+          enabled: !_isLoading,
+          onChanged: (value) {
+            setState(() {});
+          },
+          decoration: InputDecoration(
+            hintText: '0',
+            hintStyle: TextStyle(color: AppColors.slate400),
+            filled: true,
+            fillColor: AppColors.slate800.withOpacity(0.5),
+            border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.gold, width: 2),
+              borderSide: BorderSide(color: AppColors.gold, width: 2),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  DateFormat('yyyy-MM-dd').format(_selectedDate),
-                  style: TextStyle(color: Colors.white, fontSize: 20),
-                ),
-                Icon(Icons.calendar_today, color: AppColors.gold),
-              ],
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppColors.gold, width: 2),
             ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppColors.gold, width: 2),
+            ),
+            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
+          keyboardType: TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'[\d,.]')),
+            TextInputFormatter.withFunction((oldValue, newValue) {
+              if (newValue.text.isEmpty) return newValue;
+              // 소수점은 하나만 허용
+              final text = newValue.text;
+              final dotCount = text.split('.').length - 1;
+              if (dotCount > 1) return oldValue;
+
+              // 쉼표 제거 후 파싱
+              final cleanText = text.replaceAll(',', '');
+              final number = double.tryParse(cleanText);
+              if (number == null && cleanText != '.') return oldValue;
+
+              // 포맷팅 (소수점이 있으면 포맷팅하지 않음)
+              if (text.contains('.')) {
+                return newValue;
+              } else {
+                final intValue = int.tryParse(cleanText);
+                if (intValue != null) {
+                  final formatted = NumberFormat('#,###').format(intValue);
+                  return TextEditingValue(
+                    text: formatted,
+                    selection: TextSelection.collapsed(
+                      offset: formatted.length,
+                    ),
+                  );
+                }
+              }
+              return newValue;
+            }),
+          ],
+          style: TextStyle(color: Colors.white, fontSize: 20),
+          textAlign: TextAlign.right,
         ),
       ],
     );
@@ -309,28 +398,33 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _selectedAssetId = asset.id;
-                  // 자산 선택 시 자동으로 다음 단계로 이동
-                  if (_currentStep == 0) {
-                    _currentStep = 1;
-                  }
-                });
-              },
+              onTap: _isLoading
+                  ? null
+                  : () {
+                      setState(() {
+                        _selectedAssetId = asset.id;
+                        // 자산 선택 시 자동으로 다음 단계로 이동
+                        if (_currentStep == 0) {
+                          _currentStep = 1;
+                        }
+                      });
+                    },
               child: AssetButton(
                 assetName: asset.displayName(localeCode),
                 icon: asset.icon,
                 isSelected: _selectedAssetId == asset.id,
-                onTap: () {
-                  setState(() {
-                    _selectedAssetId = asset.id;
-                    // 자산 선택 시 자동으로 다음 단계로 이동
-                    if (_currentStep == 0) {
-                      _currentStep = 1;
-                    }
-                  });
-                },
+                isDisabled: _isLoading,
+                onTap: _isLoading
+                    ? () {}
+                    : () {
+                        setState(() {
+                          _selectedAssetId = asset.id;
+                          // 자산 선택 시 자동으로 다음 단계로 이동
+                          if (_currentStep == 0) {
+                            _currentStep = 1;
+                          }
+                        });
+                      },
               ),
             ),
           ),
@@ -344,11 +438,13 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
             padding: const EdgeInsets.only(bottom: 8),
             child: Center(
               child: TextButton(
-                onPressed: () {
-                  setState(() {
-                    _expandedTypes[type] = !isExpanded;
-                  });
-                },
+                onPressed: _isLoading
+                    ? null
+                    : () {
+                        setState(() {
+                          _expandedTypes[type] = !isExpanded;
+                        });
+                      },
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -409,136 +505,172 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      child: LiquidGlass(
-        decoration: BoxDecoration(
-          color: AppColors.navyDark.withOpacity(0.95),
-          borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppColors.gold.withOpacity(0.3)),
-        ),
-        child: Container(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.9,
-            minHeight: MediaQuery.of(context).size.height * 0.6,
-            maxWidth: double.infinity,
-          ),
-          padding: EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // 헤더 (타이틀 + X 버튼)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Stack(
+        children: [
+          LiquidGlass(
+            decoration: BoxDecoration(
+              color: AppColors.navyDark.withOpacity(0.95),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: AppColors.gold.withOpacity(0.3)),
+            ),
+            child: Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.9,
+                minHeight: MediaQuery.of(context).size.height * 0.6,
+                maxWidth: double.infinity,
+              ),
+              padding: EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    l10n.addAsset,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                  // 헤더 (타이틀 + X 버튼)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        l10n.addAsset,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.close, color: AppColors.slate400),
+                        onPressed: _isLoading
+                            ? null
+                            : () => Navigator.pop(context),
+                        padding: EdgeInsets.zero,
+                        constraints: BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 24),
+                  // 단계 표시
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildStepIndicator(0, '자산 선택'),
+                      Container(
+                        width: 40,
+                        height: 2,
+                        color: _currentStep >= 1
+                            ? AppColors.gold
+                            : AppColors.slate700,
+                      ),
+                      _buildStepIndicator(1, '정보 입력'),
+                    ],
+                  ),
+                  SizedBox(height: 24),
+                  // 단계별 콘텐츠
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: _currentStep == 0
+                          ? _buildAssetSelectionStep(
+                              appProvider,
+                              localeCode,
+                              l10n,
+                            )
+                          : _buildAmountAndDateStep(currencyUnit, l10n),
                     ),
                   ),
-                  IconButton(
-                    icon: Icon(Icons.close, color: AppColors.slate400),
-                    onPressed: () => Navigator.pop(context),
-                    padding: EdgeInsets.zero,
-                    constraints: BoxConstraints(),
-                  ),
-                ],
-              ),
-              SizedBox(height: 24),
-              // 단계 표시
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildStepIndicator(0, '자산 선택'),
-                  Container(
-                    width: 40,
-                    height: 2,
-                    color: _currentStep >= 1
-                        ? AppColors.gold
-                        : AppColors.slate700,
-                  ),
-                  _buildStepIndicator(1, '정보 입력'),
-                ],
-              ),
-              SizedBox(height: 24),
-              // 단계별 콘텐츠
-              Expanded(
-                child: SingleChildScrollView(
-                  child: _currentStep == 0
-                      ? _buildAssetSelectionStep(appProvider, localeCode, l10n)
-                      : _buildAmountAndDateStep(currencyUnit, l10n),
-                ),
-              ),
-              SizedBox(height: 24),
-              // 하단 버튼
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  if (_currentStep == 1)
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          _currentStep = 0;
-                        });
-                      },
-                      child: Text(
-                        '이전',
-                        style: TextStyle(color: AppColors.slate400),
-                      ),
-                    )
-                  else
-                    SizedBox.shrink(),
+                  SizedBox(height: 24),
+                  // 하단 버튼
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: Text(
-                          l10n.cancel,
-                          style: TextStyle(color: AppColors.slate400),
-                        ),
-                      ),
-                      SizedBox(width: 12),
-                      ElevatedButton(
-                        onPressed: _currentStep == 0
-                            ? (_selectedAssetId != null
-                                  ? () {
-                                      setState(() {
-                                        _currentStep = 1;
-                                      });
-                                    }
-                                  : null)
-                            : (_selectedAssetId != null &&
-                                      _parseCurrency(_amountController.text) > 0
-                                  ? _submit
-                                  : null),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.gold,
-                          foregroundColor: AppColors.navyDark,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 32,
-                            vertical: 16,
+                      if (_currentStep == 1)
+                        TextButton(
+                          onPressed: _isLoading
+                              ? null
+                              : () {
+                                  setState(() {
+                                    _currentStep = 0;
+                                  });
+                                },
+                          child: Text(
+                            '이전',
+                            style: TextStyle(color: AppColors.slate400),
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                        )
+                      else
+                        SizedBox.shrink(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: _isLoading
+                                ? null
+                                : () => Navigator.pop(context),
+                            child: Text(
+                              l10n.cancel,
+                              style: TextStyle(color: AppColors.slate400),
+                            ),
                           ),
-                        ),
-                        child: Text(
-                          _currentStep == 0 ? '다음' : l10n.confirm,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                          SizedBox(width: 12),
+                          ElevatedButton(
+                            onPressed: _isLoading
+                                ? null
+                                : (_currentStep == 0
+                                      ? (_selectedAssetId != null
+                                            ? () {
+                                                setState(() {
+                                                  _currentStep = 1;
+                                                });
+                                              }
+                                            : null)
+                                      : (_selectedAssetId != null &&
+                                                _parseCurrency(
+                                                      _principalController.text,
+                                                    ) >
+                                                    0 &&
+                                                _parseQuantity(
+                                                      _quantityController.text,
+                                                    ) >
+                                                    0
+                                            ? () async => await _submit()
+                                            : null)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.gold,
+                              foregroundColor: AppColors.navyDark,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 32,
+                                vertical: 16,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                              _currentStep == 0 ? '다음' : l10n.confirm,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
-        ),
+          // 로딩 오버레이
+          if (_isLoading)
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.7),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Center(
+                  child: CircularProgressIndicator(color: AppColors.gold),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

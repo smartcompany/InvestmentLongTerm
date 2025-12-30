@@ -208,8 +208,10 @@
   "noAssetsRegistered": "未注册资产",
   "addAssetToTrack": "添加资产以开始跟踪",
   "registeredDate": "购买日期",
-  "initialAmount": "购买金额",
+  "initialAmount": "投资本金",
+  "currentValuationAmount": "当前评估金额",
   "currentValue": "当前价值",
+  "currentPrice": "当前价格",
   "returnRate": "收益率",
   "totalPurchaseAmount": "总购买金额",
   "totalReturnRate": "总收益率",
@@ -217,6 +219,8 @@
   "deleteAsset": "删除资产",
   "deleteAssetConfirm": "确定要删除此资产吗？",
   "cancel": "取消",
-  "noPriceData": "无价格数据"
+  "noPriceData": "无价格数据",
+  "quantity": "数量",
+  "averagePurchasePrice": "平均买入价"
 }
 

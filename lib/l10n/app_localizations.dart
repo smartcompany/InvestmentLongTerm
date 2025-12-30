@@ -1037,14 +1037,26 @@ abstract class AppLocalizations {
   /// No description provided for @initialAmount.
   ///
   /// In ko, this message translates to:
-  /// **'매수 금액'**
+  /// **'투자 원금'**
   String get initialAmount;
+
+  /// No description provided for @currentValuationAmount.
+  ///
+  /// In ko, this message translates to:
+  /// **'현재 평가 금액'**
+  String get currentValuationAmount;
 
   /// No description provided for @currentValue.
   ///
   /// In ko, this message translates to:
   /// **'현재 가치'**
   String get currentValue;
+
+  /// No description provided for @currentPrice.
+  ///
+  /// In ko, this message translates to:
+  /// **'현재가'**
+  String get currentPrice;
 
   /// No description provided for @returnRate.
   ///
@@ -1055,7 +1067,7 @@ abstract class AppLocalizations {
   /// No description provided for @totalPurchaseAmount.
   ///
   /// In ko, this message translates to:
-  /// **'총 매수 금액'**
+  /// **'총 투자 원금'**
   String get totalPurchaseAmount;
 
   /// No description provided for @totalReturnRate.
@@ -1093,6 +1105,18 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'가격 데이터가 없습니다'**
   String get noPriceData;
+
+  /// No description provided for @quantity.
+  ///
+  /// In ko, this message translates to:
+  /// **'수량'**
+  String get quantity;
+
+  /// No description provided for @averagePurchasePrice.
+  ///
+  /// In ko, this message translates to:
+  /// **'평균 매수가'**
+  String get averagePurchasePrice;
 }
 
 class _AppLocalizationsDelegate

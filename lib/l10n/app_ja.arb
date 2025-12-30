@@ -208,8 +208,10 @@
   "noAssetsRegistered": "登録された資産がありません",
   "addAssetToTrack": "資産を追加して追跡を開始してください",
   "registeredDate": "購入日",
-  "initialAmount": "購入金額",
+  "initialAmount": "投資元本",
+  "currentValuationAmount": "現在評価額",
   "currentValue": "現在価値",
+  "currentPrice": "現在価格",
   "returnRate": "収益率",
   "totalPurchaseAmount": "総購入金額",
   "totalReturnRate": "総収益率",
@@ -217,6 +219,8 @@
   "deleteAsset": "資産削除",
   "deleteAssetConfirm": "この資産を削除しますか？",
   "cancel": "キャンセル",
-  "noPriceData": "価格データがありません"
+  "noPriceData": "価格データがありません",
+  "quantity": "数量",
+  "averagePurchasePrice": "平均取得価格"
 }
 

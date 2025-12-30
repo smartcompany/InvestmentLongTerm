@@ -15,6 +15,7 @@ import 'providers/currency_provider.dart';
 import 'screens/main_tab_screen.dart';
 import 'providers/my_assets_provider.dart';
 import 'utils/colors.dart';
+import 'utils/currency_converter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,6 +56,9 @@ void main() async {
 
   // Initialize Kakao SDK
   KakaoSdk.init(nativeAppKey: '30272b5f0271c22c1747949a87f1758d');
+
+  // Initialize currency exchange rates (백그라운드에서 실행)
+  CurrencyConverter.initialize();
 
   runApp(
     MultiProvider(

@@ -218,15 +218,19 @@
   "noAssetsRegistered": "등록된 자산이 없습니다",
   "addAssetToTrack": "자산을 추가하여 추적을 시작하세요",
   "registeredDate": "매수일",
-  "initialAmount": "매수 금액",
+  "initialAmount": "투자 원금",
+  "currentValuationAmount": "현재 평가 금액",
   "currentValue": "현재 가치",
+  "currentPrice": "현재가",
   "returnRate": "수익률",
-  "totalPurchaseAmount": "총 매수 금액",
+  "totalPurchaseAmount": "총 투자 원금",
   "totalReturnRate": "총 수익률",
   "loadingPrice": "가격 로딩 중...",
   "deleteAsset": "자산 삭제",
   "deleteAssetConfirm": "이 자산을 삭제하시겠습니까?",
   "cancel": "취소",
-  "noPriceData": "가격 데이터가 없습니다"
+  "noPriceData": "가격 데이터가 없습니다",
+  "quantity": "수량",
+  "averagePurchasePrice": "평균 매수가"
 }
 

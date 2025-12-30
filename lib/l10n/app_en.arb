@@ -210,8 +210,10 @@
   "noAssetsRegistered": "No assets registered",
   "addAssetToTrack": "Add an asset to start tracking",
   "registeredDate": "Purchase Date",
-  "initialAmount": "Purchase Amount",
+  "initialAmount": "Investment Principal",
+  "currentValuationAmount": "Current Valuation Amount",
   "currentValue": "Current Value",
+  "currentPrice": "Current Price",
   "returnRate": "Return Rate",
   "totalPurchaseAmount": "Total Purchase Amount",
   "totalReturnRate": "Total Return Rate",
@@ -219,6 +221,8 @@
   "deleteAsset": "Delete Asset",
   "deleteAssetConfirm": "Are you sure you want to delete this asset?",
   "cancel": "Cancel",
-  "noPriceData": "No price data available"
+  "noPriceData": "No price data available",
+  "quantity": "Quantity",
+  "averagePurchasePrice": "Average Purchase Price"
 }
 

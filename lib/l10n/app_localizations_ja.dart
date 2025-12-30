@@ -528,10 +528,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get registeredDate => '購入日';
 
   @override
-  String get initialAmount => '購入金額';
+  String get initialAmount => '投資元本';
+
+  @override
+  String get currentValuationAmount => '現在評価額';
 
   @override
   String get currentValue => '現在価値';
+
+  @override
+  String get currentPrice => '現在価格';
 
   @override
   String get returnRate => '収益率';
@@ -556,4 +562,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get noPriceData => '価格データがありません';
+
+  @override
+  String get quantity => '数量';
+
+  @override
+  String get averagePurchasePrice => '平均取得価格';
 }

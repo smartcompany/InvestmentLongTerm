@@ -5,8 +5,12 @@ import 'package:fl_chart/fl_chart.dart';
 import '../l10n/app_localizations.dart';
 import '../models/my_asset.dart';
 import '../providers/my_assets_provider.dart';
+import '../providers/app_state_provider.dart';
+import '../providers/currency_provider.dart';
 import '../utils/colors.dart';
+import '../utils/currency_converter.dart';
 import '../widgets/liquid_glass.dart';
+import '../services/api_service.dart';
 
 class AssetDetailScreen extends StatefulWidget {
   final MyAsset asset;
@@ -20,11 +24,13 @@ class AssetDetailScreen extends StatefulWidget {
 class _AssetDetailScreenState extends State<AssetDetailScreen> {
   List<FlSpot>? _priceSpots;
   bool _isLoading = true;
+  double? _currentPrice;
 
   @override
   void initState() {
     super.initState();
     _loadPriceData();
+    _loadCurrentPrice();
   }
 
   Future<void> _loadPriceData() async {
@@ -46,10 +52,48 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
     }
   }
 
+  Future<void> _loadCurrentPrice() async {
+    try {
+      final priceData = await ApiService.fetchDailyPrices(
+        widget.asset.assetId,
+        1,
+      );
+      if (priceData.isNotEmpty) {
+        final latestPrice = (priceData.last['price'] as num?)?.toDouble();
+        if (latestPrice != null && latestPrice.isFinite) {
+          setState(() {
+            _currentPrice = latestPrice;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Failed to load current price: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final asset = widget.asset;
+    final currencyProvider = context.watch<CurrencyProvider>();
+    final appProvider = context.watch<AppStateProvider>();
+    final localeCode = Localizations.localeOf(context).languageCode;
+    final currencySymbol = currencyProvider.getCurrencySymbol(localeCode);
+
+    // 자산 타입에 따른 현재가 통화 결정
+    String currentPriceCurrency = '\$'; // 기본값은 달러
+    try {
+      final assetOption = appProvider.assets.firstWhere(
+        (a) => a.id == asset.assetId,
+      );
+      // 한국 주식은 원화, 나머지는 달러
+      if (assetOption.type == 'korean_stock') {
+        currentPriceCurrency = '₩';
+      }
+    } catch (e) {
+      // 자산을 찾을 수 없으면 기본값(달러) 사용
+      debugPrint('Asset not found: ${asset.assetId}');
+    }
 
     return Scaffold(
       body: Container(
@@ -104,30 +148,126 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildInfoRow(
-                        l10n.registeredDate,
-                        DateFormat('yyyy-MM-dd').format(asset.registeredDate),
-                      ),
-                      SizedBox(height: 8),
-                      _buildInfoRow(
                         l10n.initialAmount,
-                        NumberFormat('#,###').format(asset.initialAmount),
+                        '$currencySymbol${NumberFormat('#,##0.##').format(asset.initialAmount)}',
                       ),
                       SizedBox(height: 8),
                       if (asset.currentValue != null) ...[
-                        _buildInfoRow(
-                          l10n.currentValue,
-                          NumberFormat('#,###').format(asset.currentValue!),
-                        ),
+                        _buildInfoRow(l10n.currentValue, () {
+                          // 자산의 원본 통화 확인
+                          String originalCurrency = '\$'; // 기본값
+                          try {
+                            final assetOption = appProvider.assets.firstWhere(
+                              (a) => a.id == asset.assetId,
+                            );
+                            if (assetOption.type == 'korean_stock') {
+                              originalCurrency = '₩';
+                            }
+                          } catch (e) {
+                            // 기본값 사용
+                          }
+
+                          // 환율 변환된 현재 가치
+                          final convertedValue = CurrencyConverter.convertSync(
+                            asset.currentValue!,
+                            originalCurrency,
+                            currencySymbol,
+                          );
+                          return '$currencySymbol${NumberFormat('#,##0.##').format(convertedValue)}';
+                        }()),
                         SizedBox(height: 8),
                         _buildInfoRow(
                           l10n.returnRate,
-                          '${((asset.currentValue! / asset.initialAmount - 1) * 100).toStringAsFixed(2)}%',
-                          color: asset.currentValue! >= asset.initialAmount
-                              ? AppColors.success
-                              : Colors.red,
+                          () {
+                            // 자산의 원본 통화 확인
+                            String originalCurrency = '\$';
+                            try {
+                              final assetOption = appProvider.assets.firstWhere(
+                                (a) => a.id == asset.assetId,
+                              );
+                              if (assetOption.type == 'korean_stock') {
+                                originalCurrency = '₩';
+                              }
+                            } catch (e) {
+                              // 기본값 사용
+                            }
+
+                            // 환율 변환된 현재 가치
+                            final convertedValue =
+                                CurrencyConverter.convertSync(
+                                  asset.currentValue!,
+                                  originalCurrency,
+                                  currencySymbol,
+                                );
+                            final returnRate =
+                                ((convertedValue / asset.initialAmount - 1) *
+                                100);
+                            return '${returnRate.toStringAsFixed(2)}%';
+                          }(),
+                          color: () {
+                            String originalCurrency = '\$';
+                            try {
+                              final assetOption = appProvider.assets.firstWhere(
+                                (a) => a.id == asset.assetId,
+                              );
+                              if (assetOption.type == 'korean_stock') {
+                                originalCurrency = '₩';
+                              }
+                            } catch (e) {
+                              // 기본값 사용
+                            }
+                            final convertedValue =
+                                CurrencyConverter.convertSync(
+                                  asset.currentValue!,
+                                  originalCurrency,
+                                  currencySymbol,
+                                );
+                            return convertedValue >= asset.initialAmount
+                                ? AppColors.success
+                                : Colors.red;
+                          }(),
                         ),
                       ] else
                         _buildInfoRow(l10n.loadingPrice, '...'),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 24),
+              // 현재가 정보 카드
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24),
+                child: LiquidGlass(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.18),
+                      width: 1.5,
+                    ),
+                  ),
+                  padding: EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildInfoRow(
+                        l10n.currentPrice,
+                        _currentPrice != null
+                            ? '$currentPriceCurrency${NumberFormat('#,##0.##').format(_currentPrice!)}'
+                            : l10n.loadingPrice,
+                      ),
+                      SizedBox(height: 8),
+                      _buildInfoRow(
+                        l10n.quantity,
+                        NumberFormat('#,##0.##').format(asset.quantity),
+                      ),
+                      SizedBox(height: 8),
+                      _buildInfoRow(
+                        l10n.averagePurchasePrice,
+                        asset.quantity > 0
+                            ? '$currencySymbol${NumberFormat('#,##0.##').format(asset.initialAmount / asset.quantity)}'
+                            : '-',
+                      ),
                     ],
                   ),
                 ),

@@ -6,12 +6,15 @@ import 'dart:math' as math;
 import '../l10n/app_localizations.dart';
 import '../providers/my_assets_provider.dart';
 import '../providers/app_state_provider.dart';
+import '../providers/currency_provider.dart';
 import '../models/my_asset.dart';
 import '../utils/colors.dart';
+import '../utils/currency_converter.dart';
 import '../widgets/liquid_glass.dart';
 import '../widgets/add_asset_dialog.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'asset_detail_screen.dart';
+import 'settings_screen.dart';
 
 class MyAssetsScreen extends StatefulWidget {
   const MyAssetsScreen({super.key});
@@ -29,10 +32,67 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
     });
   }
 
+  // 자산 타입에 따른 원본 통화 결정
+  String _getAssetOriginalCurrency(
+    String assetId,
+    AppStateProvider appProvider,
+  ) {
+    try {
+      final assetOption = appProvider.assets.firstWhere((a) => a.id == assetId);
+      // 한국 주식은 원화, 나머지는 달러
+      if (assetOption.type == 'korean_stock') {
+        return '₩';
+      } else {
+        return '\$';
+      }
+    } catch (e) {
+      return '\$'; // 기본값은 달러
+    }
+  }
+
+  // 환율 변환된 총 현재 가치 계산
+  double? _getConvertedTotalCurrentValue(
+    MyAssetsProvider provider,
+    AppStateProvider appProvider,
+    String targetCurrency,
+  ) {
+    double total = 0.0;
+    bool hasValue = false;
+
+    for (final asset in provider.assets) {
+      if (asset.currentValue == null) continue;
+
+      final originalCurrency = _getAssetOriginalCurrency(
+        asset.assetId,
+        appProvider,
+      );
+      final convertedValue = CurrencyConverter.convertSync(
+        asset.currentValue!,
+        originalCurrency,
+        targetCurrency,
+      );
+      total += convertedValue;
+      hasValue = true;
+    }
+
+    return hasValue ? total : null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<MyAssetsProvider>();
+    final appProvider = context.watch<AppStateProvider>();
+    final currencyProvider = context.watch<CurrencyProvider>();
+    final localeCode = Localizations.localeOf(context).languageCode;
+    final currencySymbol = currencyProvider.getCurrencySymbol(localeCode);
     final l10n = AppLocalizations.of(context)!;
+
+    // 환율 변환된 총 현재 가치
+    final convertedTotalCurrentValue = _getConvertedTotalCurrentValue(
+      provider,
+      appProvider,
+      currencySymbol,
+    );
 
     // 상태바 투명하게 설정
     SystemChrome.setSystemUIOverlayStyle(
@@ -59,15 +119,36 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // 타이틀 (가운데 정렬)
-              Text(
-                l10n.myAssets,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
+              // 타이틀과 설정 버튼
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Expanded(child: SizedBox()),
+                  Text(
+                    l10n.myAssets,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        icon: Icon(Icons.settings, color: Colors.white),
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => SettingsScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ],
               ),
               SizedBox(height: 24),
               // 포트폴리오 그래프 (자산이 있을 때만 표시)
@@ -237,25 +318,28 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${l10n.totalPurchaseAmount}: ${NumberFormat('#,###').format(provider.totalPurchaseAmount)}',
+                          '${l10n.totalPurchaseAmount}: $currencySymbol${NumberFormat('#,##0.##').format(provider.totalPurchaseAmount)}',
                           style: TextStyle(color: Colors.white, fontSize: 16),
                         ),
                         SizedBox(height: 12),
                         Text(
-                          provider.totalCurrentValue != null
-                              ? '${l10n.currentValue}: ${NumberFormat('#,###').format(provider.totalCurrentValue!)}'
+                          convertedTotalCurrentValue != null
+                              ? '${l10n.currentValue}: $currencySymbol${NumberFormat('#,##0.##').format(convertedTotalCurrentValue)}'
                               : '${l10n.currentValue}: ${l10n.loadingPrice}',
                           style: TextStyle(color: Colors.white, fontSize: 16),
                         ),
                         SizedBox(height: 12),
                         Text(
-                          provider.totalReturnRate != null
-                              ? '${l10n.totalReturnRate}: ${provider.totalReturnRate!.toStringAsFixed(2)}%'
+                          convertedTotalCurrentValue != null &&
+                                  provider.totalPurchaseAmount > 0
+                              ? '${l10n.totalReturnRate}: ${((convertedTotalCurrentValue / provider.totalPurchaseAmount - 1) * 100).toStringAsFixed(2)}%'
                               : '${l10n.totalReturnRate}: -',
                           style: TextStyle(
                             color:
-                                provider.totalReturnRate != null &&
-                                    provider.totalReturnRate! >= 0
+                                convertedTotalCurrentValue != null &&
+                                    provider.totalPurchaseAmount > 0 &&
+                                    convertedTotalCurrentValue >=
+                                        provider.totalPurchaseAmount
                                 ? AppColors.success
                                 : Colors.red,
                             fontSize: 16,
@@ -347,6 +431,34 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
     MyAssetsProvider provider,
     AppLocalizations l10n,
   ) {
+    final currencyProvider = context.watch<CurrencyProvider>();
+    final appProvider = context.watch<AppStateProvider>();
+    final localeCode = Localizations.localeOf(context).languageCode;
+    final currencySymbol = currencyProvider.getCurrencySymbol(localeCode);
+
+    // 자산의 원본 통화 확인
+    String originalCurrency = '\$'; // 기본값
+    try {
+      final assetOption = appProvider.assets.firstWhere(
+        (a) => a.id == asset.assetId,
+      );
+      if (assetOption.type == 'korean_stock') {
+        originalCurrency = '₩';
+      }
+    } catch (e) {
+      // 기본값 사용
+    }
+
+    // 환율 변환된 현재 가치
+    double? convertedCurrentValue;
+    if (asset.currentValue != null) {
+      convertedCurrentValue = CurrencyConverter.convertSync(
+        asset.currentValue!,
+        originalCurrency,
+        currencySymbol,
+      );
+    }
+
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
@@ -392,28 +504,23 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
               ),
               SizedBox(height: 12),
               Text(
-                '${l10n.registeredDate}: ${DateFormat('yyyy-MM-dd').format(asset.registeredDate)}',
-                style: TextStyle(color: AppColors.slate300, fontSize: 14),
-              ),
-              SizedBox(height: 8),
-              Text(
-                '${l10n.initialAmount}: ${NumberFormat('#,###').format(asset.initialAmount)}',
+                '${l10n.initialAmount}: $currencySymbol${NumberFormat('#,##0.##').format(asset.initialAmount)}',
                 style: TextStyle(color: Colors.white, fontSize: 16),
               ),
               SizedBox(height: 12),
-              if (asset.currentValue != null)
+              if (convertedCurrentValue != null)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${l10n.currentValue}: ${NumberFormat('#,###').format(asset.currentValue)}',
+                      '${l10n.currentValue}: $currencySymbol${NumberFormat('#,##0.##').format(convertedCurrentValue)}',
                       style: TextStyle(color: Colors.white, fontSize: 16),
                     ),
                     SizedBox(height: 4),
                     Text(
-                      '${l10n.returnRate}: ${((asset.currentValue! / asset.initialAmount - 1) * 100).toStringAsFixed(2)}%',
+                      '${l10n.returnRate}: ${((convertedCurrentValue / asset.initialAmount - 1) * 100).toStringAsFixed(2)}%',
                       style: TextStyle(
-                        color: asset.currentValue! >= asset.initialAmount
+                        color: convertedCurrentValue >= asset.initialAmount
                             ? AppColors.success
                             : Colors.red,
                         fontSize: 16,

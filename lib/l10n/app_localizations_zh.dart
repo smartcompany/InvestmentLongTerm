@@ -527,10 +527,16 @@ class AppLocalizationsZh extends AppLocalizations {
   String get registeredDate => '购买日期';
 
   @override
-  String get initialAmount => '购买金额';
+  String get initialAmount => '投资本金';
+
+  @override
+  String get currentValuationAmount => '当前评估金额';
 
   @override
   String get currentValue => '当前价值';
+
+  @override
+  String get currentPrice => '当前价格';
 
   @override
   String get returnRate => '收益率';
@@ -555,4 +561,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get noPriceData => '无价格数据';
+
+  @override
+  String get quantity => '数量';
+
+  @override
+  String get averagePurchasePrice => '平均买入价';
 }

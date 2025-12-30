@@ -535,10 +535,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get registeredDate => 'Purchase Date';
 
   @override
-  String get initialAmount => 'Purchase Amount';
+  String get initialAmount => 'Investment Principal';
+
+  @override
+  String get currentValuationAmount => 'Current Valuation Amount';
 
   @override
   String get currentValue => 'Current Value';
+
+  @override
+  String get currentPrice => 'Current Price';
 
   @override
   String get returnRate => 'Return Rate';
@@ -564,4 +570,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noPriceData => 'No price data available';
+
+  @override
+  String get quantity => 'Quantity';
+
+  @override
+  String get averagePurchasePrice => 'Average Purchase Price';
 }
