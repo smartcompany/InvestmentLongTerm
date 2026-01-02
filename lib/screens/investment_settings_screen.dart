@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import '../l10n/app_localizations.dart';
 import '../models/investment_config.dart';
 import '../providers/app_state_provider.dart';
@@ -82,35 +83,56 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
         ),
       );
 
-      // Calculate results
-      await provider.calculate();
+      // 광고 표시와 계산을 병렬로 실행
+      debugPrint('📊 계산 시작');
+      final calculationFuture = provider.calculate();
 
-      if (!mounted) return;
-
-      if (provider.error != null) {
-        Navigator.of(context).pop(); // Close loading dialog
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.calculationError(provider.error!)),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-
-      // Show ad (keep loading dialog open until ad is shown or failed)
+      // 광고 표시 (사용자가 광고를 보는 동안 계산이 백그라운드에서 진행됨)
       await AdService.shared.showFullScreenAd(
-        onAdDismissed: () {
+        onAdDismissed: () async {
+          if (!mounted) return;
+          // 광고가 끝나면 계산 완료 대기
+          debugPrint('⏳ 광고 종료 - 계산 완료 대기 중...');
+          await calculationFuture;
+          debugPrint('✅ 계산 완료!');
+
           if (!mounted) return;
           Navigator.of(context).pop(); // Close loading dialog
+
+          if (provider.error != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(l10n.calculationError(provider.error!)),
+                backgroundColor: Colors.red,
+              ),
+            );
+            return;
+          }
+
           Navigator.of(
             context,
           ).push(MaterialPageRoute(builder: (context) => ResultScreen()));
         },
-        onAdFailedToShow: () {
-          // If ad fails, close loading dialog and proceed
+        onAdFailedToShow: () async {
+          // 광고 실패 시에도 계산 완료 대기
+          if (!mounted) return;
+          debugPrint('❌ 광고 실패 - 계산 완료 대기 중...');
+          await calculationFuture;
+          debugPrint('✅ 계산 완료!');
+
           if (!mounted) return;
           Navigator.of(context).pop(); // Close loading dialog
+
+          if (provider.error != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(l10n.calculationError(provider.error!)),
+                backgroundColor: Colors.red,
+              ),
+            );
+            return;
+          }
+
           Navigator.of(
             context,
           ).push(MaterialPageRoute(builder: (context) => ResultScreen()));
