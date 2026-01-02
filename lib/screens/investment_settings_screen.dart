@@ -98,11 +98,6 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
         return;
       }
 
-      // Load ad settings (keep loading dialog open)
-      await AdService.shared.loadSettings();
-
-      if (!mounted) return;
-
       // Show ad (keep loading dialog open until ad is shown or failed)
       await AdService.shared.showFullScreenAd(
         onAdDismissed: () {

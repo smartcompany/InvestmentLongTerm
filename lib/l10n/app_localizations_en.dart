@@ -182,6 +182,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get koreanStock => 'Korean Stock';
 
   @override
+  String get realEstate => 'Real Estate';
+
+  @override
   String get cash => 'Cash';
 
   @override

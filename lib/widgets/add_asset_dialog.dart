@@ -376,6 +376,8 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
                   ? l10n.commodity
                   : type == 'korean_stock'
                   ? l10n.koreanStock
+                  : type == 'real_estate'
+                  ? l10n.realEstate
                   : l10n.stock,
               style: TextStyle(
                 color: AppColors.slate300,

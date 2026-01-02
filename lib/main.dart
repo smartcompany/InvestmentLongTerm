@@ -16,6 +16,7 @@ import 'screens/main_tab_screen.dart';
 import 'providers/my_assets_provider.dart';
 import 'utils/colors.dart';
 import 'utils/currency_converter.dart';
+import 'services/ad_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,6 +60,9 @@ void main() async {
 
   // Initialize currency exchange rates (백그라운드에서 실행)
   CurrencyConverter.initialize();
+
+  // Initialize ad settings (앱 시작 시 한 번만 로드)
+  AdService.shared.loadSettings();
 
   runApp(
     MultiProvider(

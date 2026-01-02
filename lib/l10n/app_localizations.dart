@@ -402,6 +402,12 @@ abstract class AppLocalizations {
   /// **'한국 주식'**
   String get koreanStock;
 
+  /// No description provided for @realEstate.
+  ///
+  /// In ko, this message translates to:
+  /// **'부동산'**
+  String get realEstate;
+
   /// No description provided for @cash.
   ///
   /// In ko, this message translates to:

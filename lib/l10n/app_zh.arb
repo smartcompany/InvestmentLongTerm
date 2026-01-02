@@ -49,6 +49,7 @@
   "crypto": "加密货币",
   "stock": "美股",
   "koreanStock": "韩国股票",
+  "realEstate": "房地产",
   "cash": "现金",
   "commodity": "商品",
   "failedToLoadAssetList": "加载资产列表失败。",

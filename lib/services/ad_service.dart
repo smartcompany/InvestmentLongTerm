@@ -13,16 +13,31 @@ class AdService {
   }
   static final AdService shared = AdService._();
 
+  bool _settingsLoaded = false;
+  bool _isLoadingSettings = false;
+
   String? get rewardedAdId => share_lib.AdService.shared.rewardedAdId;
   String? get initialAdId => share_lib.AdService.shared.initialAdId;
   String? get downloadUrl => share_lib.AdService.shared.downloadUrl;
 
   Future<bool> loadSettings() async {
-    // baseUrl이 설정되지 않았으면 설정
-    share_lib.AdService.shared.setBaseUrl(
-      'https://investment-long-term-server.vercel.app',
-    );
-    return await share_lib.AdService.shared.loadSettings();
+    // 이미 로드했거나 로딩 중이면 재호출하지 않음
+    if (_settingsLoaded || _isLoadingSettings) {
+      return _settingsLoaded;
+    }
+
+    _isLoadingSettings = true;
+    try {
+      // baseUrl이 설정되지 않았으면 설정
+      share_lib.AdService.shared.setBaseUrl(
+        'https://investment-long-term-server.vercel.app',
+      );
+      final result = await share_lib.AdService.shared.loadSettings();
+      _settingsLoaded = result;
+      return result;
+    } finally {
+      _isLoadingSettings = false;
+    }
   }
 
   Future<void> showFullScreenAd({

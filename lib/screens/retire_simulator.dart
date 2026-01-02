@@ -1459,11 +1459,6 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
                       ),
                     );
 
-                    // Load ad settings
-                    await AdService.shared.loadSettings();
-
-                    if (!mounted) return;
-
                     // Show ad
                     await AdService.shared.showFullScreenAd(
                       onAdDismissed: () {

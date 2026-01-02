@@ -86,8 +86,9 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
       final assetOption = appProvider.assets.firstWhere(
         (a) => a.id == asset.assetId,
       );
-      // 한국 주식은 원화, 나머지는 달러
-      if (assetOption.type == 'korean_stock') {
+      // 한국 주식과 부동산은 원화, 나머지는 달러
+      if (assetOption.type == 'korean_stock' ||
+          assetOption.type == 'real_estate') {
         currentPriceCurrency = '₩';
       }
     } catch (e) {
@@ -160,7 +161,8 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                             final assetOption = appProvider.assets.firstWhere(
                               (a) => a.id == asset.assetId,
                             );
-                            if (assetOption.type == 'korean_stock') {
+                            if (assetOption.type == 'korean_stock' ||
+                                assetOption.type == 'real_estate') {
                               originalCurrency = '₩';
                             }
                           } catch (e) {

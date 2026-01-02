@@ -179,6 +179,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get koreanStock => '한국 주식';
 
   @override
+  String get realEstate => '부동산';
+
+  @override
   String get cash => '현금';
 
   @override

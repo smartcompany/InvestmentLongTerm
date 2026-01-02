@@ -49,6 +49,7 @@
   "crypto": "Cryptocurrency",
   "stock": "US Stock",
   "koreanStock": "Korean Stock",
+  "realEstate": "Real Estate",
   "cash": "Cash",
   "commodity": "Commodity",
   "failedToLoadAssetList": "Failed to load asset list.",

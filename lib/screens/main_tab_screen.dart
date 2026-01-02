@@ -58,10 +58,6 @@ class _MainTabScreenState extends State<MainTabScreen> {
     });
 
     try {
-      await AdService.shared.loadSettings();
-
-      if (!mounted) return;
-
       await AdService.shared.showFullScreenAd(
         onAdDismissed: () {
           if (!mounted) return;
