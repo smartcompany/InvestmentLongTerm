@@ -568,4 +568,14 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get averagePurchasePrice => '平均取得価格';
+
+  @override
+  String get currencyChangeWarning => '通貨変更';
+
+  @override
+  String get currencyChangeMessage =>
+      '通貨を変更すると、既に入力した資産の価格が新しい通貨基準で変わります。\n\n資産を正しく表示するには、新しく入力する必要があります。';
+
+  @override
+  String get understand => '理解しました';
 }

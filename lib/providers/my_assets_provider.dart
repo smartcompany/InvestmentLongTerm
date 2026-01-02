@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:fl_chart/fl_chart.dart';
 import '../models/my_asset.dart';
 import '../services/api_service.dart';
-import '../utils/currency_converter.dart';
 
 class MyAssetsProvider with ChangeNotifier {
   final List<MyAsset> _assets = [];
@@ -13,6 +12,7 @@ class MyAssetsProvider with ChangeNotifier {
   bool _isLoadingPortfolio = false;
   DateTime? _portfolioStartDate; // 포트폴리오 시작일
   DateTime? _portfolioEndDate; // 포트폴리오 종료일
+  int _selectedChartYears = 1; // 선택된 차트 기간 (년)
 
   List<MyAsset> get assets => List.unmodifiable(_assets);
   bool get isLoading => _isLoading;
@@ -20,6 +20,7 @@ class MyAssetsProvider with ChangeNotifier {
   bool get isLoadingPortfolio => _isLoadingPortfolio;
   DateTime? get portfolioStartDate => _portfolioStartDate;
   DateTime? get portfolioEndDate => _portfolioEndDate;
+  int get selectedChartYears => _selectedChartYears;
 
   // 총 매수 금액
   double get totalPurchaseAmount {
@@ -68,8 +69,8 @@ class MyAssetsProvider with ChangeNotifier {
         }
       }
 
-      // 포트폴리오 그래프 데이터 로드
-      await _loadPortfolioChart();
+      // 포트폴리오 그래프 데이터 로드 (기본 1년)
+      await loadPortfolioChart(years: 1);
     } catch (e) {
       debugPrint('Failed to load assets: $e');
     } finally {
@@ -119,7 +120,7 @@ class MyAssetsProvider with ChangeNotifier {
   }
 
   // 전체 포트폴리오 그래프 데이터 로드
-  Future<void> _loadPortfolioChart() async {
+  Future<void> loadPortfolioChart({int years = 1}) async {
     if (_assets.isEmpty) {
       _portfolioSpots = null;
       notifyListeners();
@@ -131,21 +132,19 @@ class MyAssetsProvider with ChangeNotifier {
 
     try {
       final now = DateTime.now();
-      // 차트 시작일을 1년 전으로 설정
-      final earliestDate = now.subtract(const Duration(days: 365));
-      final totalDays = 365; // 1년
+      // 차트 시작일을 지정된 년수 전으로 설정
+      final totalDays = years * 365;
+      final earliestDate = now.subtract(Duration(days: totalDays));
 
-      // 각 자산별로 일봉 데이터 가져오기 (1년치)
-
-      // 각 자산별로 일봉 데이터 가져오기 (1년치)
+      // 각 자산별로 일봉 데이터 가져오기
       final Map<String, Map<DateTime, double>> assetPricesByDate = {};
 
       for (final asset in _assets) {
         try {
-          // 1년 전부터 현재까지의 가격 데이터 가져오기
+          // 지정된 년수 전부터 현재까지의 가격 데이터 가져오기
           final priceData = await ApiService.fetchDailyPrices(
             asset.assetId,
-            365, // 1년치 데이터
+            totalDays, // 지정된 년수치 데이터
           );
 
           final assetPrices = <DateTime, double>{};
@@ -159,7 +158,7 @@ class MyAssetsProvider with ChangeNotifier {
 
             final date = DateTime.parse(dateStr).toLocal();
 
-            // 차트 시작일(1년 전) 이전 데이터는 스킵
+            // 차트 시작일 이전 데이터는 스킵
             if (date.isBefore(earliestDate)) continue;
 
             // 차트 범위 내의 데이터만 저장
@@ -189,7 +188,7 @@ class MyAssetsProvider with ChangeNotifier {
             }
           }
 
-          // 1년 전 가격이 없으면 첫 번째 가격 사용
+          // 시작일 가격이 없으면 첫 번째 가격 사용
           if (!assetPrices.containsKey(earliestDate)) {
             if (assetPrices.isNotEmpty) {
               final sortedDates = assetPrices.keys.toList()..sort();
@@ -321,24 +320,34 @@ class MyAssetsProvider with ChangeNotifier {
     await _saveAssets();
     // 현재 가격으로 currentValue 업데이트
     await _updateCurrentValue(newAsset);
-    await _loadPortfolioChart(); // 포트폴리오 그래프 업데이트
+    // 포트폴리오 그래프는 화면에서 선택된 기간으로 다시 로드해야 하므로 여기서는 호출하지 않음
+    notifyListeners();
+  }
+
+  // 선택된 차트 기간 설정
+  void setSelectedChartYears(int years) {
+    _selectedChartYears = years;
     notifyListeners();
   }
 
   // 개별 자산의 가격 히스토리 가져오기 (상세 화면용)
-  Future<List<FlSpot>> getPriceHistory(MyAsset asset) async {
+  Future<List<FlSpot>> getPriceHistory(MyAsset asset, {int? years}) async {
     try {
       final now = DateTime.now();
-      // 차트 시작일을 1년 전으로 설정
-      final earliestDate = now.subtract(const Duration(days: 365));
-      final totalDays = 365; // 1년
+      // 차트 시작일을 지정된 년수 전으로 설정 (기본값은 선택된 기간 사용)
+      final chartYears = years ?? _selectedChartYears;
+      final totalDays = chartYears * 365;
+      final earliestDate = now.subtract(Duration(days: totalDays));
 
-      // 1년 전부터 현재까지의 가격 데이터 가져오기
-      final priceData = await ApiService.fetchDailyPrices(asset.assetId, 365);
+      // 지정된 년수 전부터 현재까지의 가격 데이터 가져오기
+      final priceData = await ApiService.fetchDailyPrices(
+        asset.assetId,
+        totalDays,
+      );
 
       final assetPrices = <DateTime, double>{};
 
-      // 1년 전부터 현재까지의 가격 데이터 사용
+      // 지정된 년수 전부터 현재까지의 가격 데이터 사용
       for (final pricePoint in priceData) {
         final dateStr = pricePoint['date'] as String?;
         final price = (pricePoint['price'] as num).toDouble();
@@ -347,7 +356,7 @@ class MyAssetsProvider with ChangeNotifier {
 
         final date = DateTime.parse(dateStr).toLocal();
 
-        // 차트 시작일(1년 전) 이전 데이터는 스킵
+        // 차트 시작일 이전 데이터는 스킵
         if (date.isBefore(earliestDate)) continue;
 
         // 차트 범위 내의 데이터만 저장
@@ -374,7 +383,7 @@ class MyAssetsProvider with ChangeNotifier {
         }
       }
 
-      // 1년 전 가격이 없으면 첫 번째 가격 사용
+      // 시작일 가격이 없으면 첫 번째 가격 사용
       if (!assetPrices.containsKey(earliestDate)) {
         if (assetPrices.isNotEmpty) {
           final sortedDates = assetPrices.keys.toList()..sort();
@@ -431,7 +440,7 @@ class MyAssetsProvider with ChangeNotifier {
   Future<void> removeAsset(String id) async {
     _assets.removeWhere((asset) => asset.id == id);
     await _saveAssets();
-    await _loadPortfolioChart(); // 포트폴리오 그래프 업데이트
+    // 포트폴리오 그래프는 화면에서 선택된 기간으로 다시 로드해야 하므로 여기서는 호출하지 않음
     notifyListeners();
   }
 

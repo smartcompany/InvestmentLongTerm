@@ -253,7 +253,16 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                       _buildInfoRow(
                         l10n.currentPrice,
                         _currentPrice != null
-                            ? '$currentPriceCurrency${NumberFormat('#,##0.##').format(_currentPrice!)}'
+                            ? () {
+                                // 현재가를 사용자가 선택한 통화로 변환
+                                final convertedPrice =
+                                    CurrencyConverter.convertSync(
+                                      _currentPrice!,
+                                      currentPriceCurrency,
+                                      currencySymbol,
+                                    );
+                                return '$currencySymbol${NumberFormat('#,##0.##').format(convertedPrice)}';
+                              }()
                             : l10n.loadingPrice,
                       ),
                       SizedBox(height: 8),

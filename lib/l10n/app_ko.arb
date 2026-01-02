@@ -231,6 +231,9 @@
   "cancel": "취소",
   "noPriceData": "가격 데이터가 없습니다",
   "quantity": "수량",
-  "averagePurchasePrice": "평균 매수가"
+  "averagePurchasePrice": "평균 매수가",
+  "currencyChangeWarning": "통화 변경",
+  "currencyChangeMessage": "통화를 변경하면 기존에 입력한 자산의 가격이 새 통화 기준으로 달라집니다.\n\n자산을 올바르게 표시하려면 새로 입력해야 합니다.",
+  "understand": "이해했습니다"
 }
 

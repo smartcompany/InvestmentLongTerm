@@ -1117,6 +1117,24 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'평균 매수가'**
   String get averagePurchasePrice;
+
+  /// No description provided for @currencyChangeWarning.
+  ///
+  /// In ko, this message translates to:
+  /// **'통화 변경'**
+  String get currencyChangeWarning;
+
+  /// No description provided for @currencyChangeMessage.
+  ///
+  /// In ko, this message translates to:
+  /// **'통화를 변경하면 기존에 입력한 자산의 가격이 새 통화 기준으로 달라집니다.\n\n자산을 올바르게 표시하려면 새로 입력해야 합니다.'**
+  String get currencyChangeMessage;
+
+  /// No description provided for @understand.
+  ///
+  /// In ko, this message translates to:
+  /// **'이해했습니다'**
+  String get understand;
 }
 
 class _AppLocalizationsDelegate

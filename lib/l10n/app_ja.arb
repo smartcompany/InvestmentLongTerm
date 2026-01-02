@@ -221,6 +221,9 @@
   "cancel": "キャンセル",
   "noPriceData": "価格データがありません",
   "quantity": "数量",
-  "averagePurchasePrice": "平均取得価格"
+  "averagePurchasePrice": "平均取得価格",
+  "currencyChangeWarning": "通貨変更",
+  "currencyChangeMessage": "通貨を変更すると、既に入力した資産の価格が新しい通貨基準で変わります。\n\n資産を正しく表示するには、新しく入力する必要があります。",
+  "understand": "理解しました"
 }
 

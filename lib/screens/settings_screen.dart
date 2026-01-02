@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/currency_provider.dart';
+import '../providers/my_assets_provider.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
 import '../widgets/liquid_glass.dart';
@@ -88,7 +89,7 @@ class SettingsScreen extends StatelessWidget {
       icon: Icon(Icons.arrow_drop_down, color: AppColors.gold),
       underline: Container(height: 2, color: AppColors.gold),
       items: currencyOptions.map((option) {
-        final symbol = option['symbol'] as String?;
+        final symbol = option['symbol'];
         final label = option['label'] as String;
         final isSelected = symbol == selectedCurrency;
 
@@ -130,6 +131,48 @@ class SettingsScreen extends StatelessWidget {
         );
       }).toList(),
       onChanged: (String? newValue) async {
+        // 통화 변경 전에 자산이 있는지 확인
+        final myAssetsProvider = context.read<MyAssetsProvider>();
+        if (myAssetsProvider.assets.isNotEmpty) {
+          // 자산이 있으면 경고 다이얼로그 표시
+          final shouldProceed = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              backgroundColor: AppColors.navyMedium,
+              title: Text(
+                l10n.currencyChangeWarning,
+                style: TextStyle(color: Colors.white),
+              ),
+              content: Text(
+                l10n.currencyChangeMessage,
+                style: TextStyle(color: AppColors.slate300),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text(
+                    l10n.cancel,
+                    style: TextStyle(color: AppColors.slate400),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: Text(
+                    l10n.understand,
+                    style: TextStyle(color: AppColors.gold),
+                  ),
+                ),
+              ],
+            ),
+          );
+
+          // 사용자가 취소했으면 통화 변경하지 않음
+          if (shouldProceed != true) {
+            return;
+          }
+        }
+
+        // 통화 변경
         if (newValue == null) {
           await currencyProvider.resetToDefault(localeCode);
         } else {

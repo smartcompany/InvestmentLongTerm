@@ -221,6 +221,9 @@
   "cancel": "取消",
   "noPriceData": "无价格数据",
   "quantity": "数量",
-  "averagePurchasePrice": "平均买入价"
+  "averagePurchasePrice": "平均买入价",
+  "currencyChangeWarning": "货币更改",
+  "currencyChangeMessage": "更改货币将使已输入的资产价格按新货币基准发生变化。\n\n要正确显示资产，需要重新输入。",
+  "understand": "我明白了"
 }
 

@@ -567,4 +567,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get averagePurchasePrice => '平均买入价';
+
+  @override
+  String get currencyChangeWarning => '货币更改';
+
+  @override
+  String get currencyChangeMessage =>
+      '更改货币将使已输入的资产价格按新货币基准发生变化。\n\n要正确显示资产，需要重新输入。';
+
+  @override
+  String get understand => '我明白了';
 }

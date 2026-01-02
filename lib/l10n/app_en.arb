@@ -223,6 +223,9 @@
   "cancel": "Cancel",
   "noPriceData": "No price data available",
   "quantity": "Quantity",
-  "averagePurchasePrice": "Average Purchase Price"
+  "averagePurchasePrice": "Average Purchase Price",
+  "currencyChangeWarning": "Currency Change",
+  "currencyChangeMessage": "Changing the currency will alter the prices of assets you've already entered to match the new currency.\n\nTo display assets correctly, you need to re-enter them.",
+  "understand": "I Understand"
 }
 

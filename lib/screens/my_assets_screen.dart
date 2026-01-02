@@ -24,11 +24,18 @@ class MyAssetsScreen extends StatefulWidget {
 }
 
 class _MyAssetsScreenState extends State<MyAssetsScreen> {
+  int _selectedYears = 1; // 기본값: 1년
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<MyAssetsProvider>().loadAssets();
+      final provider = context.read<MyAssetsProvider>();
+      provider.loadAssets();
+      // Provider에 초기 기간 설정
+      provider.setSelectedChartYears(_selectedYears);
+      // 초기 그래프 로드
+      provider.loadPortfolioChart(years: _selectedYears);
     });
   }
 
@@ -152,7 +159,21 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
               ),
               SizedBox(height: 24),
               // 포트폴리오 그래프 (자산이 있을 때만 표시)
-              if (provider.assets.isNotEmpty)
+              if (provider.assets.isNotEmpty) ...[
+                // 기간 선택 버튼
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildPeriodButton('1Y', 1, provider),
+                    SizedBox(width: 8),
+                    _buildPeriodButton('3Y', 3, provider),
+                    SizedBox(width: 8),
+                    _buildPeriodButton('5Y', 5, provider),
+                    SizedBox(width: 8),
+                    _buildPeriodButton('10Y', 10, provider),
+                  ],
+                ),
+                SizedBox(height: 16),
                 Container(
                   height: 200,
                   margin: EdgeInsets.only(bottom: 24),
@@ -300,6 +321,7 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
                         )
                       : SizedBox.shrink(),
                 ),
+              ],
               // 통계 카드 (자산이 있을 때만 표시)
               if (provider.assets.isNotEmpty)
                 Container(
@@ -425,6 +447,43 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
     return (interval / factor).ceil() * factor;
   }
 
+  Widget _buildPeriodButton(
+    String label,
+    int years,
+    MyAssetsProvider provider,
+  ) {
+    final isSelected = _selectedYears == years;
+    return GestureDetector(
+      onTap: () async {
+        setState(() {
+          _selectedYears = years;
+        });
+        // Provider에도 선택된 기간 저장
+        provider.setSelectedChartYears(years);
+        await provider.loadPortfolioChart(years: years);
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.gold : Colors.white.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? AppColors.gold : Colors.white.withOpacity(0.3),
+            width: 1.5,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? AppColors.navyDark : Colors.white,
+            fontSize: 14,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildAssetCard(
     BuildContext context,
     MyAsset asset,
@@ -541,18 +600,22 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
     );
   }
 
-  void _showAddAssetDialog(
+  Future<void> _showAddAssetDialog(
     BuildContext context,
     MyAssetsProvider provider,
     AppLocalizations l10n,
-  ) {
+  ) async {
     // 자산 목록이 로드되지 않았으면 로드
     final appProvider = context.read<AppStateProvider>();
     if (appProvider.assets.isEmpty && !appProvider.isAssetsLoading) {
       appProvider.loadAssets();
     }
 
-    showDialog(context: context, builder: (context) => AddAssetDialog());
+    await showDialog(context: context, builder: (context) => AddAssetDialog());
+    // 다이얼로그가 닫힌 후 차트 다시 로드 (자산이 추가되었을 수 있으므로)
+    if (mounted) {
+      await provider.loadPortfolioChart(years: _selectedYears);
+    }
   }
 
   void _deleteAsset(
@@ -560,7 +623,7 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
     String assetId,
     MyAssetsProvider provider,
     AppLocalizations l10n,
-  ) {
+  ) async {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -572,9 +635,11 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
             child: Text(l10n.cancel),
           ),
           TextButton(
-            onPressed: () {
-              provider.removeAsset(assetId);
+            onPressed: () async {
+              await provider.removeAsset(assetId);
               Navigator.pop(context);
+              // 차트 다시 로드
+              await provider.loadPortfolioChart(years: _selectedYears);
             },
             child: Text(l10n.delete, style: TextStyle(color: Colors.red)),
           ),

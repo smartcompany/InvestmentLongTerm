@@ -568,4 +568,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get averagePurchasePrice => '평균 매수가';
+
+  @override
+  String get currencyChangeWarning => '통화 변경';
+
+  @override
+  String get currencyChangeMessage =>
+      '통화를 변경하면 기존에 입력한 자산의 가격이 새 통화 기준으로 달라집니다.\n\n자산을 올바르게 표시하려면 새로 입력해야 합니다.';
+
+  @override
+  String get understand => '이해했습니다';
 }

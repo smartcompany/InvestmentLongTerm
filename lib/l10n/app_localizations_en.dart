@@ -576,4 +576,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get averagePurchasePrice => 'Average Purchase Price';
+
+  @override
+  String get currencyChangeWarning => 'Currency Change';
+
+  @override
+  String get currencyChangeMessage =>
+      'Changing the currency will alter the prices of assets you\'ve already entered to match the new currency.\n\nTo display assets correctly, you need to re-enter them.';
+
+  @override
+  String get understand => 'I Understand';
 }
