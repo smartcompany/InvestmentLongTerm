@@ -46,6 +46,7 @@
   "retirementDescription": "은퇴 후 자산 변화를 시뮬레이션해보세요.",
   "pastAssetSimulation": "그때 샀다면?",
   "retirementSimulation": "은퇴 가능할까?",
+  "growthRace": "성장률 경주",
   "crypto": "암호화폐",
   "stock": "미국 주식",
   "koreanStock": "한국 주식",
@@ -235,6 +236,7 @@
   "averagePurchasePrice": "평균 매수가",
   "currencyChangeWarning": "통화 변경",
   "currencyChangeMessage": "통화를 변경하면 기존에 입력한 자산의 가격이 새 통화 기준으로 달라집니다.\n\n자산을 올바르게 표시하려면 새로 입력해야 합니다.",
-  "understand": "이해했습니다"
+  "understand": "이해했습니다",
+  "watchAdAndStart": "광고 보고 시작"
 }
 

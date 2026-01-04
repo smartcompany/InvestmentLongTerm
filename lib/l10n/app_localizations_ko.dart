@@ -170,6 +170,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get retirementSimulation => '은퇴 가능할까?';
 
   @override
+  String get growthRace => '성장률 경주';
+
+  @override
   String get crypto => '암호화폐';
 
   @override
@@ -581,4 +584,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get understand => '이해했습니다';
+
+  @override
+  String get watchAdAndStart => '광고 보고 시작';
 }

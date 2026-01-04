@@ -154,33 +154,42 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                       ),
                       SizedBox(height: 8),
                       if (asset.currentValue != null) ...[
-                        _buildInfoRow(l10n.currentValue, () {
-                          // 자산의 원본 통화 확인
-                          String originalCurrency = '\$'; // 기본값
-                          try {
-                            final assetOption = appProvider.assets.firstWhere(
-                              (a) => a.id == asset.assetId,
-                            );
-                            if (assetOption.type == 'korean_stock' ||
-                                assetOption.type == 'real_estate') {
-                              originalCurrency = '₩';
+                        FutureBuilder<double>(
+                          future: () async {
+                            // 자산의 원본 통화 확인
+                            String originalCurrency = '\$'; // 기본값
+                            try {
+                              final assetOption = appProvider.assets.firstWhere(
+                                (a) => a.id == asset.assetId,
+                              );
+                              if (assetOption.type == 'korean_stock' ||
+                                  assetOption.type == 'real_estate') {
+                                originalCurrency = '₩';
+                              }
+                            } catch (e) {
+                              // 기본값 사용
                             }
-                          } catch (e) {
-                            // 기본값 사용
-                          }
 
-                          // 환율 변환된 현재 가치
-                          final convertedValue = CurrencyConverter.convertSync(
-                            asset.currentValue!,
-                            originalCurrency,
-                            currencySymbol,
-                          );
-                          return '$currencySymbol${NumberFormat('#,##0.##').format(convertedValue)}';
-                        }()),
+                            // 환율 변환된 현재 가치
+                            return await CurrencyConverter.shared.convert(
+                              asset.currentValue!,
+                              originalCurrency,
+                              currencySymbol,
+                            );
+                          }(),
+                          builder: (context, snapshot) {
+                            final value = snapshot.data;
+                            return _buildInfoRow(
+                              l10n.currentValue,
+                              value != null
+                                  ? '$currencySymbol${NumberFormat('#,##0.##').format(value)}'
+                                  : l10n.loadingPrice,
+                            );
+                          },
+                        ),
                         SizedBox(height: 8),
-                        _buildInfoRow(
-                          l10n.returnRate,
-                          () {
+                        FutureBuilder<double>(
+                          future: () async {
                             // 자산의 원본 통화 확인
                             String originalCurrency = '\$';
                             try {
@@ -195,39 +204,31 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                             }
 
                             // 환율 변환된 현재 가치
-                            final convertedValue =
-                                CurrencyConverter.convertSync(
-                                  asset.currentValue!,
-                                  originalCurrency,
-                                  currencySymbol,
-                                );
+                            return await CurrencyConverter.shared.convert(
+                              asset.currentValue!,
+                              originalCurrency,
+                              currencySymbol,
+                            );
+                          }(),
+                          builder: (context, snapshot) {
+                            final convertedValue = snapshot.data;
+                            if (convertedValue == null) {
+                              return _buildInfoRow(
+                                l10n.returnRate,
+                                l10n.loadingPrice,
+                              );
+                            }
                             final returnRate =
                                 ((convertedValue / asset.initialAmount - 1) *
                                 100);
-                            return '${returnRate.toStringAsFixed(2)}%';
-                          }(),
-                          color: () {
-                            String originalCurrency = '\$';
-                            try {
-                              final assetOption = appProvider.assets.firstWhere(
-                                (a) => a.id == asset.assetId,
-                              );
-                              if (assetOption.type == 'korean_stock') {
-                                originalCurrency = '₩';
-                              }
-                            } catch (e) {
-                              // 기본값 사용
-                            }
-                            final convertedValue =
-                                CurrencyConverter.convertSync(
-                                  asset.currentValue!,
-                                  originalCurrency,
-                                  currencySymbol,
-                                );
-                            return convertedValue >= asset.initialAmount
-                                ? AppColors.success
-                                : Colors.red;
-                          }(),
+                            return _buildInfoRow(
+                              l10n.returnRate,
+                              '${returnRate.toStringAsFixed(2)}%',
+                              color: convertedValue >= asset.initialAmount
+                                  ? AppColors.success
+                                  : Colors.red,
+                            );
+                          },
                         ),
                       ] else
                         _buildInfoRow(l10n.loadingPrice, '...'),
@@ -252,21 +253,24 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildInfoRow(
-                        l10n.currentPrice,
-                        _currentPrice != null
-                            ? () {
-                                // 현재가를 사용자가 선택한 통화로 변환
-                                final convertedPrice =
-                                    CurrencyConverter.convertSync(
-                                      _currentPrice!,
-                                      currentPriceCurrency,
-                                      currencySymbol,
-                                    );
-                                return '$currencySymbol${NumberFormat('#,##0.##').format(convertedPrice)}';
-                              }()
-                            : l10n.loadingPrice,
-                      ),
+                      _currentPrice != null
+                          ? FutureBuilder<double>(
+                              future: CurrencyConverter.shared.convert(
+                                _currentPrice!,
+                                currentPriceCurrency,
+                                currencySymbol,
+                              ),
+                              builder: (context, snapshot) {
+                                final convertedPrice = snapshot.data;
+                                return _buildInfoRow(
+                                  l10n.currentPrice,
+                                  convertedPrice != null
+                                      ? '$currencySymbol${NumberFormat('#,##0.##').format(convertedPrice)}'
+                                      : l10n.loadingPrice,
+                                );
+                              },
+                            )
+                          : _buildInfoRow(l10n.currentPrice, l10n.loadingPrice),
                       SizedBox(height: 8),
                       _buildInfoRow(
                         l10n.quantity,

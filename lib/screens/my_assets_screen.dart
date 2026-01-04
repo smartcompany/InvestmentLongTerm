@@ -59,11 +59,11 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
   }
 
   // 환율 변환된 총 현재 가치 계산
-  double? _getConvertedTotalCurrentValue(
+  Future<double?> _getConvertedTotalCurrentValue(
     MyAssetsProvider provider,
     AppStateProvider appProvider,
     String targetCurrency,
-  ) {
+  ) async {
     double total = 0.0;
     bool hasValue = false;
 
@@ -74,7 +74,7 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
         asset.assetId,
         appProvider,
       );
-      final convertedValue = CurrencyConverter.convertSync(
+      final convertedValue = await CurrencyConverter.shared.convert(
         asset.currentValue!,
         originalCurrency,
         targetCurrency,
@@ -95,8 +95,8 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
     final currencySymbol = currencyProvider.getCurrencySymbol(localeCode);
     final l10n = AppLocalizations.of(context)!;
 
-    // 환율 변환된 총 현재 가치
-    final convertedTotalCurrentValue = _getConvertedTotalCurrentValue(
+    // 환율 변환된 총 현재 가치 (FutureBuilder로 처리)
+    final convertedTotalCurrentValueFuture = _getConvertedTotalCurrentValue(
       provider,
       appProvider,
       currencySymbol,
@@ -327,50 +327,62 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
               if (provider.assets.isNotEmpty)
                 Container(
                   margin: EdgeInsets.only(bottom: 24),
-                  child: LiquidGlass(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.18),
-                        width: 1.5,
-                      ),
-                    ),
-                    padding: EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${l10n.totalPurchaseAmount}: $currencySymbol${NumberFormat('#,##0.##').format(provider.totalPurchaseAmount)}',
-                          style: TextStyle(color: Colors.white, fontSize: 16),
-                        ),
-                        SizedBox(height: 12),
-                        Text(
-                          convertedTotalCurrentValue != null
-                              ? '${l10n.currentValue}: $currencySymbol${NumberFormat('#,##0.##').format(convertedTotalCurrentValue)}'
-                              : '${l10n.currentValue}: ${l10n.loadingPrice}',
-                          style: TextStyle(color: Colors.white, fontSize: 16),
-                        ),
-                        SizedBox(height: 12),
-                        Text(
-                          convertedTotalCurrentValue != null &&
-                                  provider.totalPurchaseAmount > 0
-                              ? '${l10n.totalReturnRate}: ${((convertedTotalCurrentValue / provider.totalPurchaseAmount - 1) * 100).toStringAsFixed(2)}%'
-                              : '${l10n.totalReturnRate}: -',
-                          style: TextStyle(
-                            color:
-                                convertedTotalCurrentValue != null &&
-                                    provider.totalPurchaseAmount > 0 &&
-                                    convertedTotalCurrentValue >=
-                                        provider.totalPurchaseAmount
-                                ? AppColors.success
-                                : Colors.red,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                  child: FutureBuilder<double?>(
+                    future: convertedTotalCurrentValueFuture,
+                    builder: (context, snapshot) {
+                      final convertedTotalCurrentValue = snapshot.data;
+                      return LiquidGlass(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.18),
+                            width: 1.5,
                           ),
                         ),
-                      ],
-                    ),
+                        padding: EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${l10n.totalPurchaseAmount}: $currencySymbol${NumberFormat('#,##0.##').format(provider.totalPurchaseAmount)}',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                            SizedBox(height: 12),
+                            Text(
+                              convertedTotalCurrentValue != null
+                                  ? '${l10n.currentValue}: $currencySymbol${NumberFormat('#,##0.##').format(convertedTotalCurrentValue)}'
+                                  : '${l10n.currentValue}: ${l10n.loadingPrice}',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                            SizedBox(height: 12),
+                            Text(
+                              convertedTotalCurrentValue != null &&
+                                      provider.totalPurchaseAmount > 0
+                                  ? '${l10n.totalReturnRate}: ${((convertedTotalCurrentValue / provider.totalPurchaseAmount - 1) * 100).toStringAsFixed(2)}%'
+                                  : '${l10n.totalReturnRate}: -',
+                              style: TextStyle(
+                                color:
+                                    convertedTotalCurrentValue != null &&
+                                        provider.totalPurchaseAmount > 0 &&
+                                        convertedTotalCurrentValue >=
+                                            provider.totalPurchaseAmount
+                                    ? AppColors.success
+                                    : Colors.red,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
                 ),
               // 자산 카드 목록
@@ -510,95 +522,99 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
       // 기본값 사용
     }
 
-    // 환율 변환된 현재 가치
-    double? convertedCurrentValue;
-    if (asset.currentValue != null) {
-      convertedCurrentValue = CurrencyConverter.convertSync(
-        asset.currentValue!,
-        originalCurrency,
-        currencySymbol,
-      );
-    }
+    // 환율 변환된 현재 가치 (FutureBuilder로 처리)
+    return FutureBuilder<double?>(
+      future: asset.currentValue != null
+          ? CurrencyConverter.shared.convert(
+              asset.currentValue!,
+              originalCurrency,
+              currencySymbol,
+            )
+          : Future.value(null),
+      builder: (context, snapshot) {
+        final convertedCurrentValue = snapshot.data;
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => AssetDetailScreen(asset: asset),
+        return GestureDetector(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => AssetDetailScreen(asset: asset),
+              ),
+            );
+          },
+          child: Container(
+            margin: EdgeInsets.only(bottom: 16),
+            child: LiquidGlass(
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.18),
+                  width: 1.5,
+                ),
+              ),
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          asset.assetName,
+                          style: TextStyle(
+                            color: AppColors.gold,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.delete_outline, color: Colors.red),
+                        onPressed: () =>
+                            _deleteAsset(context, asset.id, provider, l10n),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 12),
+                  Text(
+                    '${l10n.initialAmount}: $currencySymbol${NumberFormat('#,##0.##').format(asset.initialAmount)}',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                  SizedBox(height: 12),
+                  if (convertedCurrentValue != null)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${l10n.currentValue}: $currencySymbol${NumberFormat('#,##0.##').format(convertedCurrentValue)}',
+                          style: TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          '${l10n.returnRate}: ${((convertedCurrentValue / asset.initialAmount - 1) * 100).toStringAsFixed(2)}%',
+                          style: TextStyle(
+                            color: convertedCurrentValue >= asset.initialAmount
+                                ? AppColors.success
+                                : Colors.red,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    )
+                  else
+                    Text(
+                      l10n.loadingPrice,
+                      style: TextStyle(color: AppColors.slate400, fontSize: 14),
+                    ),
+                ],
+              ),
+            ),
           ),
         );
       },
-      child: Container(
-        margin: EdgeInsets.only(bottom: 16),
-        child: LiquidGlass(
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.18),
-              width: 1.5,
-            ),
-          ),
-          padding: EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      asset.assetName,
-                      style: TextStyle(
-                        color: AppColors.gold,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.delete_outline, color: Colors.red),
-                    onPressed: () =>
-                        _deleteAsset(context, asset.id, provider, l10n),
-                  ),
-                ],
-              ),
-              SizedBox(height: 12),
-              Text(
-                '${l10n.initialAmount}: $currencySymbol${NumberFormat('#,##0.##').format(asset.initialAmount)}',
-                style: TextStyle(color: Colors.white, fontSize: 16),
-              ),
-              SizedBox(height: 12),
-              if (convertedCurrentValue != null)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${l10n.currentValue}: $currencySymbol${NumberFormat('#,##0.##').format(convertedCurrentValue)}',
-                      style: TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      '${l10n.returnRate}: ${((convertedCurrentValue / asset.initialAmount - 1) * 100).toStringAsFixed(2)}%',
-                      style: TextStyle(
-                        color: convertedCurrentValue >= asset.initialAmount
-                            ? AppColors.success
-                            : Colors.red,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                )
-              else
-                Text(
-                  l10n.loadingPrice,
-                  style: TextStyle(color: AppColors.slate400, fontSize: 14),
-                ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 

@@ -173,6 +173,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get retirementSimulation => 'Can I retire?';
 
   @override
+  String get growthRace => 'Growth Race';
+
+  @override
   String get crypto => 'Cryptocurrency';
 
   @override
@@ -589,4 +592,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get understand => 'I Understand';
+
+  @override
+  String get watchAdAndStart => 'Watch Ad and Start';
 }

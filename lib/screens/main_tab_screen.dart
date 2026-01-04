@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'home_screen.dart';
 import 'retire_simulator.dart';
 import 'my_assets_screen.dart';
+import 'growth_race_screen.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/colors.dart';
 import '../services/ad_service.dart';
@@ -25,6 +26,7 @@ class _MainTabScreenState extends State<MainTabScreen> {
   List<Widget> get _screens => [
     const HomeScreen(),
     RetireSimulatorScreen(isVisible: _currentIndex == 1),
+    const GrowthRaceScreen(),
     const MyAssetsScreen(),
   ];
 
@@ -39,13 +41,13 @@ class _MainTabScreenState extends State<MainTabScreen> {
     // 앱 실행 중 한 번만 버튼 표시 (광고 없이)
     if (!_hasShownAdButtonThisSession) {
       setState(() {
-        _currentIndex = 2; // 탭 인덱스 즉시 업데이트
+        _currentIndex = 3; // 탭 인덱스 즉시 업데이트 (성장률 경주 탭 추가로 인덱스 변경)
         _showMyAssetsButton = true;
       });
     } else {
       // 이미 본 경우 바로 페이지로 이동
       setState(() {
-        _currentIndex = 2;
+        _currentIndex = 3;
         _showMyAssetsButton = false;
       });
     }
@@ -65,7 +67,7 @@ class _MainTabScreenState extends State<MainTabScreen> {
             _isLoadingAd = false;
             _showMyAssetsButton = false;
             _hasShownAdButtonThisSession = true; // 앱 실행 중에만 유지
-            _currentIndex = 2;
+            _currentIndex = 3; // 성장률 경주 탭 추가로 인덱스 변경
           });
         },
         onAdFailedToShow: () {
@@ -74,7 +76,7 @@ class _MainTabScreenState extends State<MainTabScreen> {
             _isLoadingAd = false;
             _showMyAssetsButton = false;
             _hasShownAdButtonThisSession = true; // 앱 실행 중에만 유지
-            _currentIndex = 2;
+            _currentIndex = 3; // 성장률 경주 탭 추가로 인덱스 변경
           });
         },
       );
@@ -84,7 +86,7 @@ class _MainTabScreenState extends State<MainTabScreen> {
         _isLoadingAd = false;
         _showMyAssetsButton = false;
         _hasShownAdButtonThisSession = true; // 앱 실행 중에만 유지
-        _currentIndex = 2;
+        _currentIndex = 3; // 성장률 경주 탭 추가로 인덱스 변경
       });
     }
   }
@@ -121,7 +123,7 @@ class _MainTabScreenState extends State<MainTabScreen> {
                         l10n.myAssetsSubtitle,
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                           fontSize: 16,
                           height: 1.5,
                         ),
@@ -191,9 +193,14 @@ class _MainTabScreenState extends State<MainTabScreen> {
                       index: 1,
                     ),
                     _buildTabItem(
+                      icon: Icons.compare_arrows,
+                      label: l10n.growthRace,
+                      index: 2,
+                    ),
+                    _buildTabItem(
                       icon: Icons.account_balance_wallet,
                       label: l10n.myAssets,
-                      index: 2,
+                      index: 3,
                     ),
                   ],
                 ),
@@ -218,7 +225,7 @@ class _MainTabScreenState extends State<MainTabScreen> {
           splashColor: Colors.transparent,
           highlightColor: Colors.transparent,
           onTap: () {
-            if (index == 2) {
+            if (index == 3) {
               // "지금 내 자산" 탭 클릭 시
               _handleMyAssetsTabTap();
             } else {

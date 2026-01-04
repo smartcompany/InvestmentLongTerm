@@ -170,6 +170,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get retirementSimulation => '退職できる？';
 
   @override
+  String get growthRace => '成長率レース';
+
+  @override
   String get crypto => '暗号資産';
 
   @override
@@ -581,4 +584,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get understand => '理解しました';
+
+  @override
+  String get watchAdAndStart => '広告を見て開始';
 }

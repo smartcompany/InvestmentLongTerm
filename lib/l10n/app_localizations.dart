@@ -384,6 +384,12 @@ abstract class AppLocalizations {
   /// **'은퇴 가능할까?'**
   String get retirementSimulation;
 
+  /// No description provided for @growthRace.
+  ///
+  /// In ko, this message translates to:
+  /// **'성장률 경주'**
+  String get growthRace;
+
   /// No description provided for @crypto.
   ///
   /// In ko, this message translates to:
@@ -1141,6 +1147,12 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'이해했습니다'**
   String get understand;
+
+  /// No description provided for @watchAdAndStart.
+  ///
+  /// In ko, this message translates to:
+  /// **'광고 보고 시작'**
+  String get watchAdAndStart;
 }
 
 class _AppLocalizationsDelegate

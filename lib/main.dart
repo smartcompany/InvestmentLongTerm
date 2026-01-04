@@ -14,8 +14,8 @@ import 'providers/retire_simulator_provider.dart';
 import 'providers/currency_provider.dart';
 import 'screens/main_tab_screen.dart';
 import 'providers/my_assets_provider.dart';
+import 'providers/growth_race_provider.dart';
 import 'utils/colors.dart';
-import 'utils/currency_converter.dart';
 import 'services/ad_service.dart';
 
 void main() async {
@@ -58,9 +58,6 @@ void main() async {
   // Initialize Kakao SDK
   KakaoSdk.init(nativeAppKey: '30272b5f0271c22c1747949a87f1758d');
 
-  // Initialize currency exchange rates (백그라운드에서 실행)
-  CurrencyConverter.initialize();
-
   // Initialize ad settings (앱 시작 시 한 번만 로드)
   AdService.shared.loadSettings();
 
@@ -71,6 +68,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => RetireSimulatorProvider()),
         ChangeNotifierProvider(create: (_) => CurrencyProvider()),
         ChangeNotifierProvider(create: (_) => MyAssetsProvider()),
+        ChangeNotifierProvider(create: (_) => GrowthRaceProvider()),
       ],
       child: MyApp(),
     ),

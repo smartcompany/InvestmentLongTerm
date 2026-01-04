@@ -5,14 +5,21 @@ import '../services/api_service.dart';
 
 /// 환율 변환 유틸리티 (서버 API 사용)
 class CurrencyConverter {
+  // 싱글톤 인스턴스
+  static final CurrencyConverter shared = CurrencyConverter._();
+
+  CurrencyConverter._();
+
   static const String _cacheKey = 'exchange_rates';
   static const String _cacheDateKey = 'exchange_rates_date';
 
-  static Map<String, double>? _ratesCache;
-  static DateTime? _cacheDate;
+  Map<String, double>? _ratesCache;
+  DateTime? _cacheDate;
+  bool _isInitializing = false;
+  bool _isInitialized = false;
 
   /// 날짜만 비교 (시간 무시)
-  static bool _isSameDate(DateTime date1, DateTime date2) {
+  bool _isSameDate(DateTime date1, DateTime date2) {
     return date1.year == date2.year &&
         date1.month == date2.month &&
         date1.day == date2.day;
@@ -20,7 +27,7 @@ class CurrencyConverter {
 
   /// 환율 가져오기 (캐시 확인 후 서버 API 호출)
   /// 동일 날짜면 저장된 환율을 재사용합니다.
-  static Future<Map<String, double>> _getExchangeRates() async {
+  Future<Map<String, double>> _getExchangeRates() async {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
@@ -80,12 +87,48 @@ class CurrencyConverter {
     }
   }
 
+  /// 환율 초기화 (앱 시작 시 호출 권장, 또는 첫 사용 시 자동 호출)
+  Future<void> initialize() async {
+    if (_isInitialized) return;
+    if (_isInitializing) {
+      // 이미 초기화 중이면 완료될 때까지 대기
+      while (_isInitializing) {
+        await Future.delayed(Duration(milliseconds: 100));
+      }
+      return;
+    }
+
+    _isInitializing = true;
+    try {
+      await _getExchangeRates();
+      _isInitialized = true;
+    } catch (e) {
+      debugPrint('Failed to initialize currency converter: $e');
+      rethrow;
+    } finally {
+      _isInitializing = false;
+    }
+  }
+
+  /// 초기화 확인 및 필요시 초기화
+  Future<void> _ensureInitialized() async {
+    if (!_isInitialized && !_isInitializing) {
+      await initialize();
+    } else if (_isInitializing) {
+      // 초기화 중이면 완료될 때까지 대기
+      while (_isInitializing) {
+        await Future.delayed(Duration(milliseconds: 100));
+      }
+    }
+  }
+
   /// 환율 변환 (from에서 to로)
-  static Future<double> convert(
+  Future<double> convert(
     double amount,
     String fromCurrency,
     String toCurrency,
   ) async {
+    await _ensureInitialized();
     if (fromCurrency == toCurrency) return amount;
 
     final rates = await _getExchangeRates();
@@ -97,42 +140,8 @@ class CurrencyConverter {
     return _fromUsd(usdAmount, toCurrency, rates);
   }
 
-  /// 동기식 변환 (캐시된 환율 사용, 없으면 에러)
-  static double convertSync(
-    double amount,
-    String fromCurrency,
-    String toCurrency,
-  ) {
-    if (fromCurrency == toCurrency) return amount;
-
-    if (_ratesCache == null) {
-      throw Exception('Exchange rates not loaded. Call initialize() first.');
-    }
-
-    final rates = _ratesCache!;
-
-    // 디버깅: 환율 값 확인
-    debugPrint(
-      '[CurrencyConverter] 환율 값: KRW=${rates['KRW']}, JPY=${rates['JPY']}, CNY=${rates['CNY']}',
-    );
-    debugPrint('[CurrencyConverter] 변환: $amount $fromCurrency -> $toCurrency');
-
-    // USD로 먼저 변환
-    double usdAmount = _toUsd(amount, fromCurrency, rates);
-
-    // USD에서 목표 통화로 변환
-    final result = _fromUsd(usdAmount, toCurrency, rates);
-    debugPrint('[CurrencyConverter] 결과: $result $toCurrency');
-
-    return result;
-  }
-
   /// USD로 변환
-  static double _toUsd(
-    double amount,
-    String currency,
-    Map<String, double> rates,
-  ) {
+  double _toUsd(double amount, String currency, Map<String, double> rates) {
     switch (currency) {
       case '\$':
       case 'USD':
@@ -152,7 +161,7 @@ class CurrencyConverter {
   }
 
   /// USD에서 변환
-  static double _fromUsd(
+  double _fromUsd(
     double usdAmount,
     String currency,
     Map<String, double> rates,
@@ -173,10 +182,5 @@ class CurrencyConverter {
       default:
         return usdAmount;
     }
-  }
-
-  /// 환율 초기화 (앱 시작 시 호출 권장)
-  static Future<void> initialize() async {
-    await _getExchangeRates();
   }
 }

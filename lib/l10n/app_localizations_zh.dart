@@ -170,6 +170,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get retirementSimulation => '能退休吗？';
 
   @override
+  String get growthRace => '增长率竞赛';
+
+  @override
   String get crypto => '加密货币';
 
   @override
@@ -580,4 +583,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get understand => '我明白了';
+
+  @override
+  String get watchAdAndStart => '观看广告并开始';
 }

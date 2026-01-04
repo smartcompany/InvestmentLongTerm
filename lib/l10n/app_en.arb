@@ -46,6 +46,7 @@
   "retirementDescription": "Simulate how your assets change after retirement.",
   "pastAssetSimulation": "If I bought it then?",
   "retirementSimulation": "Can I retire?",
+  "growthRace": "Growth Race",
   "crypto": "Cryptocurrency",
   "stock": "US Stock",
   "koreanStock": "Korean Stock",
@@ -227,6 +228,7 @@
   "averagePurchasePrice": "Average Purchase Price",
   "currencyChangeWarning": "Currency Change",
   "currencyChangeMessage": "Changing the currency will alter the prices of assets you've already entered to match the new currency.\n\nTo display assets correctly, you need to re-enter them.",
-  "understand": "I Understand"
+  "understand": "I Understand",
+  "watchAdAndStart": "Watch Ad and Start"
 }
 
