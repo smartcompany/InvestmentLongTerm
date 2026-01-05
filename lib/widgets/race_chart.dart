@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
 import '../utils/colors.dart';
 
 class RaceChartData {
@@ -77,11 +78,38 @@ class RaceChart extends StatelessWidget {
                 tooltipPadding: EdgeInsets.all(12),
                 tooltipMargin: 16,
                 getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
-                  return touchedBarSpots.map((barSpot) {
+                  if (touchedBarSpots.isEmpty) return [];
+
+                  // 날짜는 한 번만 계산 (모든 spot이 같은 날짜이므로)
+                  final firstSpot = touchedBarSpots.first;
+                  final date = DateTime.fromMillisecondsSinceEpoch(
+                    firstSpot.x.toInt(),
+                  );
+                  final formattedDate = DateFormat('yyyy-MM-dd').format(date);
+
+                  return touchedBarSpots.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final barSpot = entry.value;
                     final flSpot = barSpot;
                     final seriesData = sortedSeries[barSpot.barIndex];
+                    final isLast = index == touchedBarSpots.length - 1;
+
+                    // Y축 값은 포트폴리오 가치 (원 단위), 초기 투자금 100만원 기준으로 수익률 계산
+                    const initialInvestment = 1000000.0;
+                    final currentValue = flSpot.y;
+                    final growthRate =
+                        ((currentValue - initialInvestment) /
+                            initialInvestment) *
+                        100;
+                    final formattedRate =
+                        '${growthRate >= 0 ? '+' : ''}${growthRate.toStringAsFixed(1)}%';
+
+                    final text = isLast
+                        ? '${seriesData.name}: $formattedRate\n$formattedDate'
+                        : '${seriesData.name}: $formattedRate';
+
                     return LineTooltipItem(
-                      '${seriesData.name}: ${flSpot.y.toStringAsFixed(2)}%',
+                      text,
                       TextStyle(
                         color: seriesData.color,
                         fontWeight: FontWeight.bold,

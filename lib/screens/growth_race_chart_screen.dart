@@ -6,6 +6,9 @@ import '../l10n/app_localizations.dart';
 import '../providers/app_state_provider.dart';
 import '../providers/growth_race_provider.dart';
 import '../utils/colors.dart';
+import '../utils/chart_image_utils.dart';
+import '../widgets/common_share_ui.dart';
+import '../services/ad_service.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../widgets/race_chart.dart';
 
@@ -20,6 +23,7 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
     with SingleTickerProviderStateMixin {
   Timer? _raceTimer;
   late AnimationController _animationController;
+  final GlobalKey _chartKey = GlobalKey();
 
   @override
   void initState() {
@@ -51,7 +55,41 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
 
     if (priceData.isEmpty) return;
 
-    double progress = 0.0;
+    // 모든 자산의 날짜 범위에서 가장 오래된 날짜와 가장 최신 날짜 찾기
+    DateTime? startDate;
+    DateTime? endDate;
+    for (final data in priceData.values) {
+      if (data.isNotEmpty) {
+        try {
+          final firstDateStr = data[0]['date'] as String?;
+          final lastDateStr = data[data.length - 1]['date'] as String?;
+          if (firstDateStr != null && lastDateStr != null) {
+            final firstDate = DateTime.parse(firstDateStr);
+            final lastDate = DateTime.parse(lastDateStr);
+            if (startDate == null || firstDate.isBefore(startDate)) {
+              startDate = firstDate;
+            }
+            if (endDate == null || lastDate.isAfter(endDate)) {
+              endDate = lastDate;
+            }
+          }
+        } catch (e) {
+          // 날짜 파싱 실패 시 무시
+        }
+      }
+    }
+
+    if (startDate == null || endDate == null) return;
+
+    final start = startDate;
+    final end = endDate;
+
+    DateTime currentDate = start;
+    final totalDuration = end.difference(start);
+    final stepDuration = Duration(
+      milliseconds: (totalDuration.inMilliseconds / 200).round(),
+    ); // 약 200단계
+
     _raceTimer?.cancel();
 
     _raceTimer = Timer.periodic(Duration(milliseconds: 50), (timer) {
@@ -60,13 +98,15 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
         return;
       }
 
-      if (progress >= 1.0) {
+      if (currentDate.isAfter(end) || currentDate.isAtSameMomentAs(end)) {
+        // 마지막 날짜로 설정하여 완료 상태로 만듦
+        provider.updateRaceDate(end);
         timer.cancel();
         return;
       }
 
-      provider.updateRaceProgress(progress);
-      progress += 0.01; // 진행도 증가 (약 10초에 완료)
+      provider.updateRaceDate(currentDate);
+      currentDate = currentDate.add(stepDuration);
     });
   }
 
@@ -90,16 +130,6 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
           },
         ),
         title: Text(l10n.growthRace, style: TextStyle(color: Colors.white)),
-        actions: [
-          if (provider.isRacing)
-            IconButton(
-              icon: Icon(Icons.pause, color: Colors.white),
-              onPressed: () {
-                provider.stopRace();
-                _raceTimer?.cancel();
-              },
-            ),
-        ],
       ),
       body: SafeArea(
         child: provider.priceData.isEmpty
@@ -109,7 +139,7 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
                   style: TextStyle(color: AppColors.slate400),
                 ),
               )
-            : _buildRaceChart(provider, appProvider, localeCode),
+            : _buildRaceChart(provider, appProvider, localeCode, l10n),
       ),
     );
   }
@@ -118,10 +148,11 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
     GrowthRaceProvider provider,
     AppStateProvider appProvider,
     String localeCode,
+    AppLocalizations l10n,
   ) {
     final priceData = provider.priceData;
     final rankedAssetIds = provider.rankedAssetIds;
-    final progress = provider.progress;
+    final currentDate = provider.currentDate;
 
     final raceSeries = <RaceChartData>[];
     double maxX = 0.0;
@@ -150,68 +181,52 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
       if (data != null && data.isNotEmpty) {
         final firstPrice = (data[0]['price'] as num).toDouble();
         final spots = <FlSpot>[];
+        double? lastKnownPrice = firstPrice;
 
-        // 첫 번째 날짜를 기준으로 설정
-        DateTime? startDate;
-        try {
-          final firstDateStr = data[0]['date'] as String?;
-          if (firstDateStr != null) {
-            startDate = DateTime.parse(firstDateStr);
-          }
-        } catch (e) {
-          // 날짜 파싱 실패 시 인덱스 사용
-        }
+        // currentDate까지의 데이터만 차트에 추가
+        for (int j = 0; j < data.length; j++) {
+          try {
+            final dateStr = data[j]['date'] as String?;
+            if (dateStr != null) {
+              final dataDate = DateTime.parse(dateStr);
 
-        // 진행도에 비례한 인덱스 계산
-        final endIndex = ((progress * (data.length - 1))).round().clamp(
-          0,
-          data.length - 1,
-        );
-        for (int j = 0; j <= endIndex; j++) {
-          final price = (data[j]['price'] as num).toDouble();
-
-          // Y축: 초기 투자 금액으로 산 자산의 현재 가치
-          final assetValue = firstPrice > 0
-              ? (initialInvestment / firstPrice) * price
-              : 0.0;
-
-          // X축: 날짜 사용 (시작일부터의 일수)
-          double xValue;
-          if (startDate != null) {
-            try {
-              final dateStr = data[j]['date'] as String?;
-              if (dateStr != null) {
-                final currentDate = DateTime.parse(dateStr);
-                final daysDiff = currentDate.difference(startDate).inDays;
-                xValue = daysDiff.toDouble();
-              } else {
-                xValue = j.toDouble();
+              // currentDate가 null이면 모든 데이터 표시, 아니면 currentDate까지만
+              if (currentDate != null && dataDate.isAfter(currentDate)) {
+                break;
               }
-            } catch (e) {
-              xValue = j.toDouble();
+
+              final price = (data[j]['price'] as num).toDouble();
+              lastKnownPrice = price;
+
+              // Y축: 초기 투자 금액으로 산 자산의 현재 가치
+              final assetValue = firstPrice > 0
+                  ? (initialInvestment / firstPrice) * price
+                  : 0.0;
+
+              // X축: 실제 날짜 (DateTime의 millisecondsSinceEpoch 사용)
+              final xValue = dataDate.millisecondsSinceEpoch.toDouble();
+
+              spots.add(FlSpot(xValue, assetValue));
+
+              // X축 범위 업데이트
+              if (!hasXData) {
+                maxX = xValue;
+                minX = xValue;
+                hasXData = true;
+              } else {
+                if (xValue > maxX) maxX = xValue;
+                if (xValue < minX) minX = xValue;
+              }
             }
-          } else {
-            xValue = j.toDouble();
-          }
-
-          spots.add(FlSpot(xValue, assetValue));
-
-          // X축 범위 업데이트
-          if (!hasXData) {
-            maxX = xValue;
-            minX = xValue;
-            hasXData = true;
-          } else {
-            if (xValue > maxX) maxX = xValue;
-            if (xValue < minX) minX = xValue;
+          } catch (e) {
+            // 날짜 파싱 실패 시 무시
           }
         }
 
         // 레이블용 수익률 계산 (%)
-        final currentPrice =
-            data[math.min(endIndex, data.length - 1)]['price'] as num;
+        final currentPrice = lastKnownPrice ?? firstPrice;
         final currentGrowthRate = firstPrice > 0
-            ? ((currentPrice.toDouble() - firstPrice) / firstPrice) * 100
+            ? ((currentPrice - firstPrice) / firstPrice) * 100
             : 0.0;
 
         raceSeries.add(
@@ -259,24 +274,170 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
       minY = math.max(0, minY - padding); // 최소값은 0 이상
     }
 
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
+    return SingleChildScrollView(
       padding: EdgeInsets.all(16),
-      child: raceSeries.isEmpty
-          ? Center(
-              child: Text(
-                '데이터를 불러오는 중...',
-                style: TextStyle(color: AppColors.slate400),
-              ),
-            )
-          : RaceChart(
-              series: raceSeries,
-              maxX: hasXData ? maxX : 0.0,
-              minX: hasXData ? minX : 0.0,
-              maxY: maxY,
-              minY: minY,
+      child: Column(
+        children: [
+          RepaintBoundary(
+            key: _chartKey,
+            child: Container(
+              width: double.infinity,
+              height: MediaQuery.of(context).size.height * 0.6,
+              child: raceSeries.isEmpty
+                  ? Center(
+                      child: Text(
+                        '데이터를 불러오는 중...',
+                        style: TextStyle(color: AppColors.slate400),
+                      ),
+                    )
+                  : RaceChart(
+                      series: raceSeries,
+                      maxX: hasXData ? maxX : 0.0,
+                      minX: hasXData ? minX : 0.0,
+                      maxY: maxY,
+                      minY: minY,
+                    ),
             ),
+          ),
+          if (_isRaceComplete(provider, priceData)) ...[
+            SizedBox(height: 32),
+            _buildShareButton(provider, appProvider, localeCode, l10n),
+            SizedBox(height: 16),
+          ],
+        ],
+      ),
     );
+  }
+
+  bool _isRaceComplete(
+    GrowthRaceProvider provider,
+    Map<String, List<Map<String, dynamic>>> priceData,
+  ) {
+    final currentDate = provider.currentDate;
+    if (currentDate == null) return false;
+
+    // 모든 자산의 가장 최신 날짜 찾기
+    DateTime? latestDate;
+    for (final data in priceData.values) {
+      if (data.isNotEmpty) {
+        try {
+          final lastDateStr = data[data.length - 1]['date'] as String?;
+          if (lastDateStr != null) {
+            final date = DateTime.parse(lastDateStr);
+            if (latestDate == null || date.isAfter(latestDate)) {
+              latestDate = date;
+            }
+          }
+        } catch (e) {
+          // 날짜 파싱 실패 시 무시
+        }
+      }
+    }
+
+    if (latestDate == null) return false;
+    return currentDate.isAfter(latestDate) ||
+        currentDate.isAtSameMomentAs(latestDate);
+  }
+
+  Widget _buildShareButton(
+    GrowthRaceProvider provider,
+    AppStateProvider appProvider,
+    String localeCode,
+    AppLocalizations l10n,
+  ) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: () async {
+          final shareText = _buildShareText(
+            provider,
+            appProvider,
+            localeCode,
+            l10n,
+          );
+
+          // Convert chart to image
+          final chartImageBytes = await ChartImageUtils.widgetToImage(
+            _chartKey,
+          );
+
+          if (!mounted) return;
+          await CommonShareUI.showShareOptionsDialog(
+            context: context,
+            shareText: shareText,
+            chartImageBytes: chartImageBytes,
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.gold,
+          foregroundColor: AppColors.navyDark,
+          padding: EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        icon: Icon(Icons.share_outlined),
+        label: Text(
+          l10n.share,
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
+  }
+
+  String _buildShareText(
+    GrowthRaceProvider provider,
+    AppStateProvider appProvider,
+    String localeCode,
+    AppLocalizations l10n,
+  ) {
+    final buffer = StringBuffer();
+    final rankedAssetIds = provider.rankedAssetIds;
+    final priceData = provider.priceData;
+
+    buffer.writeln('📊 ${l10n.growthRace}');
+    buffer.writeln('');
+    buffer.writeln('${provider.selectedYears}년 기준 자산들의 성장률을 경주로 비교한 결과입니다.');
+    buffer.writeln('');
+
+    for (int i = 0; i < rankedAssetIds.length; i++) {
+      final assetId = rankedAssetIds[i];
+      final asset = appProvider.assets.firstWhere((a) => a.id == assetId);
+      final data = priceData[assetId];
+
+      if (data != null && data.isNotEmpty) {
+        final firstPrice = (data[0]['price'] as num).toDouble();
+        final lastPrice = (data[data.length - 1]['price'] as num).toDouble();
+        final growthRate = firstPrice > 0
+            ? ((lastPrice - firstPrice) / firstPrice) * 100
+            : 0.0;
+
+        final emoji = i == 0
+            ? '🏆'
+            : i == 1
+            ? '🥈'
+            : i == 2
+            ? '🥉'
+            : '📈';
+
+        buffer.writeln(
+          '$emoji ${i + 1}위: ${asset.displayName(localeCode)} ${asset.icon}',
+        );
+        buffer.writeln('   수익률: ${growthRate.toStringAsFixed(2)}%');
+        buffer.writeln('');
+      }
+    }
+
+    buffer.writeln('');
+    buffer.writeln('✨ ${l10n.shareTextFooter}');
+
+    // Add download URL if available
+    final downloadUrl = AdService.shared.downloadUrl;
+    if (downloadUrl != null && downloadUrl.isNotEmpty) {
+      buffer.writeln('');
+      buffer.writeln('🔗 ${l10n.downloadLink(downloadUrl)}');
+    }
+
+    return buffer.toString();
   }
 }

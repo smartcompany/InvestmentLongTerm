@@ -12,7 +12,7 @@ class GrowthRaceProvider with ChangeNotifier {
       {}; // assetId -> current growth rate
   List<String> _rankedAssetIds = []; // 순위별 assetId 목록
   DateTime? _raceStartDate;
-  double _progress = 0.0; // 0.0 ~ 1.0 진행도
+  DateTime? _currentDate;
 
   Set<String> get selectedAssetIds => Set.unmodifiable(_selectedAssetIds);
   int get selectedYears => _selectedYears;
@@ -24,7 +24,7 @@ class GrowthRaceProvider with ChangeNotifier {
       Map.unmodifiable(_currentGrowthRates);
   List<String> get rankedAssetIds => List.unmodifiable(_rankedAssetIds);
   DateTime? get raceStartDate => _raceStartDate;
-  double get progress => _progress;
+  DateTime? get currentDate => _currentDate;
 
   void toggleAsset(String assetId) {
     if (_selectedAssetIds.contains(assetId)) {
@@ -83,24 +83,32 @@ class GrowthRaceProvider with ChangeNotifier {
     if (_selectedAssetIds.isEmpty || _priceData.isEmpty) return;
 
     _isRacing = true;
-    _progress = 0.0;
+    _currentDate = null;
     _currentGrowthRates.clear();
     _rankedAssetIds = _selectedAssetIds.toList();
     _raceStartDate = DateTime.now();
 
-    // 모든 자산의 첫 번째 가격을 기준으로 정렬 (초기 순위)
-    if (_priceData.isNotEmpty) {
-      final firstPrices = <String, double>{};
-      for (final assetId in _selectedAssetIds) {
-        final data = _priceData[assetId];
-        if (data != null && data.isNotEmpty) {
-          firstPrices[assetId] = (data[0]['price'] as num).toDouble();
+    // 모든 자산의 첫 번째 날짜를 찾아서 가장 오래된 날짜로 설정
+    DateTime? earliestDate;
+    for (final assetId in _selectedAssetIds) {
+      final data = _priceData[assetId];
+      if (data != null && data.isNotEmpty) {
+        try {
+          final firstDateStr = data[0]['date'] as String?;
+          if (firstDateStr != null) {
+            final date = DateTime.parse(firstDateStr);
+            if (earliestDate == null || date.isBefore(earliestDate)) {
+              earliestDate = date;
+            }
+          }
+        } catch (e) {
+          // 날짜 파싱 실패 시 무시
         }
       }
-      // 초기 순위는 첫 가격 기준 (내림차순, 높은 가격이 위)
-      _rankedAssetIds.sort(
-        (a, b) => (firstPrices[a] ?? 0).compareTo(firstPrices[b] ?? 0),
-      );
+    }
+
+    if (earliestDate != null) {
+      _currentDate = earliestDate;
     }
 
     notifyListeners();
@@ -108,32 +116,39 @@ class GrowthRaceProvider with ChangeNotifier {
 
   void stopRace() {
     _isRacing = false;
-    _progress = 0.0;
+    _currentDate = null;
     notifyListeners();
   }
 
-  void updateRaceProgress(double progress) {
+  void updateRaceDate(DateTime date) {
     if (!_isRacing) return;
-    _progress = progress.clamp(0.0, 1.0);
+    _currentDate = date;
 
     // 각 자산의 현재 성장률 계산
     _currentGrowthRates.clear();
-    final firstPrices = <String, double>{};
-    final currentPrices = <String, double>{};
 
     for (final assetId in _selectedAssetIds) {
       final data = _priceData[assetId];
       if (data != null && data.isNotEmpty) {
         final firstPrice = (data[0]['price'] as num).toDouble();
-        // 진행도에 비례한 인덱스 계산
-        final currentIndex = ((progress * (data.length - 1))).round().clamp(
-          0,
-          data.length - 1,
-        );
-        final currentPrice = (data[currentIndex]['price'] as num).toDouble();
 
-        firstPrices[assetId] = firstPrice;
-        currentPrices[assetId] = currentPrice;
+        // 해당 날짜에 데이터가 있으면 사용, 없으면 가장 가까운 과거 데이터 사용
+        // 데이터가 날짜순으로 정렬되어 있으므로 역순으로 확인
+        double currentPrice = firstPrice;
+        for (int i = data.length - 1; i >= 0; i--) {
+          try {
+            final dateStr = data[i]['date'] as String?;
+            if (dateStr != null) {
+              final dataDate = DateTime.parse(dateStr);
+              if (!dataDate.isAfter(date)) {
+                currentPrice = (data[i]['price'] as num).toDouble();
+                break;
+              }
+            }
+          } catch (e) {
+            // 날짜 파싱 실패 시 무시
+          }
+        }
 
         if (firstPrice > 0) {
           final growthRate = ((currentPrice - firstPrice) / firstPrice) * 100;
@@ -162,7 +177,7 @@ class GrowthRaceProvider with ChangeNotifier {
     _currentGrowthRates.clear();
     _rankedAssetIds.clear();
     _raceStartDate = null;
-    _progress = 0.0;
+    _currentDate = null;
     notifyListeners();
   }
 }
