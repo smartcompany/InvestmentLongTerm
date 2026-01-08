@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/investment_config.dart';
 import '../models/calculation_result.dart';
 import '../providers/app_state_provider.dart';
+import '../providers/currency_provider.dart';
 import '../utils/calculator.dart';
 import '../utils/colors.dart';
 import '../widgets/comparison_chart.dart';
@@ -37,8 +38,9 @@ class ComparisonScreen extends StatelessWidget {
     );
     final recurringResult = InvestmentCalculator.calculate(recurringConfig);
 
+    final currencySymbol = CurrencyProvider.shared.getCurrencySymbol();
     final currencyFormat = NumberFormat.currency(
-      symbol: '\$',
+      symbol: currencySymbol,
       decimalDigits: 0,
     );
     final chartSeries = [
@@ -98,7 +100,10 @@ class ComparisonScreen extends StatelessWidget {
               child: Container(
                 height: 300,
                 padding: EdgeInsets.only(right: 16, top: 10, bottom: 10),
-                child: ComparisonChart(series: chartSeries),
+                child: ComparisonChart(
+                  series: chartSeries,
+                  currencySymbol: currencySymbol,
+                ),
               ),
             ),
             SizedBox(height: 20),

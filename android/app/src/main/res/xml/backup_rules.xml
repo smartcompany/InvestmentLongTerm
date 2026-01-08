@@ -6,7 +6,5 @@
     <!-- 모든 SharedPreferences 백업 -->
     <include domain="sharedpref" path="." />
     
-    <!-- 기타 불필요한 데이터 제외 -->
-    <exclude domain="file" path="cache/" />
-    <exclude domain="database" path="cache.db" />
+    <!-- cache는 기본적으로 백업되지 않으므로 exclude 불필요 -->
 </full-backup-content>
