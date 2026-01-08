@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../utils/colors.dart';
 
 class ComparisonSeries {
@@ -24,8 +25,13 @@ class ComparisonSeries {
 
 class ComparisonChart extends StatelessWidget {
   final List<ComparisonSeries> series;
+  final String currencySymbol;
 
-  const ComparisonChart({super.key, required this.series});
+  const ComparisonChart({
+    super.key,
+    required this.series,
+    required this.currencySymbol,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -44,11 +50,12 @@ class ComparisonChart extends StatelessWidget {
             tooltipPadding: EdgeInsets.all(12),
             tooltipMargin: 16,
             getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
+              final numberFormat = NumberFormat('#,###');
               return touchedBarSpots.map((barSpot) {
                 final flSpot = barSpot;
                 final seriesData = sortedSeries[barSpot.barIndex];
                 return LineTooltipItem(
-                  '${seriesData.label}: \$${flSpot.y.toStringAsFixed(0)}',
+                  '${seriesData.label}: $currencySymbol${numberFormat.format(flSpot.y)}',
                   TextStyle(
                     color: seriesData.color,
                     fontWeight: FontWeight.bold,

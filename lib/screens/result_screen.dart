@@ -9,7 +9,7 @@ import '../providers/app_state_provider.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
 import '../widgets/common_share_ui.dart';
-import '../widgets/investment_chart.dart';
+import '../widgets/asset_price_chart.dart';
 import '../widgets/comparison_chart.dart';
 import '../widgets/liquid_glass.dart';
 import '../services/ad_service.dart';
@@ -243,27 +243,39 @@ class _ResultScreenState extends State<ResultScreen> {
             SizedBox(height: 20),
             RepaintBoundary(
               key: _chartKey,
-              child: LiquidGlass(
-                blur: 10,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.18),
-                    width: 1.5,
-                  ),
-                ),
-                child: Container(
-                  height: 300,
-                  padding: EdgeInsets.only(right: 16, top: 10, bottom: 10),
-                  child: provider.config.type == InvestmentType.recurring
-                      ? _buildComparisonChart(comparisonSeries)
-                      : InvestmentChart(
-                          investedSpots: result.investedSpots,
-                          valueSpots: result.valueSpots,
+              child: provider.config.type == InvestmentType.recurring
+                  ? LiquidGlass(
+                      blur: 10,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.18),
+                          width: 1.5,
                         ),
-                ),
-              ),
+                      ),
+                      child: Container(
+                        height: 300,
+                        padding: EdgeInsets.only(
+                          right: 16,
+                          top: 10,
+                          bottom: 10,
+                        ),
+                        child: _buildComparisonChart(
+                          comparisonSeries,
+                          currencySymbol,
+                        ),
+                      ),
+                    )
+                  : AssetPriceChart(
+                      spots: result.valueSpots,
+                      startDate: DateTime.now().subtract(
+                        Duration(days: provider.config.yearsAgo * 365),
+                      ),
+                      endDate: DateTime.now(),
+                      currencySymbol: currencySymbol,
+                      height: 300,
+                    ),
             ),
             if (provider.config.type == InvestmentType.recurring &&
                 comparisonSeries.isNotEmpty) ...[
@@ -430,12 +442,15 @@ class _ResultScreenState extends State<ResultScreen> {
     );
   }
 
-  Widget _buildComparisonChart(List<ComparisonSeries> series) {
+  Widget _buildComparisonChart(
+    List<ComparisonSeries> series,
+    String currencySymbol,
+  ) {
     if (series.length < 2) {
       return Center(child: CircularProgressIndicator(color: AppColors.gold));
     }
 
-    return ComparisonChart(series: series);
+    return ComparisonChart(series: series, currencySymbol: currencySymbol);
   }
 
   Widget _buildStrategySummaryCard({

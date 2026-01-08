@@ -11,7 +11,9 @@ import '../utils/colors.dart';
 import '../utils/text_styles.dart';
 import '../widgets/liquid_glass.dart';
 import '../services/ad_service.dart';
+import '../providers/currency_provider.dart';
 import 'result_screen.dart';
+import 'settings_screen.dart';
 
 class InvestmentSettingsScreen extends StatefulWidget {
   const InvestmentSettingsScreen({super.key});
@@ -141,294 +143,312 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
     }
   }
 
-  String _getCurrencySymbol(String localeCode) {
-    switch (localeCode) {
-      case 'ko':
-        return '₩';
-      case 'ja':
-        return '¥';
-      case 'zh':
-        return 'CN¥';
-      case 'en':
-      default:
-        return '\$';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AppStateProvider>();
     final config = provider.config;
-    final localeCode = Localizations.localeOf(context).languageCode;
     final assetName = provider.assetNameForLocale();
     final l10n = AppLocalizations.of(context)!;
-    final currencySymbol = _getCurrencySymbol(localeCode);
 
-    return Scaffold(
-      backgroundColor: AppColors.navyDark,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          l10n.investmentSettingsTitle(assetName),
-          style: AppTextStyles.appBarTitle,
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Years Slider
-            Text(
-              l10n.investmentStartDate(
-                DateTime.now().year - config.yearsAgo,
-                config.yearsAgo,
-              ),
-              style: AppTextStyles.settingsSectionLabel,
-            ),
-            SizedBox(height: 10),
-            LiquidGlass(
-              blur: 10,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  width: 1.5,
-                ),
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: SliderTheme(
-                data: SliderThemeData(
-                  activeTrackColor: AppColors.gold,
-                  inactiveTrackColor: AppColors.slate700,
-                  thumbColor: AppColors.gold,
-                  overlayColor: AppColors.gold.withValues(alpha: 0.2),
-                  trackHeight: 4,
-                  thumbShape: RoundSliderThumbShape(enabledThumbRadius: 10),
-                ),
-                child: Slider(
-                  value: config.yearsAgo.toDouble(),
-                  min: 1,
-                  max: 10,
-                  divisions: 9,
-                  onChanged: (value) {
-                    provider.updateConfig(yearsAgo: value.toInt());
-                  },
-                ),
-              ),
-            ),
+    return ListenableBuilder(
+      listenable: CurrencyProvider.shared,
+      builder: (context, _) {
+        final currencySymbol = CurrencyProvider.shared.getCurrencySymbol();
 
-            SizedBox(height: 30),
-
-            // Amount Input
-            Text(
-              l10n.investmentAmountLabel,
-              style: AppTextStyles.settingsSectionLabel,
+        return Scaffold(
+          backgroundColor: AppColors.navyDark,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
             ),
-            SizedBox(height: 10),
-            TextField(
-              controller: _amountController,
-              onChanged: (value) {
-                if (value.isNotEmpty) {
-                  String cleanText = value.replaceAll(',', '');
-                  if (cleanText.isNotEmpty) {
-                    final number = int.tryParse(cleanText);
-                    if (number != null) {
-                      final formatted = NumberFormat('#,###').format(number);
-                      if (formatted != value) {
-                        _amountController.value = TextEditingValue(
-                          text: formatted,
-                          selection: TextSelection.collapsed(
-                            offset: formatted.length,
-                          ),
-                        );
-                      }
-                    }
-                  }
-                }
-                setState(() {});
-              },
-              onTapOutside: (event) =>
-                  FocusManager.instance.primaryFocus?.unfocus(),
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              style: AppTextStyles.settingsAmountInput,
-              decoration: InputDecoration(
-                prefixText: "$currencySymbol ",
-                prefixStyle: AppTextStyles.settingsAmountPrefix,
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.slate700),
+            title: Text(
+              l10n.investmentSettingsTitle(assetName),
+              style: AppTextStyles.appBarTitle,
+            ),
+          ),
+          body: SingleChildScrollView(
+            padding: EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Years Slider
+                Text(
+                  l10n.investmentStartDate(
+                    DateTime.now().year - config.yearsAgo,
+                    config.yearsAgo,
+                  ),
+                  style: AppTextStyles.settingsSectionLabel,
                 ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: AppColors.gold),
-                ),
-              ),
-            ),
-
-            SizedBox(height: 30),
-
-            // Investment Type
-            Text(
-              l10n.investmentTypeLabel,
-              style: AppTextStyles.settingsSectionLabel,
-            ),
-            SizedBox(height: 10),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: Container(
-                  padding: EdgeInsets.all(4),
+                SizedBox(height: 10),
+                LiquidGlass(
+                  blur: 10,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.12),
+                    color: Colors.white.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: Colors.white.withValues(alpha: 0.2),
                       width: 1.5,
                     ),
                   ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: _buildInvestmentTypeButton(
-                          label: l10n.singleInvestment,
-                          isSelected: config.type == InvestmentType.single,
-                          onTap: () {
-                            provider.updateConfig(type: InvestmentType.single);
-                          },
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  child: SliderTheme(
+                    data: SliderThemeData(
+                      activeTrackColor: AppColors.gold,
+                      inactiveTrackColor: AppColors.slate700,
+                      thumbColor: AppColors.gold,
+                      overlayColor: AppColors.gold.withValues(alpha: 0.2),
+                      trackHeight: 4,
+                      thumbShape: RoundSliderThumbShape(enabledThumbRadius: 10),
+                    ),
+                    child: Slider(
+                      value: config.yearsAgo.toDouble(),
+                      min: 1,
+                      max: 10,
+                      divisions: 9,
+                      onChanged: (value) {
+                        provider.updateConfig(yearsAgo: value.toInt());
+                      },
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: 30),
+
+                // Amount Input
+                Text(
+                  l10n.investmentAmountLabel,
+                  style: AppTextStyles.settingsSectionLabel,
+                ),
+                SizedBox(height: 10),
+                TextField(
+                  controller: _amountController,
+                  onChanged: (value) {
+                    if (value.isNotEmpty) {
+                      String cleanText = value.replaceAll(',', '');
+                      if (cleanText.isNotEmpty) {
+                        final number = int.tryParse(cleanText);
+                        if (number != null) {
+                          final formatted = NumberFormat(
+                            '#,###',
+                          ).format(number);
+                          if (formatted != value) {
+                            _amountController.value = TextEditingValue(
+                              text: formatted,
+                              selection: TextSelection.collapsed(
+                                offset: formatted.length,
+                              ),
+                            );
+                          }
+                        }
+                      }
+                    }
+                    setState(() {});
+                  },
+                  onTapOutside: (event) =>
+                      FocusManager.instance.primaryFocus?.unfocus(),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  style: AppTextStyles.settingsAmountInput,
+                  decoration: InputDecoration(
+                    prefixText: "$currencySymbol ",
+                    prefixStyle: AppTextStyles.settingsAmountPrefix,
+                    suffixIcon: GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const SettingsScreen(),
+                          ),
+                        );
+                      },
+                      child: Tooltip(
+                        message: l10n.currencySettings,
+                        child: Icon(
+                          Icons.currency_exchange,
+                          color: AppColors.gold,
+                          size: 24,
                         ),
                       ),
-                      SizedBox(width: 8),
+                    ),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: AppColors.slate700),
+                    ),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: AppColors.gold),
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: 30),
+
+                // Investment Type
+                Text(
+                  l10n.investmentTypeLabel,
+                  style: AppTextStyles.settingsSectionLabel,
+                ),
+                SizedBox(height: 10),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      padding: EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: _buildInvestmentTypeButton(
+                              label: l10n.singleInvestment,
+                              isSelected: config.type == InvestmentType.single,
+                              onTap: () {
+                                provider.updateConfig(
+                                  type: InvestmentType.single,
+                                );
+                              },
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: _buildInvestmentTypeButton(
+                              label: l10n.recurringInvestment,
+                              isSelected:
+                                  config.type == InvestmentType.recurring,
+                              onTap: () {
+                                provider.updateConfig(
+                                  type: InvestmentType.recurring,
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Frequency (Animated)
+                AnimatedSwitcher(
+                  duration: Duration(milliseconds: 300),
+                  child: config.type == InvestmentType.recurring
+                      ? Padding(
+                          key: ValueKey("frequency-options"),
+                          padding: EdgeInsets.only(top: 20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                l10n.investmentFrequencyLabel,
+                                style: AppTextStyles.settingsSectionLabel,
+                              ),
+                              SizedBox(height: 12),
+                              Wrap(
+                                spacing: 16,
+                                runSpacing: 12,
+                                children: [
+                                  _buildFrequencyOption(
+                                    Frequency.monthly,
+                                    l10n.monthly,
+                                    provider,
+                                  ),
+                                  _buildFrequencyOption(
+                                    Frequency.weekly,
+                                    l10n.weekly,
+                                    provider,
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                l10n.frequencySelectionHint,
+                                style: TextStyle(
+                                  color: AppColors.slate400,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : SizedBox.shrink(key: ValueKey("frequency-empty")),
+                ),
+
+                SizedBox(height: 40),
+
+                // Summary Preview
+                LiquidGlass(
+                  blur: 10,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.25),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      width: 1.5,
+                    ),
+                  ),
+                  padding: EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, color: AppColors.gold),
+                      SizedBox(width: 12),
                       Expanded(
-                        child: _buildInvestmentTypeButton(
-                          label: l10n.recurringInvestment,
-                          isSelected: config.type == InvestmentType.recurring,
-                          onTap: () {
-                            provider.updateConfig(
-                              type: InvestmentType.recurring,
-                            );
-                          },
+                        child: Text(
+                          _getSummaryText(
+                            config,
+                            assetName,
+                            l10n,
+                            currencySymbol,
+                          ),
+                          style: TextStyle(color: AppColors.slate300),
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
-            ),
 
-            // Frequency (Animated)
-            AnimatedSwitcher(
-              duration: Duration(milliseconds: 300),
-              child: config.type == InvestmentType.recurring
-                  ? Padding(
-                      key: ValueKey("frequency-options"),
-                      padding: EdgeInsets.only(top: 20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            l10n.investmentFrequencyLabel,
-                            style: AppTextStyles.settingsSectionLabel,
+                SizedBox(height: 40),
+
+                // Calculate Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: GestureDetector(
+                        onTap: _calculateAndNavigate,
+                        child: Container(
+                          width: double.infinity,
+                          height: 56,
+                          decoration: SelectedButtonStyle.solidBoxDecoration(
+                            BorderRadius.circular(16),
                           ),
-                          SizedBox(height: 12),
-                          Wrap(
-                            spacing: 16,
-                            runSpacing: 12,
-                            children: [
-                              _buildFrequencyOption(
-                                Frequency.monthly,
-                                l10n.monthly,
-                                provider,
+                          child: Center(
+                            child: Text(
+                              l10n.viewResults,
+                              style: AppTextStyles.buttonTextPrimary.copyWith(
+                                color: AppColors.navyDark,
                               ),
-                              _buildFrequencyOption(
-                                Frequency.weekly,
-                                l10n.weekly,
-                                provider,
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 8),
-                          Text(
-                            l10n.frequencySelectionHint,
-                            style: TextStyle(
-                              color: AppColors.slate400,
-                              fontSize: 13,
                             ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : SizedBox.shrink(key: ValueKey("frequency-empty")),
-            ),
-
-            SizedBox(height: 40),
-
-            // Summary Preview
-            LiquidGlass(
-              blur: 10,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.25),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.3),
-                  width: 1.5,
-                ),
-              ),
-              padding: EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Icon(Icons.info_outline, color: AppColors.gold),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      _getSummaryText(config, assetName, l10n, currencySymbol),
-                      style: TextStyle(color: AppColors.slate300),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            SizedBox(height: 40),
-
-            // Calculate Button
-            SizedBox(
-              width: double.infinity,
-              height: 56,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: GestureDetector(
-                    onTap: _calculateAndNavigate,
-                    child: Container(
-                      width: double.infinity,
-                      height: 56,
-                      decoration: SelectedButtonStyle.solidBoxDecoration(
-                        BorderRadius.circular(16),
-                      ),
-                      child: Center(
-                        child: Text(
-                          l10n.viewResults,
-                          style: AppTextStyles.buttonTextPrimary.copyWith(
-                            color: AppColors.navyDark,
                           ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
