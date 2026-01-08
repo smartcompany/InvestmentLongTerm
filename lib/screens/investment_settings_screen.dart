@@ -160,7 +160,7 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
     final provider = context.watch<AppStateProvider>();
     final config = provider.config;
     final localeCode = Localizations.localeOf(context).languageCode;
-    final assetName = provider.assetNameForLocale(localeCode);
+    final assetName = provider.assetNameForLocale();
     final l10n = AppLocalizations.of(context)!;
     final currencySymbol = _getCurrencySymbol(localeCode);
 

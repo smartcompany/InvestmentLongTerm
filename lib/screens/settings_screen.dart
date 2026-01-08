@@ -12,50 +12,57 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencyProvider = context.watch<CurrencyProvider>();
     final localeCode = Localizations.localeOf(context).languageCode;
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      backgroundColor: AppColors.navyDark,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(l10n.settings, style: AppTextStyles.appBarTitle),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(l10n.currencySettings, style: AppTextStyles.chartSectionTitle),
-            SizedBox(height: 16),
-            LiquidGlass(
-              blur: 10,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.18),
-                  width: 1.5,
-                ),
-              ),
-              padding: EdgeInsets.all(16),
-              child: _buildCurrencyDropdown(
-                context,
-                currencyProvider,
-                localeCode,
-                l10n,
-              ),
+    return ListenableBuilder(
+      listenable: CurrencyProvider.shared,
+      builder: (context, _) {
+        return Scaffold(
+          backgroundColor: AppColors.navyDark,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
             ),
-          ],
-        ),
-      ),
+            title: Text(l10n.settings, style: AppTextStyles.appBarTitle),
+            centerTitle: true,
+          ),
+          body: SingleChildScrollView(
+            padding: EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.currencySettings,
+                  style: AppTextStyles.chartSectionTitle,
+                ),
+                SizedBox(height: 16),
+                LiquidGlass(
+                  blur: 10,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.18),
+                      width: 1.5,
+                    ),
+                  ),
+                  padding: EdgeInsets.all(16),
+                  child: _buildCurrencyDropdown(
+                    context,
+                    CurrencyProvider.shared,
+                    localeCode,
+                    l10n,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -66,7 +73,7 @@ class SettingsScreen extends StatelessWidget {
     AppLocalizations l10n,
   ) {
     final selectedCurrency = currencyProvider.selectedCurrency;
-    final defaultSymbol = currencyProvider.getCurrencySymbol(localeCode);
+    final defaultSymbol = currencyProvider.getCurrencySymbol();
 
     // 통화 옵션 리스트
     final currencyOptions = [
@@ -174,9 +181,9 @@ class SettingsScreen extends StatelessWidget {
 
         // 통화 변경
         if (newValue == null) {
-          await currencyProvider.resetToDefault(localeCode);
+          await CurrencyProvider.shared.resetToDefault(localeCode);
         } else {
-          await currencyProvider.setCurrency(newValue);
+          await CurrencyProvider.shared.setCurrency(newValue);
         }
       },
     );

@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 class AssetOption {
   final String id;
   final String type;
@@ -28,9 +30,13 @@ class AssetOption {
     );
   }
 
-  String displayName(String localeCode) {
-    return names[localeCode] ??
-        names[_normalizeLocale(localeCode)] ??
+  /// 로케일별 자산 이름을 반환합니다. localeCode가 제공되지 않으면 시스템 로케일을 사용합니다.
+  String displayName([String? localeCode]) {
+    // localeCode가 제공되지 않으면 시스템 로케일 사용
+    final systemLocaleCode =
+        localeCode ?? ui.PlatformDispatcher.instance.locale.languageCode;
+    return names[systemLocaleCode] ??
+        names[_normalizeLocale(systemLocaleCode)] ??
         names['en'] ??
         id;
   }

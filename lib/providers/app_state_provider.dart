@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'dart:ui' as ui;
 import '../models/investment_config.dart';
 import '../models/calculation_result.dart';
 import '../models/asset_option.dart';
@@ -88,10 +90,16 @@ class AppStateProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  String assetNameForLocale(String localeCode, {String? assetId}) {
+  /// 자산 이름을 반환합니다. localeCode가 제공되지 않으면 시스템 로케일을 사용합니다.
+  String assetNameForLocale({String? localeCode, String? assetId}) {
     final targetId = assetId ?? _config.asset;
     final asset = _assets.firstWhereOrNull((item) => item.id == targetId);
-    return asset?.displayName(localeCode) ?? targetId;
+    // AssetOption.displayName()이 이미 시스템 로케일을 사용하므로
+    // localeCode가 제공된 경우에만 전달, 그렇지 않으면 displayName()만 호출
+    if (localeCode != null) {
+      return asset?.displayName(localeCode) ?? targetId;
+    }
+    return asset?.displayName() ?? targetId;
   }
 
   void toggleFrequencySelection(Frequency frequency) {

@@ -1,9 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
 import 'package:fl_chart/fl_chart.dart';
+import 'dart:convert';
+import 'dart:io';
 import '../models/my_asset.dart';
 import '../services/api_service.dart';
+import '../services/icloud_service.dart';
+import '../utils/currency_converter.dart';
 
 class MyAssetsProvider with ChangeNotifier {
   final List<MyAsset> _assets = [];
@@ -48,29 +51,122 @@ class MyAssetsProvider with ChangeNotifier {
 
   static const String _keyAssets = 'my_assets_list';
 
-  Future<void> loadAssets() async {
+  // 자산 데이터 저장 (로컬)
+  Future<void> _saveAssets() async {
+    try {
+      final assetsJson = jsonEncode(
+        _assets.map((asset) => asset.toJson()).toList(),
+      );
+
+      if (Platform.isIOS) {
+        // iOS: iCloud Key-Value Storage 사용 (자동 동기화, 권한 불필요)
+        final success = await ICloudService.setValue(_keyAssets, assetsJson);
+        if (success) {
+          debugPrint(
+            '✅ [LocalStorage] iOS iCloud에 자산 저장 완료: ${_assets.length}개 (자동 동기화)',
+          );
+        } else {
+          // iCloud 실패 시 SharedPreferences에 백업 저장
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(_keyAssets, assetsJson);
+          debugPrint(
+            '⚠️ [LocalStorage] iCloud 저장 실패, SharedPreferences에 백업 저장',
+          );
+        }
+      } else {
+        // Android: SharedPreferences 사용 (Auto Backup으로 자동 백업됨)
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_keyAssets, assetsJson);
+        debugPrint(
+          '✅ [LocalStorage] Android에 자산 저장 완료: ${_assets.length}개 (Auto Backup)',
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ [LocalStorage] 자산 저장 실패: $e');
+    }
+  }
+
+  Future<void> loadAssets({
+    int? chartYears,
+    String? targetCurrency,
+    String Function(String assetId)? getAssetOriginalCurrency,
+  }) async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final assetsJson = prefs.getString(_keyAssets);
+      // 로컬에서 데이터 로드
+      // iOS: iCloud Key-Value Storage 사용 (자동 동기화, iCloud 로그인 시)
+      // Android: SharedPreferences + Auto Backup
 
-      if (assetsJson != null) {
-        final List<dynamic> decoded = jsonDecode(assetsJson);
-        _assets.clear();
-        _assets.addAll(
-          decoded.map((json) => MyAsset.fromJson(json as Map<String, dynamic>)),
+      // iOS: iCloud Key-Value Storage는 항상 작동하며, iCloud 로그인 시 자동 동기화됨
+      if (Platform.isIOS) {
+        debugPrint(
+          '📱 [LocalStorage] iOS iCloud Key-Value Storage 사용 중 (자동 동기화)',
         );
-
-        // 각 자산의 현재 가치 업데이트
-        for (final asset in _assets) {
-          await _updateCurrentValue(asset);
-        }
       }
 
-      // 포트폴리오 그래프 데이터 로드 (기본 1년)
-      await loadPortfolioChart(years: 1);
+      String? assetsJson;
+
+      if (Platform.isIOS) {
+        // iOS: iCloud Key-Value Storage에서 읽기 (자동 동기화된 데이터)
+        debugPrint(
+          '📱 [LocalStorage] iOS iCloud Key-Value Storage에서 자산 데이터 로드 시작...',
+        );
+        assetsJson = await ICloudService.getValue(_keyAssets);
+
+        if (assetsJson == null || assetsJson.isEmpty) {
+          // iCloud에 없으면 SharedPreferences에서 읽기 (백업)
+          debugPrint(
+            '⚠️ [LocalStorage] iCloud에 데이터 없음, SharedPreferences 확인 중...',
+          );
+          final prefs = await SharedPreferences.getInstance();
+          assetsJson = prefs.getString(_keyAssets);
+        }
+      } else {
+        // Android: SharedPreferences에서 읽기 (Auto Backup으로 복원됨)
+        debugPrint(
+          '📱 [LocalStorage] Android SharedPreferences에서 자산 데이터 로드 시작...',
+        );
+        final prefs = await SharedPreferences.getInstance();
+        assetsJson = prefs.getString(_keyAssets);
+      }
+      debugPrint(
+        '📱 [LocalStorage] 데이터 조회 결과: ${assetsJson != null ? '있음' : '없음'}',
+      );
+
+      if (assetsJson != null && assetsJson.isNotEmpty) {
+        try {
+          final List<dynamic> decoded = jsonDecode(assetsJson);
+          _assets.clear();
+          _assets.addAll(
+            decoded.map(
+              (json) => MyAsset.fromJson(json as Map<String, dynamic>),
+            ),
+          );
+          debugPrint('✅ [LocalStorage] 자산 로드 완료: ${_assets.length}개 자산');
+        } catch (e) {
+          debugPrint('❌ [LocalStorage] JSON 파싱 실패: $e');
+        }
+      } else {
+        debugPrint('ℹ️ [LocalStorage] 저장된 자산 없음');
+      }
+
+      // 각 자산의 현재 가치 업데이트
+      for (final asset in _assets) {
+        await _updateCurrentValue(asset);
+      }
+
+      // 통화 정보가 제공된 경우 포트폴리오 차트 자동 로드
+      if (targetCurrency != null &&
+          getAssetOriginalCurrency != null &&
+          chartYears != null) {
+        await loadPortfolioChart(
+          years: chartYears,
+          targetCurrency: targetCurrency,
+          getAssetOriginalCurrency: getAssetOriginalCurrency,
+        );
+      }
     } catch (e) {
       debugPrint('Failed to load assets: $e');
     } finally {
@@ -120,7 +216,11 @@ class MyAssetsProvider with ChangeNotifier {
   }
 
   // 전체 포트폴리오 그래프 데이터 로드
-  Future<void> loadPortfolioChart({int years = 1}) async {
+  Future<void> loadPortfolioChart({
+    int years = 1,
+    String? targetCurrency,
+    String Function(String assetId)? getAssetOriginalCurrency,
+  }) async {
     if (_assets.isEmpty) {
       _portfolioSpots = null;
       notifyListeners();
@@ -261,8 +361,30 @@ class MyAssetsProvider with ChangeNotifier {
           }
 
           if (price != null) {
-            // 보유 주수 * 가격 = 현재 가치
-            totalValue += asset.quantity * price;
+            // 보유 주수 * 가격 = 현재 가치 (원본 통화 기준)
+            double assetValue = asset.quantity * price;
+
+            // 통화 변환 (targetCurrency가 제공된 경우)
+            if (targetCurrency != null && getAssetOriginalCurrency != null) {
+              final originalCurrency = getAssetOriginalCurrency(asset.assetId);
+              debugPrint(
+                '[PortfolioChart] 자산 ${asset.assetId}: 원본 통화=$originalCurrency, 목표 통화=$targetCurrency, 변환 전 가치=$assetValue',
+              );
+              if (originalCurrency != targetCurrency) {
+                // 동기 변환 사용 (현재 환율 기준)
+                final beforeValue = assetValue;
+                assetValue = CurrencyConverter.shared.convertSync(
+                  assetValue,
+                  originalCurrency,
+                  targetCurrency,
+                );
+                debugPrint(
+                  '[PortfolioChart] 변환 후: $beforeValue ($originalCurrency) -> $assetValue ($targetCurrency)',
+                );
+              }
+            }
+
+            totalValue += assetValue;
           }
         }
 
@@ -274,7 +396,30 @@ class MyAssetsProvider with ChangeNotifier {
       }
 
       // 마지막 포인트를 실제 총 현재 가치로 명시적으로 설정 (차트와 표시된 현재 가치 일치)
-      final actualTotalCurrentValue = totalCurrentValue;
+      double? actualTotalCurrentValue = totalCurrentValue;
+
+      // 통화 변환 (targetCurrency가 제공된 경우)
+      if (actualTotalCurrentValue != null &&
+          targetCurrency != null &&
+          getAssetOriginalCurrency != null) {
+        // totalCurrentValue는 이미 각 자산의 원본 통화로 계산되어 있으므로
+        // 각 자산별로 변환해서 합산해야 함
+        actualTotalCurrentValue = 0.0;
+        for (final asset in _assets) {
+          if (asset.currentValue == null) continue;
+          final originalCurrency = getAssetOriginalCurrency(asset.assetId);
+          final convertedValue = CurrencyConverter.shared.convertSync(
+            asset.currentValue!,
+            originalCurrency,
+            targetCurrency,
+          );
+          actualTotalCurrentValue = actualTotalCurrentValue! + convertedValue;
+        }
+        debugPrint(
+          '[PortfolioChart] 마지막 포인트 변환: $totalCurrentValue -> $actualTotalCurrentValue $targetCurrency',
+        );
+      }
+
       if (actualTotalCurrentValue != null) {
         // 기존 마지막 포인트 제거 (x가 1.0인 경우)
         spots.removeWhere((spot) => spot.x >= 1.0);
@@ -307,6 +452,8 @@ class MyAssetsProvider with ChangeNotifier {
     required DateTime registeredDate,
     required double quantity,
   }) async {
+    debugPrint('💾 [LocalStorage] 자산 추가 시작: $assetName ($assetId)');
+
     final newAsset = MyAsset(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       assetId: assetId,
@@ -317,11 +464,15 @@ class MyAssetsProvider with ChangeNotifier {
     );
 
     _assets.add(newAsset);
-    await _saveAssets();
+
     // 현재 가격으로 currentValue 업데이트
     await _updateCurrentValue(newAsset);
-    // 포트폴리오 그래프는 화면에서 선택된 기간으로 다시 로드해야 하므로 여기서는 호출하지 않음
+
+    // 로컬에 저장
+    await _saveAssets();
+
     notifyListeners();
+    debugPrint('✅ [LocalStorage] 자산 추가 완료! 총 ${_assets.length}개 자산');
   }
 
   // 선택된 차트 기간 설정
@@ -331,7 +482,12 @@ class MyAssetsProvider with ChangeNotifier {
   }
 
   // 개별 자산의 가격 히스토리 가져오기 (상세 화면용)
-  Future<List<FlSpot>> getPriceHistory(MyAsset asset, {int? years}) async {
+  Future<List<FlSpot>> getPriceHistory(
+    MyAsset asset, {
+    int? years,
+    String? targetCurrency,
+    String Function(String assetId)? getAssetOriginalCurrency,
+  }) async {
     try {
       final now = DateTime.now();
       // 차트 시작일을 지정된 년수 전으로 설정 (기본값은 선택된 기간 사용)
@@ -340,10 +496,14 @@ class MyAssetsProvider with ChangeNotifier {
       final earliestDate = now.subtract(Duration(days: totalDays));
 
       // 지정된 년수 전부터 현재까지의 가격 데이터 가져오기
+      debugPrint(
+        '[getPriceHistory] 가격 데이터 요청: assetId=${asset.assetId}, totalDays=$totalDays',
+      );
       final priceData = await ApiService.fetchDailyPrices(
         asset.assetId,
         totalDays,
       );
+      debugPrint('[getPriceHistory] 가격 데이터 수신: ${priceData.length}개 포인트');
 
       final assetPrices = <DateTime, double>{};
 
@@ -393,6 +553,24 @@ class MyAssetsProvider with ChangeNotifier {
         }
       }
 
+      // 통화 변환을 위한 환율 로드 (targetCurrency가 제공된 경우)
+      // CurrencyConverter.shared를 사용하면 자동으로 초기화됨
+      // 하지만 convertSync는 동기 함수이므로 환율이 준비될 때까지 대기
+      if (targetCurrency != null && getAssetOriginalCurrency != null) {
+        final isReady = await CurrencyConverter.shared.waitUntilReady(
+          maxWaitSeconds: 10,
+        );
+        if (!isReady) {
+          debugPrint(
+            '[getPriceHistory] ⚠️ 환율 캐시가 준비되지 않음. 통화 변환 없이 진행 (원본 통화로 표시됨)',
+          );
+        } else {
+          debugPrint(
+            '[getPriceHistory] ✅ 환율 캐시 준비 완료. 통화 변환 진행: ${getAssetOriginalCurrency(asset.assetId)} -> $targetCurrency',
+          );
+        }
+      }
+
       // 모든 날짜를 수집하고 정렬
       final sortedDates = assetPrices.keys.toList()..sort();
 
@@ -402,7 +580,41 @@ class MyAssetsProvider with ChangeNotifier {
         if (date.isBefore(earliestDate) || date.isAfter(now)) continue;
 
         final price = assetPrices[date]!;
-        final value = asset.quantity * price;
+        // 보유 주수 * 가격 = 현재 가치 (원본 통화 기준)
+        double value = asset.quantity * price;
+
+        // 통화 변환 (targetCurrency가 제공된 경우)
+        if (targetCurrency != null && getAssetOriginalCurrency != null) {
+          final originalCurrency = getAssetOriginalCurrency(asset.assetId);
+          if (originalCurrency != targetCurrency) {
+            // 동기 변환 사용 (현재 환율 기준)
+            final convertedValue = CurrencyConverter.shared.convertSync(
+              value,
+              originalCurrency,
+              targetCurrency,
+            );
+            // convertSync가 원본 값을 반환했다면 (캐시가 없음) 비동기 변환 시도
+            if (convertedValue == value && originalCurrency != targetCurrency) {
+              debugPrint(
+                '[getPriceHistory] ⚠️ convertSync가 원본 값 반환. 비동기 변환 시도: $value $originalCurrency -> $targetCurrency',
+              );
+              try {
+                value = await CurrencyConverter.shared.convert(
+                  value,
+                  originalCurrency,
+                  targetCurrency,
+                );
+                debugPrint(
+                  '[getPriceHistory] ✅ 비동기 변환 성공: $value $targetCurrency',
+                );
+              } catch (e) {
+                debugPrint('[getPriceHistory] ❌ 비동기 변환 실패: $e');
+              }
+            } else {
+              value = convertedValue;
+            }
+          }
+        }
 
         // x 좌표: 시작일부터의 일수 / 전체 기간
         final daysFromStart = date.difference(earliestDate).inDays;
@@ -414,15 +626,71 @@ class MyAssetsProvider with ChangeNotifier {
       // 시작일과 현재일이 포함되도록 보장
       if (spots.isEmpty || spots.first.x > 0) {
         final startPrice = assetPrices[earliestDate]!;
-        spots.insert(0, FlSpot(0, asset.quantity * startPrice));
+        double startValue = asset.quantity * startPrice;
+
+        // 통화 변환 (targetCurrency가 제공된 경우)
+        if (targetCurrency != null && getAssetOriginalCurrency != null) {
+          final originalCurrency = getAssetOriginalCurrency(asset.assetId);
+          if (originalCurrency != targetCurrency) {
+            final convertedStartValue = CurrencyConverter.shared.convertSync(
+              startValue,
+              originalCurrency,
+              targetCurrency,
+            );
+            // convertSync가 원본 값을 반환했다면 (캐시가 없음) 비동기 변환 시도
+            if (convertedStartValue == startValue) {
+              try {
+                startValue = await CurrencyConverter.shared.convert(
+                  startValue,
+                  originalCurrency,
+                  targetCurrency,
+                );
+              } catch (e) {
+                debugPrint('[getPriceHistory] 시작값 변환 실패: $e');
+              }
+            } else {
+              startValue = convertedStartValue;
+            }
+          }
+        }
+
+        spots.insert(0, FlSpot(0, startValue));
       }
 
       // 마지막 포인트를 현재 가치로 명시적으로 설정 (차트와 표시된 현재 가치 일치)
       if (asset.currentValue != null) {
         // 기존 마지막 포인트 제거 (x가 1.0인 경우)
         spots.removeWhere((spot) => spot.x >= 1.0);
+
+        // 현재 가치 통화 변환
+        double finalValue = asset.currentValue!;
+        if (targetCurrency != null && getAssetOriginalCurrency != null) {
+          final originalCurrency = getAssetOriginalCurrency(asset.assetId);
+          if (originalCurrency != targetCurrency) {
+            final convertedFinalValue = CurrencyConverter.shared.convertSync(
+              finalValue,
+              originalCurrency,
+              targetCurrency,
+            );
+            // convertSync가 원본 값을 반환했다면 (캐시가 없음) 비동기 변환 시도
+            if (convertedFinalValue == finalValue) {
+              try {
+                finalValue = await CurrencyConverter.shared.convert(
+                  finalValue,
+                  originalCurrency,
+                  targetCurrency,
+                );
+              } catch (e) {
+                debugPrint('[getPriceHistory] 최종값 변환 실패: $e');
+              }
+            } else {
+              finalValue = convertedFinalValue;
+            }
+          }
+        }
+
         // 현재 가치를 마지막 포인트로 추가
-        spots.add(FlSpot(1.0, asset.currentValue!));
+        spots.add(FlSpot(1.0, finalValue));
       } else if (spots.isEmpty || spots.last.x < 1.0) {
         final endPrice = assetPrices[now] ?? assetPrices.values.last;
         spots.add(FlSpot(1.0, asset.quantity * endPrice));
@@ -438,21 +706,14 @@ class MyAssetsProvider with ChangeNotifier {
   }
 
   Future<void> removeAsset(String id) async {
-    _assets.removeWhere((asset) => asset.id == id);
-    await _saveAssets();
-    // 포트폴리오 그래프는 화면에서 선택된 기간으로 다시 로드해야 하므로 여기서는 호출하지 않음
-    notifyListeners();
-  }
+    debugPrint('🗑️ [LocalStorage] 자산 삭제 시작: $id');
 
-  Future<void> _saveAssets() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final assetsJson = jsonEncode(
-        _assets.map((asset) => asset.toJson()).toList(),
-      );
-      await prefs.setString(_keyAssets, assetsJson);
-    } catch (e) {
-      debugPrint('Failed to save assets: $e');
-    }
+    _assets.removeWhere((asset) => asset.id == id);
+
+    // 로컬에 저장
+    await _saveAssets();
+
+    notifyListeners();
+    debugPrint('✅ [LocalStorage] 자산 삭제 완료! 남은 자산: ${_assets.length}개');
   }
 }

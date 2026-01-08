@@ -183,4 +183,69 @@ class CurrencyConverter {
         return usdAmount;
     }
   }
+
+  /// 환율 캐시가 준비되었는지 확인
+  bool get isReady => _ratesCache != null && _isInitialized;
+
+  /// 환율 캐시가 준비될 때까지 대기 (최대 5초)
+  Future<bool> waitUntilReady({int maxWaitSeconds = 5}) async {
+    if (isReady) return true;
+
+    try {
+      await initialize();
+    } catch (e) {
+      debugPrint('[CurrencyConverter] waitUntilReady: 초기화 실패: $e');
+    }
+
+    int waited = 0;
+    while (!isReady && waited < maxWaitSeconds * 10) {
+      await Future.delayed(Duration(milliseconds: 100));
+      waited++;
+    }
+
+    if (!isReady) {
+      debugPrint(
+        '[CurrencyConverter] waitUntilReady: ${maxWaitSeconds}초 후에도 준비되지 않음',
+      );
+    }
+
+    return isReady;
+  }
+
+  /// 동기 환율 변환 (캐시가 있을 때만 사용 가능, 없으면 원본 값 반환)
+  /// 주의: 이 메서드는 동기 함수이므로 초기화를 기다릴 수 없습니다.
+  /// 환율 캐시가 준비되지 않았으면 원본 값을 반환합니다.
+  /// 비동기 변환이 필요하면 convert() 메서드를 사용하세요.
+  /// convertSync를 호출하기 전에 waitUntilReady()를 먼저 호출하는 것을 권장합니다.
+  double convertSync(double amount, String fromCurrency, String toCurrency) {
+    if (fromCurrency == toCurrency) return amount;
+    if (_ratesCache == null) {
+      // 캐시가 없으면 원본 값 반환 (대략적인 변환 불가)
+      debugPrint(
+        '[CurrencyConverter] convertSync: 캐시가 없어 원본 값 반환 ($amount $fromCurrency -> $toCurrency). waitUntilReady()를 먼저 호출하세요.',
+      );
+      return amount;
+    }
+
+    // USD로 먼저 변환
+    double usdAmount = _toUsd(amount, fromCurrency, _ratesCache!);
+    debugPrint(
+      '[CurrencyConverter] convertSync: $amount $fromCurrency -> $usdAmount USD (환율: ${_ratesCache![fromCurrency == '\$' || fromCurrency == 'USD'
+          ? 'KRW'
+          : fromCurrency == '₩' || fromCurrency == 'KRW'
+          ? 'KRW'
+          : 'USD']})',
+    );
+
+    // USD에서 목표 통화로 변환
+    final result = _fromUsd(usdAmount, toCurrency, _ratesCache!);
+    debugPrint(
+      '[CurrencyConverter] convertSync: $usdAmount USD -> $result $toCurrency (환율: ${_ratesCache![toCurrency == '\$' || toCurrency == 'USD'
+          ? 'KRW'
+          : toCurrency == '₩' || toCurrency == 'KRW'
+          ? 'KRW'
+          : 'USD']})',
+    );
+    return result;
+  }
 }

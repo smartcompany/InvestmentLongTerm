@@ -64,9 +64,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
     )..repeat(reverse: true);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final provider = context.read<RetireSimulatorProvider>();
-      final currencyProvider = context.read<CurrencyProvider>();
-      final localeCode = Localizations.localeOf(context).languageCode;
-      final currencySymbol = currencyProvider.getCurrencySymbol(localeCode);
+      final currencySymbol = CurrencyProvider.shared.getCurrencySymbol();
       _lastCurrencySymbol = currencySymbol;
 
       // 저장된 설정 로드
@@ -100,9 +98,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
     if (_hasShownSetupDialog || !mounted) return;
 
     final provider = context.read<RetireSimulatorProvider>();
-    final currencyProvider = context.read<CurrencyProvider>();
-    final localeCode = Localizations.localeOf(context).languageCode;
-    final currencySymbol = currencyProvider.getCurrencySymbol(localeCode);
+    final currencySymbol = CurrencyProvider.shared.getCurrencySymbol();
     _lastCurrencySymbol = currencySymbol;
 
     // 저장된 설정이 없으면 단계별 입력 다이얼로그 표시
@@ -163,90 +159,96 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
   Widget build(BuildContext context) {
     final provider = context.watch<RetireSimulatorProvider>();
     final appProvider = context.watch<AppStateProvider>();
-    final currencyProvider = context.watch<CurrencyProvider>();
     final localeCode = Localizations.localeOf(context).languageCode;
     final l10n = AppLocalizations.of(context)!;
-    final currencySymbol = currencyProvider.getCurrencySymbol(localeCode);
-    final currencyFormat = NumberFormat.currency(
-      symbol: currencySymbol,
-      decimalDigits: 0,
-      locale: localeCode,
-    );
 
-    // 통화가 변경되면 기본값 업데이트 및 입력 필드 새로고침
-    if (_lastCurrencySymbol != currencySymbol) {
-      _lastCurrencySymbol = currencySymbol;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          // Provider에서 통화 기본값 업데이트
-          provider.updateCurrencyDefaults(currencySymbol);
-          // 입력 필드 텍스트 업데이트
-          _updateCurrencyBasedDefaults();
+    return ListenableBuilder(
+      listenable: CurrencyProvider.shared,
+      builder: (context, _) {
+        final currencySymbol = CurrencyProvider.shared.getCurrencySymbol();
+        final currencyFormat = NumberFormat.currency(
+          symbol: currencySymbol,
+          decimalDigits: 0,
+          locale: localeCode,
+        );
+
+        // 통화가 변경되면 기본값 업데이트 및 입력 필드 새로고침
+        if (_lastCurrencySymbol != currencySymbol) {
+          _lastCurrencySymbol = currencySymbol;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              // Provider에서 통화 기본값 업데이트
+              provider.updateCurrencyDefaults(currencySymbol);
+              // 입력 필드 텍스트 업데이트
+              _updateCurrencyBasedDefaults();
+            }
+          });
         }
-      });
-    }
 
-    // 자산 목록 로드
-    if (appProvider.assets.isEmpty && !appProvider.isAssetsLoading) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        appProvider.loadAssets();
-      });
-    }
+        // 자산 목록 로드
+        if (appProvider.assets.isEmpty && !appProvider.isAssetsLoading) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            appProvider.loadAssets();
+          });
+        }
 
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [AppColors.navyDark, AppColors.navyMedium],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: GestureDetector(
-          onTap: () {
-            // 텍스트 필드 외부 클릭 시 포커스 해제 및 키보드 닫기
-            FocusScope.of(context).unfocus();
-          },
-          behavior: HitTestBehavior.opaque,
-          child: SingleChildScrollView(
-            physics: AlwaysScrollableScrollPhysics(),
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 20,
-              bottom: MediaQuery.of(context).padding.bottom + 30,
-              left: 24,
-              right: 24,
+        return Scaffold(
+          body: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [AppColors.navyDark, AppColors.navyMedium],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(height: 24),
-                // 서술형 질문 섹션 (입력 필드 포함)
-                _buildQuestionSection(
-                  provider,
-                  appProvider,
-                  currencyFormat,
-                  l10n,
+            child: GestureDetector(
+              onTap: () {
+                // 텍스트 필드 외부 클릭 시 포커스 해제 및 키보드 닫기
+                FocusScope.of(context).unfocus();
+              },
+              behavior: HitTestBehavior.opaque,
+              child: SingleChildScrollView(
+                physics: AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).padding.top + 20,
+                  bottom: MediaQuery.of(context).padding.bottom + 30,
+                  left: 24,
+                  right: 24,
                 ),
-                SizedBox(height: 36),
-                // 입력 영역 (시나리오 선택만)
-                _buildInputSection(provider, currencyFormat, l10n),
-                SizedBox(height: 32),
-                // 자산 포트폴리오
-                _buildPortfolioSection(
-                  provider,
-                  appProvider,
-                  l10n,
-                  currencyFormat,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(height: 24),
+                    // 서술형 질문 섹션 (입력 필드 포함)
+                    _buildQuestionSection(
+                      provider,
+                      appProvider,
+                      currencyFormat,
+                      l10n,
+                    ),
+                    SizedBox(height: 36),
+                    // 입력 영역 (시나리오 선택만)
+                    _buildInputSection(provider, currencyFormat, l10n),
+                    SizedBox(height: 32),
+                    // 자산 포트폴리오
+                    _buildPortfolioSection(
+                      provider,
+                      appProvider,
+                      l10n,
+                      currencyFormat,
+                    ),
+                    SizedBox(height: 32),
+                    // 시뮬레이션 실행 버튼
+                    if (provider.assets.isNotEmpty &&
+                        provider.totalAllocation > 0)
+                      _buildRunButton(provider, l10n),
+                  ],
                 ),
-                SizedBox(height: 32),
-                // 시뮬레이션 실행 버튼
-                if (provider.assets.isNotEmpty && provider.totalAllocation > 0)
-                  _buildRunButton(provider, l10n),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -498,7 +500,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
     final selectedAssetNames = selectedAssetIds.map((id) {
       try {
         final assetOption = availableAssets.firstWhere((a) => a.id == id);
-        return assetOption.displayName(localeCode);
+        return assetOption.displayName();
       } catch (e) {
         return id; // 자산 옵션을 찾을 수 없으면 ID 사용
       }
@@ -1262,7 +1264,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen>
                                             ),
                                             SizedBox(width: 12),
                                             Text(
-                                              asset.displayName(localeCode),
+                                              asset.displayName(),
                                               style: TextStyle(
                                                 color: Colors.white,
                                                 fontSize: _assetNameFontSize,

@@ -28,10 +28,10 @@ class AdService {
 
     _isLoadingSettings = true;
     try {
-      // baseUrl이 설정되지 않았으면 설정
-      share_lib.AdService.shared.setBaseUrl(
-        'https://investment-long-term-server.vercel.app',
-      );
+    // baseUrl이 설정되지 않았으면 설정
+    share_lib.AdService.shared.setBaseUrl(
+      'https://investment-long-term-server.vercel.app',
+    );
       final result = await share_lib.AdService.shared.loadSettings();
       _settingsLoaded = result;
       return result;

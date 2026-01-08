@@ -17,6 +17,7 @@ import '../services/app_review_service.dart';
 import '../utils/chart_image_utils.dart';
 import 'package:flutter/rendering.dart';
 import 'main_tab_screen.dart';
+import '../providers/currency_provider.dart';
 
 class ResultScreen extends StatefulWidget {
   const ResultScreen({super.key});
@@ -41,27 +42,12 @@ class _ResultScreenState extends State<ResultScreen> {
     });
   }
 
-  String _getCurrencySymbol(String localeCode) {
-    switch (localeCode) {
-      case 'ko':
-        return '₩';
-      case 'ja':
-        return '¥';
-      case 'zh':
-        return 'CN¥';
-      case 'en':
-      default:
-        return '\$';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AppStateProvider>();
     final result = provider.result;
     final l10n = AppLocalizations.of(context)!;
-    final localeCode = Localizations.localeOf(context).languageCode;
-    final currencySymbol = _getCurrencySymbol(localeCode);
+    final currencySymbol = CurrencyProvider.shared.getCurrencySymbol();
 
     if (provider.isLoading) {
       return Scaffold(
@@ -219,7 +205,7 @@ class _ResultScreenState extends State<ResultScreen> {
                         SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            provider.assetNameForLocale(localeCode),
+                            provider.assetNameForLocale(),
                             style: AppTextStyles.resultStatValue.copyWith(
                               color: AppColors.slate300,
                               fontSize: 14,
@@ -340,7 +326,6 @@ class _ResultScreenState extends State<ResultScreen> {
                         onTap: () async {
                           final shareText = _buildShareText(
                             provider,
-                            localeCode,
                             currencyFormat,
                             percentFormat,
                             strategySummaries,
@@ -771,14 +756,13 @@ class _ResultScreenState extends State<ResultScreen> {
 
   String _buildShareText(
     AppStateProvider provider,
-    String localeCode,
     NumberFormat currencyFormat,
     NumberFormat percentFormat,
     List<_StrategySummary> summaries,
     AppLocalizations l10n,
   ) {
     final buffer = StringBuffer();
-    final assetName = provider.assetNameForLocale(localeCode);
+    final assetName = provider.assetNameForLocale();
     final formattedAmount = currencyFormat.format(provider.config.amount);
 
     // Header with emoji

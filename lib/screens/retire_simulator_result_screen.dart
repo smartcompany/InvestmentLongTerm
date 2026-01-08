@@ -61,374 +61,391 @@ class _RetireSimulatorResultScreenState
   Widget build(BuildContext context) {
     final provider = context.watch<RetireSimulatorProvider>();
     final appProvider = context.watch<AppStateProvider>();
-    final currencyProvider = context.watch<CurrencyProvider>();
-    final localeCode = Localizations.localeOf(context).languageCode;
     final l10n = AppLocalizations.of(context)!;
-    final currencySymbol = currencyProvider.getCurrencySymbol(localeCode);
-    final currencyFormat = NumberFormat.currency(
-      symbol: currencySymbol,
-      decimalDigits: 0,
-      locale: localeCode,
-    );
 
-    final results = provider.runSimulation();
-    final summary = provider.getSimulationSummary();
-
-    final totalPath = results['total'] as List<double>? ?? [];
-    final assetPaths = results['assets'] as Map<String, List<double>>? ?? {};
-
-    if (totalPath.isEmpty) {
-      return Scaffold(
-        backgroundColor: AppColors.navyDark,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios, color: Colors.white),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: Text(
-            l10n.simulationResultTitle,
-            style: AppTextStyles.appBarTitle,
-          ),
-          centerTitle: true,
-        ),
-        body: Center(
-          child: Text(
-            l10n.simulationResultNoData,
-            style: TextStyle(color: AppColors.slate400),
-          ),
-        ),
-      );
-    }
-
-    // 전체 자산 그래프 데이터 (월 인덱스를 연도로 변환)
-    final totalSpots = totalPath
-        .asMap()
-        .entries
-        .map((e) => FlSpot(e.key / 12.0, e.value))
-        .toList();
-
-    // 각 자산별 그래프 데이터
-    final assetSpotsList = provider.assets.map((asset) {
-      AssetOption? assetOption;
-      try {
-        assetOption = appProvider.assets.firstWhere(
-          (a) => a.id == asset.assetId,
+    return ListenableBuilder(
+      listenable: CurrencyProvider.shared,
+      builder: (context, _) {
+        final currencySymbol = CurrencyProvider.shared.getCurrencySymbol();
+        final currencyFormat = NumberFormat.currency(
+          symbol: currencySymbol,
+          decimalDigits: 0,
         );
-      } catch (e) {
-        assetOption = null;
-      }
-      final assetName = assetOption?.displayName(localeCode) ?? asset.assetId;
-      final assetPath = assetPaths[asset.assetId] ?? [];
-      final spots = assetPath
-          .asMap()
-          .entries
-          .map((e) => FlSpot(e.key / 12.0, e.value))
-          .toList();
-      return {
-        'name': assetName,
-        'icon': assetOption?.icon ?? '📈',
-        'spots': spots,
-        'color': _getAssetColor(asset.assetId),
-      };
-    }).toList();
 
-    // 시나리오 이름
-    final scenarioName = provider.selectedScenario == 'positive'
-        ? l10n.scenarioPositive
-        : provider.selectedScenario == 'negative'
-        ? l10n.scenarioNegative
-        : l10n.scenarioNeutral;
+        final results = provider.runSimulation();
+        final summary = provider.getSimulationSummary();
 
-    return Scaffold(
-      backgroundColor: AppColors.navyDark,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          l10n.simulationResultTitle,
-          style: AppTextStyles.appBarTitle,
-        ),
-        centerTitle: true,
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: AlwaysScrollableScrollPhysics(),
-          padding: EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 시나리오 및 인출 정보 표시
-              LiquidGlass(
-                blur: 10,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.18),
-                    width: 1.5,
-                  ),
-                ),
-                padding: EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.info_outline,
-                          color: AppColors.gold,
-                          size: 20,
-                        ),
-                        SizedBox(width: 12),
-                        Flexible(
-                          child: Wrap(
-                            children: [
-                              Text(
-                                l10n.selectedScenario,
-                                style: TextStyle(
-                                  color: AppColors.slate300,
-                                  fontSize: _simulationResultLabelFontSize,
-                                ),
-                              ),
-                              Text(
-                                scenarioName,
-                                style: TextStyle(
-                                  color: provider.selectedScenario == 'positive'
-                                      ? AppColors.success
-                                      : provider.selectedScenario == 'negative'
-                                      ? Colors.red
-                                      : AppColors.gold,
-                                  fontSize: _simulationResultValueFontSize,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+        final totalPath = results['total'] as List<double>? ?? [];
+        final assetPaths =
+            results['assets'] as Map<String, List<double>>? ?? {};
+
+        if (totalPath.isEmpty) {
+          return Scaffold(
+            backgroundColor: AppColors.navyDark,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              leading: IconButton(
+                icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
+              title: Text(
+                l10n.simulationResultTitle,
+                style: AppTextStyles.appBarTitle,
+              ),
+              centerTitle: true,
+            ),
+            body: Center(
+              child: Text(
+                l10n.simulationResultNoData,
+                style: TextStyle(color: AppColors.slate400),
+              ),
+            ),
+          );
+        }
+
+        // 전체 자산 그래프 데이터 (월 인덱스를 연도로 변환)
+        final totalSpots = totalPath
+            .asMap()
+            .entries
+            .map((e) => FlSpot(e.key / 12.0, e.value))
+            .toList();
+
+        // 각 자산별 그래프 데이터
+        final assetSpotsList = provider.assets.map((asset) {
+          AssetOption? assetOption;
+          try {
+            assetOption = appProvider.assets.firstWhere(
+              (a) => a.id == asset.assetId,
+            );
+          } catch (e) {
+            assetOption = null;
+          }
+          final assetName = assetOption?.displayName() ?? asset.assetId;
+          final assetPath = assetPaths[asset.assetId] ?? [];
+          final spots = assetPath
+              .asMap()
+              .entries
+              .map((e) => FlSpot(e.key / 12.0, e.value))
+              .toList();
+          return {
+            'name': assetName,
+            'icon': assetOption?.icon ?? '📈',
+            'spots': spots,
+            'color': _getAssetColor(asset.assetId),
+          };
+        }).toList();
+
+        // 시나리오 이름
+        final scenarioName = provider.selectedScenario == 'positive'
+            ? l10n.scenarioPositive
+            : provider.selectedScenario == 'negative'
+            ? l10n.scenarioNegative
+            : l10n.scenarioNeutral;
+
+        return Scaffold(
+          backgroundColor: AppColors.navyDark,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(
+              l10n.simulationResultTitle,
+              style: AppTextStyles.appBarTitle,
+            ),
+            centerTitle: true,
+          ),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              physics: AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 시나리오 및 인출 정보 표시
+                  LiquidGlass(
+                    blur: 10,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.18),
+                        width: 1.5,
+                      ),
                     ),
-                    SizedBox(height: 12),
-                    Row(
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(
-                          Icons.account_balance_wallet,
-                          color: Colors.orange,
-                          size: 20,
-                        ),
-                        SizedBox(width: 12),
-                        Flexible(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Wrap(
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.info_outline,
+                              color: AppColors.gold,
+                              size: 20,
+                            ),
+                            SizedBox(width: 12),
+                            Flexible(
+                              child: Wrap(
                                 children: [
                                   Text(
-                                    provider.inflationRate > 0
-                                        ? l10n.monthlyWithdrawalWithInflation
-                                        : l10n.monthlyWithdrawalLabel,
+                                    l10n.selectedScenario,
                                     style: TextStyle(
                                       color: AppColors.slate300,
                                       fontSize: _simulationResultLabelFontSize,
                                     ),
                                   ),
                                   Text(
-                                    currencyFormat.format(
-                                      provider.monthlyWithdrawal,
-                                    ),
+                                    scenarioName,
                                     style: TextStyle(
-                                      color: Colors.orange,
+                                      color:
+                                          provider.selectedScenario ==
+                                              'positive'
+                                          ? AppColors.success
+                                          : provider.selectedScenario ==
+                                                'negative'
+                                          ? Colors.red
+                                          : AppColors.gold,
                                       fontSize: _simulationResultValueFontSize,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ],
                               ),
-                              if (provider.inflationRate > 0) ...[
-                                SizedBox(height: 6),
-                                Row(
-                                  children: [
-                                    Icon(
-                                      Icons.trending_up,
-                                      color: AppColors.gold,
-                                      size: 16,
-                                    ),
-                                    SizedBox(width: 4),
-                                    Flexible(
-                                      child: Text(
-                                        l10n.inflationRateApplied(
-                                          double.parse(
-                                            (provider.inflationRate * 100)
-                                                .toStringAsFixed(1),
-                                          ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.account_balance_wallet,
+                              color: Colors.orange,
+                              size: 20,
+                            ),
+                            SizedBox(width: 12),
+                            Flexible(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Wrap(
+                                    children: [
+                                      Text(
+                                        provider.inflationRate > 0
+                                            ? l10n.monthlyWithdrawalWithInflation
+                                            : l10n.monthlyWithdrawalLabel,
+                                        style: TextStyle(
+                                          color: AppColors.slate300,
+                                          fontSize:
+                                              _simulationResultLabelFontSize,
+                                        ),
+                                      ),
+                                      Text(
+                                        currencyFormat.format(
+                                          provider.monthlyWithdrawal,
                                         ),
                                         style: TextStyle(
-                                          color: AppColors.gold,
+                                          color: Colors.orange,
                                           fontSize:
                                               _simulationResultValueFontSize,
-                                          fontWeight: FontWeight.w600,
+                                          fontWeight: FontWeight.bold,
                                         ),
-                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                  if (provider.inflationRate > 0) ...[
+                                    SizedBox(height: 6),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.trending_up,
+                                          color: AppColors.gold,
+                                          size: 16,
+                                        ),
+                                        SizedBox(width: 4),
+                                        Flexible(
+                                          child: Text(
+                                            l10n.inflationRateApplied(
+                                              double.parse(
+                                                (provider.inflationRate * 100)
+                                                    .toStringAsFixed(1),
+                                              ),
+                                            ),
+                                            style: TextStyle(
+                                              color: AppColors.gold,
+                                              fontSize:
+                                                  _simulationResultValueFontSize,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 32),
+                  // 통합 차트 (전체 + 각 자산)
+                  _buildCombinedChart(
+                    provider,
+                    totalSpots,
+                    assetSpotsList,
+                    currencyFormat,
+                    l10n,
+                  ),
+                  SizedBox(height: 32),
+                  // 읽기 편한 요약 카드
+                  _buildReadableSummaryCard(
+                    provider,
+                    appProvider,
+                    summary,
+                    currencyFormat,
+                    l10n,
+                  ),
+                  SizedBox(height: 16),
+                  // 결과 요약
+                  _buildSummaryCard(
+                    summary,
+                    currencyFormat,
+                    provider.selectedScenario,
+                    l10n,
+                  ),
+                  SizedBox(height: 32),
+                  // 월별 상세 정보
+                  _buildMonthlyDetails(
+                    provider,
+                    totalPath,
+                    currencyFormat,
+                    l10n,
+                  ),
+                  SizedBox(height: 24),
+                  // 공유하기 및 다시 계산 버튼
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                            child: GestureDetector(
+                              onTap: () async {
+                                final shareText = _buildShareText(
+                                  provider,
+                                  appProvider,
+                                  summary,
+                                  currencyFormat,
+                                  l10n,
+                                );
+                                await CommonShareUI.showShareOptionsDialog(
+                                  context: context,
+                                  shareText: shareText,
+                                );
+                              },
+                              child: Container(
+                                padding: EdgeInsets.symmetric(vertical: 14),
+                                decoration:
+                                    SelectedButtonStyle.solidBoxDecoration(
+                                      BorderRadius.circular(12),
+                                    ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.share,
+                                      color: AppColors.navyDark,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Flexible(
+                                      child: Text(
+                                        l10n.share,
+                                        style: AppTextStyles.buttonTextPrimary
+                                            .copyWith(
+                                              color: AppColors.navyDark,
+                                              fontSize: 16,
+                                            ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.visible,
+                                        textAlign: TextAlign.center,
                                       ),
                                     ),
                                   ],
                                 ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 32),
-              // 통합 차트 (전체 + 각 자산)
-              _buildCombinedChart(
-                provider,
-                totalSpots,
-                assetSpotsList,
-                currencyFormat,
-                l10n,
-              ),
-              SizedBox(height: 32),
-              // 읽기 편한 요약 카드
-              _buildReadableSummaryCard(
-                provider,
-                appProvider,
-                summary,
-                currencyFormat,
-                localeCode,
-                l10n,
-              ),
-              SizedBox(height: 16),
-              // 결과 요약
-              _buildSummaryCard(
-                summary,
-                currencyFormat,
-                provider.selectedScenario,
-                l10n,
-              ),
-              SizedBox(height: 32),
-              // 월별 상세 정보
-              _buildMonthlyDetails(provider, totalPath, currencyFormat, l10n),
-              SizedBox(height: 24),
-              // 공유하기 및 다시 계산 버튼
-              Row(
-                children: [
-                  Expanded(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                        child: GestureDetector(
-                          onTap: () async {
-                            final shareText = _buildShareText(
-                              provider,
-                              appProvider,
-                              summary,
-                              currencyFormat,
-                              localeCode,
-                              l10n,
-                            );
-                            await CommonShareUI.showShareOptionsDialog(
-                              context: context,
-                              shareText: shareText,
-                            );
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(vertical: 14),
-                            decoration: SelectedButtonStyle.solidBoxDecoration(
-                              BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.share, color: AppColors.navyDark),
-                                SizedBox(width: 8),
-                                Flexible(
-                                  child: Text(
-                                    l10n.share,
-                                    style: AppTextStyles.buttonTextPrimary
-                                        .copyWith(
-                                          color: AppColors.navyDark,
-                                          fontSize: 16,
-                                        ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.visible,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 16),
-                  Expanded(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                        child: GestureDetector(
-                          onTap: () {
-                            // MainTabScreen의 홈 탭으로 이동 (인덱스 0)
-                            Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    const MainTabScreen(initialIndex: 0),
                               ),
-                              (route) => route.isFirst, // 홈 화면까지만 유지
-                            );
-                          },
-                          child: Container(
-                            padding: EdgeInsets.symmetric(vertical: 14),
-                            decoration: SelectedButtonStyle.solidBoxDecoration(
-                              BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.arrow_back,
-                                  color: AppColors.navyDark,
-                                ),
-                                SizedBox(width: 8),
-                                Flexible(
-                                  child: Text(
-                                    l10n.pastAssetSimulation,
-                                    style: AppTextStyles.buttonTextPrimary
-                                        .copyWith(
-                                          color: AppColors.navyDark,
-                                          fontSize: 16,
-                                        ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.visible,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ],
                             ),
                           ),
                         ),
                       ),
-                    ),
+                      SizedBox(width: 16),
+                      Expanded(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                            child: GestureDetector(
+                              onTap: () {
+                                // MainTabScreen의 홈 탭으로 이동 (인덱스 0)
+                                Navigator.of(context).pushAndRemoveUntil(
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const MainTabScreen(initialIndex: 0),
+                                  ),
+                                  (route) => route.isFirst, // 홈 화면까지만 유지
+                                );
+                              },
+                              child: Container(
+                                padding: EdgeInsets.symmetric(vertical: 14),
+                                decoration:
+                                    SelectedButtonStyle.solidBoxDecoration(
+                                      BorderRadius.circular(12),
+                                    ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.arrow_back,
+                                      color: AppColors.navyDark,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Flexible(
+                                      child: Text(
+                                        l10n.pastAssetSimulation,
+                                        style: AppTextStyles.buttonTextPrimary
+                                            .copyWith(
+                                              color: AppColors.navyDark,
+                                              fontSize: 16,
+                                            ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.visible,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
+                  SizedBox(height: 60),
                 ],
               ),
-              SizedBox(height: 60),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -681,7 +698,6 @@ class _RetireSimulatorResultScreenState
     AppStateProvider appProvider,
     Map<String, dynamic> summary,
     NumberFormat currencyFormat,
-    String localeCode,
     AppLocalizations l10n,
   ) {
     // 초기 자산 금액 포맷팅 (원 단위 포함)
@@ -698,7 +714,7 @@ class _RetireSimulatorResultScreenState
       } catch (e) {
         assetOption = null;
       }
-      final assetName = assetOption?.displayName(localeCode) ?? asset.assetId;
+      final assetName = assetOption?.displayName() ?? asset.assetId;
       final allocationPercent = (asset.allocation * 100).toStringAsFixed(0);
       assetDescriptions.add('$assetName ($allocationPercent%)');
     }
@@ -1170,7 +1186,6 @@ class _RetireSimulatorResultScreenState
     AppStateProvider appProvider,
     Map<String, dynamic> summary,
     NumberFormat currencyFormat,
-    String localeCode,
     AppLocalizations l10n,
   ) {
     final buffer = StringBuffer();
@@ -1187,7 +1202,7 @@ class _RetireSimulatorResultScreenState
           .where((a) => a.id == asset.assetId)
           .firstOrNull;
       if (assetOption != null) {
-        final assetName = assetOption.displayName(localeCode);
+        final assetName = assetOption.displayName();
         final allocationPercent = (asset.allocation * 100).toStringAsFixed(0);
         portfolioParts.add('$assetName ($allocationPercent%)');
       }

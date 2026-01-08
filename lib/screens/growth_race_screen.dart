@@ -319,7 +319,7 @@ class _GrowthRaceScreenState extends State<GrowthRaceScreen> {
                         Text(asset.icon, style: TextStyle(fontSize: 18)),
                         SizedBox(width: 8),
                         Text(
-                          asset.displayName(localeCode),
+                          asset.displayName(),
                           style: TextStyle(
                             color: isSelected
                                 ? AppColors.navyDark

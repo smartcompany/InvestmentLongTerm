@@ -232,7 +232,7 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
         raceSeries.add(
           RaceChartData(
             assetId: assetId,
-            name: asset.displayName(localeCode),
+            name: asset.displayName(),
             icon: asset.icon,
             color: colors[i % colors.length],
             spots: spots,
@@ -421,7 +421,7 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
             : '📈';
 
         buffer.writeln(
-          '$emoji ${i + 1}위: ${asset.displayName(localeCode)} ${asset.icon}',
+          '$emoji ${i + 1}위: ${asset.displayName()} ${asset.icon}',
         );
         buffer.writeln('   수익률: ${growthRate.toStringAsFixed(2)}%');
         buffer.writeln('');

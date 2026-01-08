@@ -76,7 +76,7 @@ class AssetInputCard extends StatelessWidget {
                       SizedBox(width: 8),
                       Flexible(
                         child: Text(
-                          assetOption?.displayName(localeCode) ?? asset.assetId,
+                          assetOption?.displayName() ?? asset.assetId,
                           style: TextStyle(
                             color: AppColors.gold,
                             fontSize: _assetNameFontSize,

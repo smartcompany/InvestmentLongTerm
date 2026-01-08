@@ -61,12 +61,14 @@ void main() async {
   // Initialize ad settings (앱 시작 시 한 번만 로드)
   AdService.shared.loadSettings();
 
+  // CurrencyProvider 초기화 (싱글톤)
+  CurrencyProvider.shared;
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AppStateProvider()),
         ChangeNotifierProvider(create: (_) => RetireSimulatorProvider()),
-        ChangeNotifierProvider(create: (_) => CurrencyProvider()),
         ChangeNotifierProvider(create: (_) => MyAssetsProvider()),
         ChangeNotifierProvider(create: (_) => GrowthRaceProvider()),
       ],

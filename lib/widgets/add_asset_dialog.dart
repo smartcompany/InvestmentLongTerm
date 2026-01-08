@@ -63,7 +63,7 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
       final asset = appProvider.assets.firstWhere(
         (a) => a.id == _selectedAssetId!,
       );
-      final assetName = asset.displayName(localeCode);
+      final assetName = asset.displayName();
       final principal = _parseCurrency(_principalController.text);
       final quantity = _parseQuantity(_quantityController.text);
 
@@ -412,7 +412,7 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
                       });
                     },
               child: AssetButton(
-                assetName: asset.displayName(localeCode),
+                assetName: asset.displayName(),
                 icon: asset.icon,
                 isSelected: _selectedAssetId == asset.id,
                 isDisabled: _isLoading,
@@ -482,198 +482,205 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
   @override
   Widget build(BuildContext context) {
     final appProvider = context.watch<AppStateProvider>();
-    final localeCode = Localizations.localeOf(context).languageCode;
     final l10n = AppLocalizations.of(context)!;
-    final currencyProvider = context.watch<CurrencyProvider>();
-    final currencySymbol = currencyProvider.getCurrencySymbol(localeCode);
+    final localeCode = Localizations.localeOf(context).languageCode;
 
-    String _getCurrencyUnit(String symbol) {
-      switch (symbol) {
-        case '₩':
-          return l10n.won;
-        case '\$':
-          return l10n.dollar;
-        case '¥':
-          return l10n.yen;
-        case 'CN¥':
-          return l10n.yuan;
-        default:
-          return symbol;
-      }
-    }
+    return ListenableBuilder(
+      listenable: CurrencyProvider.shared,
+      builder: (context, _) {
+        final currencySymbol = CurrencyProvider.shared.getCurrencySymbol();
 
-    final currencyUnit = _getCurrencyUnit(currencySymbol);
+        String _getCurrencyUnit(String symbol) {
+          switch (symbol) {
+            case '₩':
+              return l10n.won;
+            case '\$':
+              return l10n.dollar;
+            case '¥':
+              return l10n.yen;
+            case 'CN¥':
+              return l10n.yuan;
+            default:
+              return symbol;
+          }
+        }
 
-    return Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-      child: Stack(
-        children: [
-          LiquidGlass(
-            decoration: BoxDecoration(
-              color: AppColors.navyDark.withOpacity(0.95),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: AppColors.gold.withOpacity(0.3)),
-            ),
-            child: Container(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.9,
-                minHeight: MediaQuery.of(context).size.height * 0.6,
-                maxWidth: double.infinity,
-              ),
-              padding: EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // 헤더 (타이틀 + X 버튼)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        l10n.addAsset,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.close, color: AppColors.slate400),
-                        onPressed: _isLoading
-                            ? null
-                            : () => Navigator.pop(context),
-                        padding: EdgeInsets.zero,
-                        constraints: BoxConstraints(),
-                      ),
-                    ],
+        final currencyUnit = _getCurrencyUnit(currencySymbol);
+
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          child: Stack(
+            children: [
+              LiquidGlass(
+                decoration: BoxDecoration(
+                  color: AppColors.navyDark.withOpacity(0.95),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: AppColors.gold.withOpacity(0.3)),
+                ),
+                child: Container(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.9,
+                    minHeight: MediaQuery.of(context).size.height * 0.6,
+                    maxWidth: double.infinity,
                   ),
-                  SizedBox(height: 24),
-                  // 단계 표시
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  padding: EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      _buildStepIndicator(0, '자산 선택'),
-                      Container(
-                        width: 40,
-                        height: 2,
-                        color: _currentStep >= 1
-                            ? AppColors.gold
-                            : AppColors.slate700,
-                      ),
-                      _buildStepIndicator(1, '정보 입력'),
-                    ],
-                  ),
-                  SizedBox(height: 24),
-                  // 단계별 콘텐츠
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: _currentStep == 0
-                          ? _buildAssetSelectionStep(
-                              appProvider,
-                              localeCode,
-                              l10n,
-                            )
-                          : _buildAmountAndDateStep(currencyUnit, l10n),
-                    ),
-                  ),
-                  SizedBox(height: 24),
-                  // 하단 버튼
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      if (_currentStep == 1)
-                        TextButton(
-                          onPressed: _isLoading
-                              ? null
-                              : () {
-                                  setState(() {
-                                    _currentStep = 0;
-                                  });
-                                },
-                          child: Text(
-                            '이전',
-                            style: TextStyle(color: AppColors.slate400),
-                          ),
-                        )
-                      else
-                        SizedBox.shrink(),
+                      // 헤더 (타이틀 + X 버튼)
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          TextButton(
+                          Text(
+                            l10n.addAsset,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.close, color: AppColors.slate400),
                             onPressed: _isLoading
                                 ? null
                                 : () => Navigator.pop(context),
-                            child: Text(
-                              l10n.cancel,
-                              style: TextStyle(color: AppColors.slate400),
-                            ),
+                            padding: EdgeInsets.zero,
+                            constraints: BoxConstraints(),
                           ),
-                          SizedBox(width: 12),
-                          ElevatedButton(
-                            onPressed: _isLoading
-                                ? null
-                                : (_currentStep == 0
-                                      ? (_selectedAssetId != null
-                                            ? () {
-                                                setState(() {
-                                                  _currentStep = 1;
-                                                });
-                                              }
-                                            : null)
-                                      : (_selectedAssetId != null &&
-                                                _parseCurrency(
-                                                      _principalController.text,
-                                                    ) >
-                                                    0 &&
-                                                _parseQuantity(
-                                                      _quantityController.text,
-                                                    ) >
-                                                    0
-                                            ? () async => await _submit()
-                                            : null)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.gold,
-                              foregroundColor: AppColors.navyDark,
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 32,
-                                vertical: 16,
+                        ],
+                      ),
+                      SizedBox(height: 24),
+                      // 단계 표시
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          _buildStepIndicator(0, '자산 선택'),
+                          Container(
+                            width: 40,
+                            height: 2,
+                            color: _currentStep >= 1
+                                ? AppColors.gold
+                                : AppColors.slate700,
+                          ),
+                          _buildStepIndicator(1, '정보 입력'),
+                        ],
+                      ),
+                      SizedBox(height: 24),
+                      // 단계별 콘텐츠
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: _currentStep == 0
+                              ? _buildAssetSelectionStep(
+                                  appProvider,
+                                  localeCode,
+                                  l10n,
+                                )
+                              : _buildAmountAndDateStep(currencyUnit, l10n),
+                        ),
+                      ),
+                      SizedBox(height: 24),
+                      // 하단 버튼
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          if (_currentStep == 1)
+                            TextButton(
+                              onPressed: _isLoading
+                                  ? null
+                                  : () {
+                                      setState(() {
+                                        _currentStep = 0;
+                                      });
+                                    },
+                              child: Text(
+                                '이전',
+                                style: TextStyle(color: AppColors.slate400),
                               ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                            )
+                          else
+                            SizedBox.shrink(),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              TextButton(
+                                onPressed: _isLoading
+                                    ? null
+                                    : () => Navigator.pop(context),
+                                child: Text(
+                                  l10n.cancel,
+                                  style: TextStyle(color: AppColors.slate400),
+                                ),
                               ),
-                            ),
-                            child: Text(
-                              _currentStep == 0 ? '다음' : l10n.confirm,
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                              SizedBox(width: 12),
+                              ElevatedButton(
+                                onPressed: _isLoading
+                                    ? null
+                                    : (_currentStep == 0
+                                          ? (_selectedAssetId != null
+                                                ? () {
+                                                    setState(() {
+                                                      _currentStep = 1;
+                                                    });
+                                                  }
+                                                : null)
+                                          : (_selectedAssetId != null &&
+                                                    _parseCurrency(
+                                                          _principalController
+                                                              .text,
+                                                        ) >
+                                                        0 &&
+                                                    _parseQuantity(
+                                                          _quantityController
+                                                              .text,
+                                                        ) >
+                                                        0
+                                                ? () async => await _submit()
+                                                : null)),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.gold,
+                                  foregroundColor: AppColors.navyDark,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 32,
+                                    vertical: 16,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: Text(
+                                  _currentStep == 0 ? '다음' : l10n.confirm,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
-                            ),
+                            ],
                           ),
                         ],
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
-            ),
+              // 로딩 오버레이
+              if (_isLoading)
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.7),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Center(
+                      child: CircularProgressIndicator(color: AppColors.gold),
+                    ),
+                  ),
+                ),
+            ],
           ),
-          // 로딩 오버레이
-          if (_isLoading)
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.7),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Center(
-                  child: CircularProgressIndicator(color: AppColors.gold),
-                ),
-              ),
-            ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

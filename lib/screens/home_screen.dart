@@ -87,7 +87,6 @@ class _HomeScreenState extends State<HomeScreen>
     final provider = context.watch<AppStateProvider>();
     final localeCode = Localizations.localeOf(context).languageCode;
     final selectedAssetName = provider.assetNameForLocale(
-      localeCode,
       assetId: provider.config.asset,
     );
     final l10n = AppLocalizations.of(context)!;
@@ -354,7 +353,7 @@ class _HomeScreenState extends State<HomeScreen>
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: AssetButton(
-              assetName: asset.displayName(localeCode),
+              assetName: asset.displayName(),
               icon: asset.icon,
               isSelected: provider.config.asset == asset.id,
               onTap: () {
