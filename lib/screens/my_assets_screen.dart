@@ -254,7 +254,7 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
                                 Text(
                                   convertedTotalCurrentValue != null &&
                                           provider.totalPurchaseAmount > 0
-                                      ? '${l10n.totalReturnRate}: ${((convertedTotalCurrentValue / provider.totalPurchaseAmount - 1) * 100).toStringAsFixed(2)}%'
+                                      ? '${l10n.totalReturnRate}: ${NumberFormat('#,##0.00').format((convertedTotalCurrentValue / provider.totalPurchaseAmount - 1) * 100)}%'
                                       : '${l10n.totalReturnRate}: -',
                                   style: TextStyle(
                                     color:
@@ -486,7 +486,7 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
                             ),
                             SizedBox(height: 4),
                             Text(
-                              '${l10n.returnRate}: ${((convertedCurrentValue / asset.initialAmount - 1) * 100).toStringAsFixed(2)}%',
+                              '${l10n.returnRate}: ${NumberFormat('#,##0.00').format((convertedCurrentValue / asset.initialAmount - 1) * 100)}%',
                               style: TextStyle(
                                 color:
                                     convertedCurrentValue >= asset.initialAmount
