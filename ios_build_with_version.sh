@@ -57,18 +57,27 @@ else
   log "버전 증가는 건너뜀 (옵션 미지정)"
 fi
 
+# -------- Clean previous builds --------
+log "기존 빌드 아티팩트 정리 중..."
+cd ios || fail "ios 폴더 이동 실패"
+if [ -d "build" ]; then
+  rm -rf build
+fi
+if [ -d "Runner.xcworkspace/xcuserdata" ]; then
+  rm -rf Runner.xcworkspace/xcuserdata
+fi
+if [ -d "Runner.xcodeproj/xcuserdata" ]; then
+  rm -rf Runner.xcodeproj/xcuserdata
+fi
+cd ..
+
 # -------- Flutter iOS config-only (Release) --------
 log "flutter build ios --config-only --release"
 flutter build ios --config-only --release
 
 # -------- Fastlane in ios/ --------
 cd ios || fail "ios 폴더 이동 실패"
-if [ -f Gemfile ]; then
-  log "bundle exec fastlane release"
-  bundle exec fastlane release
-else
-  log "fastlane release"
-  fastlane release
-fi
+log "fastlane release"
+fastlane release
 
 log "✅ 완료"

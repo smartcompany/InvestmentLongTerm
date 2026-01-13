@@ -33,11 +33,16 @@ platform :ios do
 
     increment_build_number(xcodeproj: "Runner.xcodeproj")
     
+    # Clean build folder before building
+    clean_build_artifacts
+    
     # Build app with dSYM generation
+    # Note: iOS uses "app-store" for export_method, but export_options.method can be "app-store-connect"
     build_app(
       workspace: "Runner.xcworkspace", 
       scheme: "Runner",
       export_method: "app-store",
+      clean: true,
       export_options: {
         method: "app-store",
         uploadBitcode: false,
@@ -53,11 +58,30 @@ platform :ios do
       gsp_path: "Runner/GoogleService-Info.plist"
     )
     
-    upload_to_app_store(
-  	skip_metadata: true,
-  	skip_screenshots: true,
-  	skip_app_version_update: true,
-  	precheck_include_in_app_purchases: false
-     )
+    # Upload to App Store
+    # Note: If you see 500 error after "UPLOAD SUCCEEDED", the upload actually succeeded
+    # The error is from Apple's metrics logging service, not the actual upload
+    begin
+      upload_to_app_store(
+        skip_metadata: true,
+        skip_screenshots: true,
+        skip_app_version_update: true,
+        precheck_include_in_app_purchases: false,
+        force: true,
+        submission_information: {
+          export_compliance: {
+            uses_non_exempt_encryption: false
+          }
+        }
+      )
+    rescue => ex
+      # Check if upload actually succeeded despite the error
+      if ex.message.include?("UPLOAD SUCCEEDED") || ex.message.include?("Delivery UUID")
+        UI.success("Upload succeeded! The error is from Apple's metrics service and can be ignored.")
+        UI.message("Please check App Store Connect to confirm the build was uploaded.")
+      else
+        raise ex
+      end
+    end
   end
 end
