@@ -60,7 +60,8 @@ class AssetPriceChart extends StatelessWidget {
                   sideTitles: SideTitles(reservedSize: 0),
                 ),
                 topTitles: AxisTitles(sideTitles: SideTitles(reservedSize: 0)),
-                bottomTitles: startDate != null && endDate != null
+                bottomTitles: startDate != null && endDate != null &&
+                        spots.isNotEmpty
                     ? AxisTitles(
                         sideTitles: SideTitles(
                           reservedSize: 30,
@@ -69,7 +70,13 @@ class AssetPriceChart extends StatelessWidget {
                             final totalDays = endDate!
                                 .difference(startDate!)
                                 .inDays;
-                            final daysFromStart = (value * totalDays).round();
+                            final maxX = spots
+                                .map((s) => s.x)
+                                .reduce((a, b) => a > b ? a : b);
+                            final normalizedX =
+                                maxX > 0 ? (value / maxX) : 0.0;
+                            final daysFromStart =
+                                (normalizedX * totalDays).round();
                             final date = startDate!.add(
                               Duration(days: daysFromStart),
                             );
@@ -141,12 +148,14 @@ class AssetPriceChart extends StatelessWidget {
             tooltipPadding: EdgeInsets.all(12),
             tooltipMargin: 16,
             getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
-              // 날짜 계산
+              // 날짜 계산: 서버는 x를 년 단위(0~yearsAgo)로 보내므로, 0~1로 정규화 후 날짜 계산
               DateTime? selectedDate;
-              if (startDate != null && endDate != null) {
+              if (startDate != null && endDate != null && spots.isNotEmpty) {
                 final totalDays = endDate!.difference(startDate!).inDays;
-                final daysFromStart = (touchedBarSpots.first.x * totalDays)
-                    .round();
+                final maxX = spots.map((s) => s.x).reduce((a, b) => a > b ? a : b);
+                final x = touchedBarSpots.first.x;
+                final normalizedX = maxX > 0 ? (x / maxX) : 0.0;
+                final daysFromStart = (normalizedX * totalDays).round();
                 selectedDate = startDate!.add(Duration(days: daysFromStart));
               }
 
