@@ -256,7 +256,7 @@ class _HomeScreenState extends State<HomeScreen>
 
 ✨ 장기 투자 매매 계산 결과
 
-🔗 다운로드: https://coinpang.org/app
+🔗 다운로드: https://investment-long-term-server.vercel.app/applink
 ''';
 
                 await CommonShareUI.showShareOptionsDialog(
