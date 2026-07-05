@@ -16,10 +16,13 @@
 app_store_connect_api_key(
   key_id: "7FN57R567Z",
   issuer_id: "69a6de88-7946-47e3-e053-5b8c7c11a4d1",
-  key_filepath: "/Users/smart/Projects/FlutterGimchi/fastlaneAuthKeys/AuthKey_7FN57R567Z.p8"
+  key_filepath: "/Users/smart/Projects/auth/fastlaneAuthKeys/AuthKey_7FN57R567Z.p8"
 )
 
 default_platform(:ios)
+
+APP_IDENTIFIER = "com.smartcompany.longterminvestment"
+TEAM_ID = "NTCK5U8AWD"
 
 platform :ios do
   desc "Push a new release build to the App Store"
@@ -32,25 +35,47 @@ platform :ios do
     )
 
     increment_build_number(xcodeproj: "Runner.xcodeproj")
+
+    # App Store 배포 프로비저닝 프로필 (archive 단계 Development 프로필 오류 방지)
+    get_provisioning_profile(
+      app_identifier: APP_IDENTIFIER,
+      adhoc: false,
+      force: true,
+      skip_install: false,
+      team_id: TEAM_ID
+    )
     
     # Clean build folder before building
     clean_build_artifacts
     
-    # Build app with dSYM generation
-    # Note: iOS uses "app-store" for export_method, but export_options.method can be "app-store-connect"
+    profile_name = lane_context[SharedValues::SIGH_NAME]
+    export_opts = {
+      method: "app-store",
+      uploadBitcode: false,
+      uploadSymbols: true,
+      compileBitcode: false,
+      signingStyle: "manual",
+      teamID: TEAM_ID,
+      provisioningProfiles: {
+        APP_IDENTIFIER => profile_name
+      }
+    }
+
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "Runner.xcodeproj",
+      team_id: TEAM_ID,
+      bundle_identifier: APP_IDENTIFIER,
+      profile_name: profile_name,
+      code_sign_identity: "Apple Distribution"
+    )
+    
     build_app(
       workspace: "Runner.xcworkspace", 
       scheme: "Runner",
       export_method: "app-store",
       clean: true,
-      export_options: {
-        method: "app-store",
-        uploadBitcode: false,
-        uploadSymbols: true,
-        compileBitcode: false,
-        signingStyle: "automatic",
-        teamID: "NTCK5U8AWD"
-      }
+      export_options: export_opts
     )
     
     # Upload dSYM to Crashlytics
