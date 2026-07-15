@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
@@ -18,6 +19,7 @@ class GrowthRaceScreen extends StatefulWidget {
 
 class _GrowthRaceScreenState extends State<GrowthRaceScreen> {
   bool _isLoadingAd = false;
+  bool _isStartingDirect = false;
 
   @override
   void initState() {
@@ -31,6 +33,28 @@ class _GrowthRaceScreenState extends State<GrowthRaceScreen> {
     });
   }
 
+  Future<void> _launchRace() async {
+    final provider = context.read<GrowthRaceProvider>();
+    await provider.loadPriceData();
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const GrowthRaceChartScreen(),
+        fullscreenDialog: true,
+      ),
+    );
+  }
+
+  Future<void> _startRaceDirect() async {
+    if (_isStartingDirect || _isLoadingAd) return;
+    setState(() => _isStartingDirect = true);
+    try {
+      await _launchRace();
+    } finally {
+      if (mounted) setState(() => _isStartingDirect = false);
+    }
+  }
+
   void _startRace() async {
     setState(() {
       _isLoadingAd = true;
@@ -40,53 +64,27 @@ class _GrowthRaceScreenState extends State<GrowthRaceScreen> {
       await AdService.shared.showFullScreenAd(
         onAdDismissed: () async {
           if (!mounted) return;
-
-          final provider = context.read<GrowthRaceProvider>();
-
-          // 데이터 로드
-          await provider.loadPriceData();
-
-          if (!mounted) return;
-
-          // 전체 화면 그래프 페이지로 이동
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const GrowthRaceChartScreen(),
-              fullscreenDialog: true,
-            ),
-          );
-
-          // 화면이 변경되지만, 안전하게 상태를 리셋
-          if (mounted) {
-            setState(() {
-              _isLoadingAd = false;
-            });
+          try {
+            await _launchRace();
+          } finally {
+            if (mounted) {
+              setState(() {
+                _isLoadingAd = false;
+              });
+            }
           }
         },
         onAdFailedToShow: () async {
           // 광고 실패 시에도 그냥 시작
           if (!mounted) return;
-
-          final provider = context.read<GrowthRaceProvider>();
-
-          // 데이터 로드
-          await provider.loadPriceData();
-
-          if (!mounted) return;
-
-          // 전체 화면 그래프 페이지로 이동
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const GrowthRaceChartScreen(),
-              fullscreenDialog: true,
-            ),
-          );
-
-          // 화면이 변경되지만, 안전하게 상태를 리셋
-          if (mounted) {
-            setState(() {
-              _isLoadingAd = false;
-            });
+          try {
+            await _launchRace();
+          } finally {
+            if (mounted) {
+              setState(() {
+                _isLoadingAd = false;
+              });
+            }
           }
         },
       );
@@ -210,6 +208,47 @@ class _GrowthRaceScreenState extends State<GrowthRaceScreen> {
 
                 SizedBox(height: 32),
 
+                // Debug: 광고 없이 바로 시작
+                if (kDebugMode) ...[
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: OutlinedButton(
+                      onPressed:
+                          provider.selectedAssetIds.isEmpty ||
+                              provider.isLoading ||
+                              _isLoadingAd ||
+                              _isStartingDirect
+                          ? null
+                          : _startRaceDirect,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.gold,
+                        side: BorderSide(color: AppColors.gold),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: _isStartingDirect
+                          ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: AppColors.gold,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Text(
+                              '바로 시작 (Debug)',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                    ),
+                  ),
+                  SizedBox(height: 12),
+                ],
+
                 // Start 버튼
                 SizedBox(
                   width: double.infinity,
@@ -218,7 +257,8 @@ class _GrowthRaceScreenState extends State<GrowthRaceScreen> {
                     onPressed:
                         provider.selectedAssetIds.isEmpty ||
                             provider.isLoading ||
-                            _isLoadingAd
+                            _isLoadingAd ||
+                            _isStartingDirect
                         ? null
                         : _startRace,
                     style: ElevatedButton.styleFrom(

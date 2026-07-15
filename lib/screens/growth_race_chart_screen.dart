@@ -9,7 +9,6 @@ import '../utils/colors.dart';
 import '../utils/chart_image_utils.dart';
 import '../widgets/common_share_ui.dart';
 import '../services/ad_service.dart';
-import 'package:fl_chart/fl_chart.dart';
 import '../widgets/race_chart.dart';
 
 class GrowthRaceChartScreen extends StatefulWidget {
@@ -158,11 +157,34 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
     double maxX = 0.0;
     double minX = 0.0;
     bool hasXData = false;
+    // 레이스 전체 구간 (카메라 pull-out용) — currentDate와 무관하게 전체 데이터에서 계산
+    double raceStartX = 0.0;
+    double raceEndX = 0.0;
+    bool hasRaceRange = false;
     // 초기 투자 금액 (100만원)
     const double initialInvestment = 1000000.0;
 
-    // 색상 목록
-    final colors = [
+    for (final data in priceData.values) {
+      if (data.isEmpty) continue;
+      try {
+        final firstStr = data.first['date'] as String?;
+        final lastStr = data.last['date'] as String?;
+        if (firstStr == null || lastStr == null) continue;
+        final firstMs = DateTime.parse(firstStr).millisecondsSinceEpoch.toDouble();
+        final lastMs = DateTime.parse(lastStr).millisecondsSinceEpoch.toDouble();
+        if (!hasRaceRange) {
+          raceStartX = firstMs;
+          raceEndX = lastMs;
+          hasRaceRange = true;
+        } else {
+          if (firstMs < raceStartX) raceStartX = firstMs;
+          if (lastMs > raceEndX) raceEndX = lastMs;
+        }
+      } catch (_) {}
+    }
+
+    // 색상은 순위가 아니라 선택 순서 기준으로 고정 (그래프·종목명 동일)
+    const colors = [
       AppColors.gold,
       AppColors.success,
       Colors.blue,
@@ -172,6 +194,12 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
       Colors.cyan,
       Colors.teal,
     ];
+    final assetColors = <String, Color>{};
+    var colorIndex = 0;
+    for (final assetId in provider.selectedAssetIds) {
+      assetColors[assetId] = colors[colorIndex % colors.length];
+      colorIndex++;
+    }
 
     for (int i = 0; i < rankedAssetIds.length; i++) {
       final assetId = rankedAssetIds[i];
@@ -180,7 +208,7 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
 
       if (data != null && data.isNotEmpty) {
         final firstPrice = (data[0]['price'] as num).toDouble();
-        final spots = <FlSpot>[];
+        final spots = <RacePoint>[];
         double? lastKnownPrice = firstPrice;
 
         // currentDate까지의 데이터만 차트에 추가
@@ -206,7 +234,7 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
               // X축: 실제 날짜 (DateTime의 millisecondsSinceEpoch 사용)
               final xValue = dataDate.millisecondsSinceEpoch.toDouble();
 
-              spots.add(FlSpot(xValue, assetValue));
+              spots.add(RacePoint(xValue, assetValue));
 
               // X축 범위 업데이트
               if (!hasXData) {
@@ -234,7 +262,7 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
             assetId: assetId,
             name: asset.displayName(),
             icon: asset.icon,
-            color: colors[i % colors.length],
+            color: assetColors[assetId] ?? colors[i % colors.length],
             spots: spots,
             currentGrowthRate: currentGrowthRate, // 수익률 % (레이블 표시용)
             rank: i,
@@ -274,13 +302,15 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
       minY = math.max(0, minY - padding); // 최소값은 0 이상
     }
 
+    final raceComplete = _isRaceComplete(provider, priceData);
+
     return SingleChildScrollView(
       padding: EdgeInsets.all(16),
       child: Column(
         children: [
           RepaintBoundary(
             key: _chartKey,
-            child: Container(
+            child: SizedBox(
               width: double.infinity,
               height: MediaQuery.of(context).size.height * 0.6,
               child: raceSeries.isEmpty
@@ -296,10 +326,13 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
                       minX: hasXData ? minX : 0.0,
                       maxY: maxY,
                       minY: minY,
+                      raceStartX: hasRaceRange ? raceStartX : minX,
+                      raceEndX: hasRaceRange ? raceEndX : maxX,
+                      isRaceComplete: raceComplete,
                     ),
             ),
           ),
-          if (_isRaceComplete(provider, priceData)) ...[
+          if (raceComplete) ...[
             SizedBox(height: 32),
             _buildShareButton(provider, appProvider, localeCode, l10n),
             SizedBox(height: 16),
