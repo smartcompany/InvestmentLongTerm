@@ -71,10 +71,56 @@ class RaceChart extends StatelessWidget {
     return Curves.easeInOutCubic.transform(t.clamp(0.0, 1.0));
   }
 
+  /// 결승선 직전 줌인(0→1) → 피니시에서 줌아웃(1→0).
+  /// 완료 시 0 (전체 뷰).
+  static double finalePunch({
+    required double leadX,
+    required double raceStartX,
+    required double raceEndX,
+    required bool isRaceComplete,
+  }) {
+    if (isRaceComplete) return 0.0;
+    final start = raceStartX;
+    final end = raceEndX > start ? raceEndX : leadX;
+    final span = math.max(end - start, 1.0);
+    final progress = ((leadX - start) / span).clamp(0.0, 1.0);
+    // 78%부터 줌인 → 89% 피크 → 100%까지 풀아웃
+    if (progress < 0.78) return 0.0;
+    if (progress < 0.89) {
+      final t = (progress - 0.78) / 0.11;
+      return Curves.easeInOutCubic.transform(t.clamp(0.0, 1.0));
+    }
+    final t = (progress - 0.89) / 0.11;
+    return 1.0 - Curves.easeInOutCubic.transform(t.clamp(0.0, 1.0));
+  }
+
+  /// 피니시 풀아웃(전체 레이스 공개) 양.
+  static double finalePullOut({
+    required double leadX,
+    required double raceStartX,
+    required double raceEndX,
+    required bool isRaceComplete,
+  }) {
+    if (isRaceComplete) return 1.0;
+    final start = raceStartX;
+    final end = raceEndX > start ? raceEndX : leadX;
+    final span = math.max(end - start, 1.0);
+    final progress = ((leadX - start) / span).clamp(0.0, 1.0);
+    if (progress < 0.89) return 0.0;
+    final t = (progress - 0.89) / 0.11;
+    return Curves.easeInOutCubic.transform(t.clamp(0.0, 1.0));
+  }
+
   @override
   Widget build(BuildContext context) {
     final sorted = [...series]..sort((a, b) => a.rank.compareTo(b.rank));
     final blend = cameraBlend(
+      leadX: maxX,
+      raceStartX: raceStartX,
+      raceEndX: raceEndX,
+      isRaceComplete: isRaceComplete,
+    );
+    final punch = finalePunch(
       leadX: maxX,
       raceStartX: raceStartX,
       raceEndX: raceEndX,
@@ -85,8 +131,11 @@ class RaceChart extends StatelessWidget {
     final rotateX = ui.lerpDouble(-0.14, -0.035, blend)!;
     final rotateY = ui.lerpDouble(0.025, -0.03, blend)!;
     final persp = ui.lerpDouble(0.0015, 0.0007, blend)!;
+    // 결승 직전: 선두(오른쪽) 쪽 중심으로 줌인
+    final scale = 1.0 + punch * 0.28;
 
     return Stack(
+      clipBehavior: Clip.hardEdge,
       children: [
         Positioned.fill(
           child: Transform(
@@ -95,17 +144,28 @@ class RaceChart extends StatelessWidget {
               ..setEntry(3, 2, persp)
               ..rotateX(rotateX)
               ..rotateY(rotateY),
-            child: CustomPaint(
-              painter: _RaceTrackPainter(
-                series: sorted,
-                leadX: maxX,
-                dataMinX: minX,
-                valueMin: minY,
-                valueMax: maxY,
-                raceStartX: raceStartX,
-                raceEndX: raceEndX,
-                isRaceComplete: isRaceComplete,
-                cameraBlend: blend,
+            child: Transform.scale(
+              scale: scale,
+              alignment: Alignment(0.55 + punch * 0.25, -0.05),
+              child: CustomPaint(
+                painter: _RaceTrackPainter(
+                  series: sorted,
+                  leadX: maxX,
+                  dataMinX: minX,
+                  valueMin: minY,
+                  valueMax: maxY,
+                  raceStartX: raceStartX,
+                  raceEndX: raceEndX,
+                  isRaceComplete: isRaceComplete,
+                  cameraBlend: blend,
+                  finalePunch: punch,
+                  finalePullOut: finalePullOut(
+                    leadX: maxX,
+                    raceStartX: raceStartX,
+                    raceEndX: raceEndX,
+                    isRaceComplete: isRaceComplete,
+                  ),
+                ),
               ),
             ),
           ),
@@ -182,6 +242,8 @@ class _RaceTrackPainter extends CustomPainter {
   final double raceEndX;
   final bool isRaceComplete;
   final double cameraBlend; // 0 = 세로 트랙, 1 = 사이드뷰
+  final double finalePunch; // 0 = 정상, 1 = 최대 줌인
+  final double finalePullOut; // 0 = 팔로우, 1 = 전체 공개
 
   _RaceTrackPainter({
     required this.series,
@@ -193,6 +255,8 @@ class _RaceTrackPainter extends CustomPainter {
     required this.raceEndX,
     required this.isRaceComplete,
     required this.cameraBlend,
+    this.finalePunch = 0.0,
+    this.finalePullOut = 0.0,
   });
 
   @override
@@ -202,19 +266,22 @@ class _RaceTrackPainter extends CustomPainter {
         raceEndX.isFinite && raceEndX > raceStart ? raceEndX : leadX;
     final totalSpan = math.max(raceEnd - raceStart, 1.0);
     final lead = leadX.isFinite ? leadX : raceStart;
-    final progress = ((lead - raceStart) / totalSpan).clamp(0.0, 1.0);
     final blend = cameraBlend.clamp(0.0, 1.0);
+    final punch = finalePunch.clamp(0.0, 1.0);
+    final pullOut = finalePullOut.clamp(0.0, 1.0);
 
-    // 카메라 시간 윈도우
+    // 카메라 시간 윈도우 — 줌인 시 타이트하게, 이후 전체 공개
     var lookBehind = totalSpan * ui.lerpDouble(0.22, 0.32, blend)!;
     var lookAhead = totalSpan * ui.lerpDouble(0.10, 0.0, blend)!;
-    if (isRaceComplete || progress > 0.88) {
-      final t = isRaceComplete
-          ? 1.0
-          : ((progress - 0.88) / 0.12).clamp(0.0, 1.0);
-      final eased = Curves.easeInOut.transform(t);
-      lookBehind = lookBehind + (lead - raceStart - lookBehind) * eased;
-      lookAhead = lookAhead + (raceEnd - lead - lookAhead) * eased;
+    lookBehind *= ui.lerpDouble(1.0, 0.28, punch)!;
+    lookAhead = math.max(
+      lookAhead * ui.lerpDouble(1.0, 0.15, punch)!,
+      totalSpan * 0.01,
+    );
+    if (pullOut > 0 || isRaceComplete) {
+      final t = isRaceComplete ? 1.0 : pullOut;
+      lookBehind = lookBehind + (lead - raceStart - lookBehind) * t;
+      lookAhead = lookAhead + (raceEnd - lead - lookAhead) * t;
     }
     final camNear = math.max(raceStart, lead - lookBehind);
     final camFar = math.min(raceEnd, lead + math.max(lookAhead, 1));
@@ -238,7 +305,8 @@ class _RaceTrackPainter extends CustomPainter {
       localMax = valueMax;
     }
     var ySpan = math.max(localMax - localMin, 1.0);
-    final yPad = ySpan * 0.22;
+    // 줌인 때는 Y도 더 타이트하게
+    final yPad = ySpan * ui.lerpDouble(0.22, 0.08, punch)!;
     localMin = math.max(0, localMin - yPad);
     localMax = localMax + yPad;
     ySpan = math.max(localMax - localMin, 1.0);
@@ -536,6 +604,8 @@ class _RaceTrackPainter extends CustomPainter {
   bool shouldRepaint(covariant _RaceTrackPainter oldDelegate) {
     return oldDelegate.leadX != leadX ||
         oldDelegate.cameraBlend != cameraBlend ||
+        oldDelegate.finalePunch != finalePunch ||
+        oldDelegate.finalePullOut != finalePullOut ||
         oldDelegate.isRaceComplete != isRaceComplete ||
         oldDelegate.series != series ||
         oldDelegate.valueMin != valueMin ||
