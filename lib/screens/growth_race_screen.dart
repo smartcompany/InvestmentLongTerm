@@ -7,6 +7,8 @@ import '../providers/growth_race_provider.dart';
 import '../models/asset_option.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
+import '../widgets/app_ui.dart';
+import '../widgets/asset_icon.dart';
 import '../services/ad_service.dart';
 import 'growth_race_chart_screen.dart';
 
@@ -20,6 +22,7 @@ class GrowthRaceScreen extends StatefulWidget {
 class _GrowthRaceScreenState extends State<GrowthRaceScreen> {
   bool _isLoadingAd = false;
   bool _isStartingDirect = false;
+  final Map<String, bool> _expandedTypes = {};
 
   @override
   void initState() {
@@ -103,190 +106,153 @@ class _GrowthRaceScreenState extends State<GrowthRaceScreen> {
     final l10n = AppLocalizations.of(context)!;
     final appProvider = context.watch<AppStateProvider>();
     final provider = context.watch<GrowthRaceProvider>();
-    final localeCode = Localizations.localeOf(context).languageCode;
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [AppColors.navyDark, AppColors.navyMedium],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 타이틀
-                Text(
-                  l10n.growthRace,
-                  style: AppTextStyles.homeMainQuestion.copyWith(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                  ),
+      backgroundColor: AppColors.bg,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.selectAssetToCompare,
+                style: AppTextStyles.homeMainQuestion.copyWith(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
                 ),
-                SizedBox(height: 8),
-                Text(
-                  '자산들의 성장률을 경주로 비교해보세요',
-                  style: TextStyle(color: AppColors.slate400, fontSize: 14),
-                ),
-                SizedBox(height: 32),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                l10n.selectUpToAssets,
+                style: AppTextStyles.homeSubDescription,
+              ),
+              const SizedBox(height: 24),
 
-                // 년도 선택
-                Text('기간 선택', style: AppTextStyles.settingsSectionLabel),
-                SizedBox(height: 12),
-                Row(
-                  children: [1, 3, 5, 7, 10].map((years) {
-                    final isSelected = provider.selectedYears == years;
-                    return Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 4),
-                        child: GestureDetector(
-                          onTap: () => provider.setSelectedYears(years),
-                          child: Container(
-                            padding: EdgeInsets.symmetric(vertical: 12),
-                            decoration: BoxDecoration(
+              Text(l10n.duration, style: AppTextStyles.settingsSectionLabel),
+              const SizedBox(height: 12),
+              Row(
+                children: [1, 3, 5, 7, 10].map((years) {
+                  final isSelected = provider.selectedYears == years;
+                  return Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: GestureDetector(
+                        onTap: () => provider.setSelectedYears(years),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 160),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppColors.primary
+                                : AppColors.surface,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
                               color: isSelected
-                                  ? AppColors.gold
-                                  : Colors.white.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
+                                  ? AppColors.primary
+                                  : AppColors.border,
+                              width: 1.5,
                             ),
-                            child: Center(
-                              child: Text(
-                                '${years}Y',
-                                style: TextStyle(
-                                  color: isSelected
-                                      ? AppColors.navyDark
-                                      : Colors.white,
-                                  fontWeight: isSelected
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                ),
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${years}Y',
+                              style: TextStyle(
+                                color: isSelected
+                                    ? Colors.white
+                                    : AppColors.textPrimary,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.w600,
                               ),
                             ),
                           ),
                         ),
                       ),
-                    );
-                  }).toList(),
-                ),
-                SizedBox(height: 32),
-
-                // 자산 선택
-                Text(
-                  '자산 선택 (${provider.selectedAssetIds.length}개 선택됨)',
-                  style: AppTextStyles.settingsSectionLabel,
-                ),
-                SizedBox(height: 12),
-
-                if (appProvider.isAssetsLoading)
-                  Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(32),
-                      child: CircularProgressIndicator(color: AppColors.gold),
                     ),
-                  )
-                else if (appProvider.assets.isEmpty)
-                  Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(32),
-                      child: Text(
-                        '자산을 불러올 수 없습니다',
-                        style: TextStyle(color: AppColors.slate400),
-                      ),
-                    ),
-                  )
-                else
-                  _buildAssetSelectionList(
-                    appProvider.assets,
-                    provider,
-                    localeCode,
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 28),
+
+              if (appProvider.isAssetsLoading)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(32),
+                    child: CircularProgressIndicator(color: AppColors.primary),
                   ),
-
-                SizedBox(height: 32),
-
-                // Debug: 광고 없이 바로 시작
-                if (kDebugMode) ...[
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: OutlinedButton(
-                      onPressed:
-                          provider.selectedAssetIds.isEmpty ||
-                              provider.isLoading ||
-                              _isLoadingAd ||
-                              _isStartingDirect
-                          ? null
-                          : _startRaceDirect,
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.gold,
-                        side: BorderSide(color: AppColors.gold),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      child: _isStartingDirect
-                          ? SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                color: AppColors.gold,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : Text(
-                              '바로 시작 (Debug)',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                )
+              else if (appProvider.assets.isEmpty)
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Text(
+                      l10n.failedToLoadAssetList,
+                      style: const TextStyle(color: AppColors.textSecondary),
                     ),
                   ),
-                  SizedBox(height: 12),
-                ],
+                )
+              else
+                _buildAssetSelectionList(appProvider.assets, provider),
 
-                // Start 버튼
+              const SizedBox(height: 32),
+
+              if (kDebugMode) ...[
                 SizedBox(
                   width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed:
-                        provider.selectedAssetIds.isEmpty ||
+                  height: 48,
+                  child: OutlinedButton(
+                    onPressed: provider.selectedAssetIds.isEmpty ||
                             provider.isLoading ||
                             _isLoadingAd ||
                             _isStartingDirect
                         ? null
-                        : _startRace,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.gold,
-                      foregroundColor: AppColors.navyDark,
+                        : _startRaceDirect,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                      side: const BorderSide(color: AppColors.primary),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      elevation: 0,
                     ),
-                    child: provider.isLoading || _isLoadingAd
-                        ? CircularProgressIndicator(
-                            color: AppColors.navyDark,
-                            strokeWidth: 2,
+                    child: _isStartingDirect
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: AppColors.primary,
+                              strokeWidth: 2,
+                            ),
                           )
-                        : Text(
-                            l10n.watchAdAndStart,
+                        : const Text(
+                            '바로 시작 (Debug)',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                   ),
                 ),
-
-                SizedBox(height: 32),
+                const SizedBox(height: 12),
               ],
-            ),
+
+              AppPrimaryButton(
+                label: provider.selectedAssetIds.isEmpty
+                    ? l10n.watchAdAndStart
+                    : l10n.compareSelectedAssets(
+                        provider.selectedAssetIds.length,
+                      ),
+                loading: provider.isLoading || _isLoadingAd || _isStartingDirect,
+                onPressed: provider.selectedAssetIds.isEmpty ||
+                        provider.isLoading ||
+                        _isLoadingAd ||
+                        _isStartingDirect
+                    ? null
+                    : _startRace,
+              ),
+
+              const SizedBox(height: 32),
+            ],
           ),
         ),
       ),
@@ -296,7 +262,6 @@ class _GrowthRaceScreenState extends State<GrowthRaceScreen> {
   Widget _buildAssetSelectionList(
     List<AssetOption> assets,
     GrowthRaceProvider provider,
-    String localeCode,
   ) {
     final assetsByType = <String, List<AssetOption>>{};
     for (final asset in assets) {
@@ -315,73 +280,102 @@ class _GrowthRaceScreenState extends State<GrowthRaceScreen> {
     final sortedTypes = assetsByType.keys.toList()
       ..sort((a, b) => (typeOrder[a] ?? 999).compareTo(typeOrder[b] ?? 999));
 
-    return Column(
-      children: sortedTypes.map((type) {
-        final typeAssets = assetsByType[type]!;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const spacing = 10.0;
+        // 균일 카드 그리드: 화면 폭 기준 4~5열
+        final columns = (constraints.maxWidth / 78).floor().clamp(4, 5);
+        final cardWidth =
+            (constraints.maxWidth - spacing * (columns - 1)) / columns;
+        final cardHeight = cardWidth * 1.35;
+        final collapsedCount = columns; // 한 줄만 먼저 노출
+
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.only(top: 16, bottom: 8),
-              child: Text(
-                _getTypeName(type, localeCode),
-                style: TextStyle(
-                  color: AppColors.slate400,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: typeAssets.map((asset) {
-                final isSelected = provider.selectedAssetIds.contains(asset.id);
-                return GestureDetector(
-                  onTap: () => provider.toggleAsset(asset.id),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppColors.gold
-                          : Colors.white.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: isSelected
-                            ? AppColors.gold
-                            : Colors.white.withValues(alpha: 0.2),
-                        width: 1.5,
-                      ),
-                    ),
+          children: sortedTypes.map((type) {
+            final typeAssets = assetsByType[type]!;
+            final isExpanded = _expandedTypes[type] ?? false;
+            final visible = isExpanded
+                ? typeAssets
+                : typeAssets.take(collapsedCount).toList();
+            final l10n = AppLocalizations.of(context)!;
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
                     child: Row(
-                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(asset.icon, style: TextStyle(fontSize: 18)),
-                        SizedBox(width: 8),
-                        Text(
-                          asset.displayName(),
-                          style: TextStyle(
-                            color: isSelected
-                                ? AppColors.navyDark
-                                : Colors.white,
-                            fontWeight: isSelected
-                                ? FontWeight.bold
-                                : FontWeight.normal,
+                        Expanded(
+                          child: Text(
+                            _getTypeName(type),
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                         ),
+                        if (typeAssets.length > collapsedCount)
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _expandedTypes[type] = !isExpanded;
+                              });
+                            },
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  isExpanded ? l10n.showLess : l10n.showMore,
+                                  style: const TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                Icon(
+                                  isExpanded
+                                      ? Icons.expand_less
+                                      : Icons.expand_more,
+                                  color: AppColors.textSecondary,
+                                  size: 18,
+                                ),
+                              ],
+                            ),
+                          ),
                       ],
                     ),
                   ),
-                );
-              }).toList(),
-            ),
-          ],
+                  Wrap(
+                    spacing: spacing,
+                    runSpacing: spacing,
+                    children: visible.map((asset) {
+                      final isSelected =
+                          provider.selectedAssetIds.contains(asset.id);
+                      return SizedBox(
+                        width: cardWidth,
+                        height: cardHeight,
+                        child: _AssetGridCard(
+                          asset: asset,
+                          selected: isSelected,
+                          onTap: () => provider.toggleAsset(asset.id),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
         );
-      }).toList(),
+      },
     );
   }
 
-  String _getTypeName(String type, String localeCode) {
+  String _getTypeName(String type) {
     final l10n = AppLocalizations.of(context)!;
     switch (type) {
       case 'crypto':
@@ -399,5 +393,89 @@ class _GrowthRaceScreenState extends State<GrowthRaceScreen> {
       default:
         return type;
     }
+  }
+}
+
+class _AssetGridCard extends StatelessWidget {
+  final AssetOption asset;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _AssetGridCard({
+    required this.asset,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          padding: const EdgeInsets.fromLTRB(4, 8, 4, 6),
+          decoration: BoxDecoration(
+            color: selected ? AppColors.primarySoft : AppColors.surface,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: selected ? AppColors.primary : AppColors.border,
+              width: selected ? 2 : 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: selected ? 0.06 : 0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    AssetIcon(
+                      assetId: asset.id,
+                      type: asset.type,
+                      size: 22,
+                    ),
+                    const SizedBox(height: 4),
+                    Flexible(
+                      child: Text(
+                        asset.displayName(),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 11,
+                          fontWeight:
+                              selected ? FontWeight.w800 : FontWeight.w600,
+                          height: 1.15,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (selected)
+                const Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Icon(
+                    Icons.check_circle,
+                    color: AppColors.primary,
+                    size: 16,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

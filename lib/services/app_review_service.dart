@@ -4,85 +4,80 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// 앱 리뷰 요청을 관리하는 서비스
 ///
-/// 사용자가 앱을 여러 번 사용한 후 적절한 타이밍에 리뷰를 요청합니다.
-/// - 최소 3회 이상 시뮬레이션 완료 후
-/// - 마지막 리뷰 요청 후 7일 이상 경과
-/// - 사용자가 리뷰를 거부하지 않은 경우
+/// - 최소 3회 이상 시뮬레이션(결과 화면) 완료 후
+/// - 마지막 리뷰 요청 후 30일 이상 경과
+/// - 디버그에서도 쿨다운은 유지 (매번 뜨지 않도록)
 class AppReviewService {
   static const String _keyLastReviewRequestDate = 'last_review_request_date';
   static const String _keyReviewDismissed = 'review_dismissed';
   static const String _keySimulationCompleteCount = 'simulation_complete_count';
 
-  // 리뷰 요청 조건
-  static const int _minSimulationCount = 3; // 최소 시뮬레이션 완료 횟수
-  static const int _daysBetweenRequests = 7; // 리뷰 요청 간 최소 일수
+  static const int _minSimulationCount = 3;
+  static const int _daysBetweenRequests = 30;
 
-  // 개발/테스트 모드 (kDebugMode일 때 조건 완화)
-  static bool get _isTestMode => kDebugMode;
-
-  /// 시뮬레이션 완료 시 호출
-  /// 조건을 만족하면 리뷰를 요청합니다.
+  /// 시뮬레이션/결과 화면 진입 시 호출.
+  /// 조건을 만족하면 시스템 인앱 리뷰를 요청합니다.
   static Future<void> requestReviewIfAppropriate() async {
     try {
       final prefs = await SharedPreferences.getInstance();
 
-      // 리뷰를 거부한 경우 더 이상 요청하지 않음
       final reviewDismissed = prefs.getBool(_keyReviewDismissed) ?? false;
       if (reviewDismissed) {
+        debugPrint('[AppReview] skipped: dismissed');
         return;
       }
 
-      // 시뮬레이션 완료 횟수 증가
       final currentCount = prefs.getInt(_keySimulationCompleteCount) ?? 0;
-      await prefs.setInt(_keySimulationCompleteCount, currentCount + 1);
+      final nextCount = currentCount + 1;
+      await prefs.setInt(_keySimulationCompleteCount, nextCount);
 
-      // 테스트 모드가 아닐 때만 조건 확인
-      if (!_isTestMode) {
-        // 최소 횟수 미만이면 요청하지 않음
-        if (currentCount + 1 < _minSimulationCount) {
+      if (nextCount < _minSimulationCount) {
+        debugPrint(
+          '[AppReview] skipped: count $nextCount < $_minSimulationCount',
+        );
+        return;
+      }
+
+      final lastRequestDateStr = prefs.getString(_keyLastReviewRequestDate);
+      if (lastRequestDateStr != null) {
+        final lastRequestDate = DateTime.parse(lastRequestDateStr);
+        final daysSinceLastRequest =
+            DateTime.now().difference(lastRequestDate).inDays;
+        if (daysSinceLastRequest < _daysBetweenRequests) {
+          debugPrint(
+            '[AppReview] skipped: $daysSinceLastRequest days since last '
+            '(need $_daysBetweenRequests)',
+          );
           return;
         }
-
-        // 마지막 요청 날짜 확인
-        final lastRequestDateStr = prefs.getString(_keyLastReviewRequestDate);
-        if (lastRequestDateStr != null) {
-          final lastRequestDate = DateTime.parse(lastRequestDateStr);
-          final daysSinceLastRequest = DateTime.now()
-              .difference(lastRequestDate)
-              .inDays;
-
-          // 최소 일수 경과하지 않았으면 요청하지 않음
-          if (daysSinceLastRequest < _daysBetweenRequests) {
-            return;
-          }
-        }
       }
 
-      // 리뷰 요청 가능 여부 확인
       final review = InAppReview.instance;
-      if (await review.isAvailable()) {
-        // 리뷰 요청 날짜 저장
-        await prefs.setString(
-          _keyLastReviewRequestDate,
-          DateTime.now().toIso8601String(),
-        );
-
-        // 리뷰 요청
-        await review.requestReview();
+      if (!await review.isAvailable()) {
+        debugPrint('[AppReview] skipped: not available');
+        return;
       }
+
+      // 요청 직전에 저장 — 시스템 UI가 안 떠도 연타로 반복 호출되는 것 방지
+      await prefs.setString(
+        _keyLastReviewRequestDate,
+        DateTime.now().toIso8601String(),
+      );
+
+      debugPrint('[AppReview] requesting review (count=$nextCount)');
+      await review.requestReview();
     } catch (e) {
-      // 리뷰 요청 실패는 무시 (앱 동작에 영향 없음)
-      print('App review request failed: $e');
+      debugPrint('[AppReview] failed: $e');
     }
   }
 
-  /// 리뷰를 거부한 경우 호출 (사용자가 "나중에" 등을 선택한 경우)
+  /// 커스텀 UI에서 사용자가 거절했을 때 호출.
+  /// (시스템 팝업의 "지금 안 함"은 콜백이 없어 감지 불가)
   static Future<void> markReviewDismissed() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_keyReviewDismissed, true);
   }
 
-  /// 리뷰 거부 상태 초기화 (테스트용)
   static Future<void> resetReviewState() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_keyReviewDismissed);
@@ -90,27 +85,26 @@ class AppReviewService {
     await prefs.remove(_keySimulationCompleteCount);
   }
 
-  /// 앱스토어로 직접 이동하여 리뷰 작성
   static Future<void> openStoreListing() async {
     try {
       final review = InAppReview.instance;
       await review.openStoreListing();
     } catch (e) {
-      print('Failed to open store listing: $e');
+      debugPrint('[AppReview] openStoreListing failed: $e');
     }
   }
 
-  /// 테스트용: 강제로 리뷰 요청 (조건 무시)
+  /// 테스트용: 조건 무시하고 강제 요청
   static Future<void> requestReviewForTesting() async {
     try {
       final review = InAppReview.instance;
       if (await review.isAvailable()) {
         await review.requestReview();
       } else {
-        print('In-app review is not available (시뮬레이터/에뮬레이터에서는 동작하지 않습니다)');
+        debugPrint('[AppReview] not available on this device/simulator');
       }
     } catch (e) {
-      print('App review request failed: $e');
+      debugPrint('[AppReview] failed: $e');
     }
   }
 }

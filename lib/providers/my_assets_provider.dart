@@ -59,19 +59,16 @@ class MyAssetsProvider with ChangeNotifier {
       );
 
       if (Platform.isIOS) {
-        // iOS: iCloud Key-Value Storage 사용 (자동 동기화, 권한 불필요)
+        // iOS: iCloud + SharedPreferences 동시 저장 (로드 시 누락 방지)
         final success = await ICloudService.setValue(_keyAssets, assetsJson);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_keyAssets, assetsJson);
         if (success) {
           debugPrint(
-            '✅ [LocalStorage] iOS iCloud에 자산 저장 완료: ${_assets.length}개 (자동 동기화)',
+            '✅ [LocalStorage] iOS iCloud+Prefs 자산 저장 완료: ${_assets.length}개',
           );
         } else {
-          // iCloud 실패 시 SharedPreferences에 백업 저장
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString(_keyAssets, assetsJson);
-          debugPrint(
-            '⚠️ [LocalStorage] iCloud 저장 실패, SharedPreferences에 백업 저장',
-          );
+          debugPrint('⚠️ [LocalStorage] iCloud 실패, SharedPreferences에 저장됨');
         }
       } else {
         // Android: SharedPreferences 사용 (Auto Backup으로 자동 백업됨)
@@ -195,14 +192,22 @@ class MyAssetsProvider with ChangeNotifier {
 
   Future<void> _updateCurrentValue(MyAsset asset) async {
     try {
-      // 현재 가격 가져오기
+      // 현금은 시세 API 없이 원금 = 현재 가치
+      if (asset.assetId == 'cash') {
+        final index = _assets.indexWhere((a) => a.id == asset.id);
+        if (index >= 0) {
+          _assets[index] = asset.copyWith(currentValue: asset.initialAmount);
+          notifyListeners();
+        }
+        return;
+      }
+
       final currentPrice = await _getCurrentPrice(asset.assetId);
       if (currentPrice == null || currentPrice <= 0) {
         debugPrint('Failed to get current price for ${asset.id}');
         return;
       }
 
-      // quantity * 현재 가격으로 현재 가치 계산
       final calculatedValue = asset.quantity * currentPrice;
 
       final index = _assets.indexWhere((a) => a.id == asset.id);
@@ -473,6 +478,52 @@ class MyAssetsProvider with ChangeNotifier {
 
     notifyListeners();
     debugPrint('✅ [LocalStorage] 자산 추가 완료! 총 ${_assets.length}개 자산');
+  }
+
+  /// 은퇴 시뮬 보유 자산을 내 자산으로 가져옵니다.
+  /// 동일 assetId가 있으면 수량·평가액을 갱신합니다.
+  Future<void> importRetireHoldings(
+    List<
+      ({String assetId, String assetName, double quantity, double valuation})
+    >
+    holdings,
+  ) async {
+    if (holdings.isEmpty) return;
+
+    for (final h in holdings) {
+      if (h.quantity <= 0) continue;
+      final existingIndex = _assets.indexWhere((a) => a.assetId == h.assetId);
+      final amount = h.valuation > 0 ? h.valuation : 0.0;
+
+      if (existingIndex >= 0) {
+        final existing = _assets[existingIndex];
+        final updated = existing.copyWith(
+          assetName: h.assetName,
+          quantity: h.quantity,
+          initialAmount: amount > 0 ? amount : existing.initialAmount,
+          registeredDate: existing.registeredDate,
+        );
+        _assets[existingIndex] = updated;
+        await _updateCurrentValue(updated);
+      } else {
+        final newAsset = MyAsset(
+          id: '${DateTime.now().millisecondsSinceEpoch}_${h.assetId}',
+          assetId: h.assetId,
+          assetName: h.assetName,
+          initialAmount: amount,
+          registeredDate: DateTime.now(),
+          quantity: h.quantity,
+        );
+        _assets.add(newAsset);
+        await _updateCurrentValue(newAsset);
+      }
+    }
+
+    await _saveAssets();
+    notifyListeners();
+    debugPrint(
+      '✅ [LocalStorage] 은퇴 보유 자산 import 완료: ${holdings.length}건 → 총 ${_assets.length}개',
+    );
   }
 
   // 선택된 차트 기간 설정

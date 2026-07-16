@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'dart:math' as math;
 import '../l10n/app_localizations.dart';
 import '../providers/my_assets_provider.dart';
 import '../providers/app_state_provider.dart';
@@ -12,8 +11,8 @@ import '../utils/colors.dart';
 import '../utils/currency_converter.dart';
 import '../widgets/liquid_glass.dart';
 import '../widgets/add_asset_dialog.dart';
+import '../widgets/asset_icon.dart';
 import '../widgets/asset_price_chart.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'asset_detail_screen.dart';
 import 'settings_screen.dart';
 
@@ -35,17 +34,24 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
       final appProvider = context.read<AppStateProvider>();
       final currencySymbol = CurrencyProvider.shared.getCurrencySymbol();
 
-      // Provider에 초기 기간 설정
       provider.setSelectedChartYears(_selectedYears);
 
-      // 자산 데이터 로드 및 차트 로드 (통화 정보 포함)
-      // loadAssets 내부에서 자산 로드 완료 후 자동으로 차트도 로드됨
-      await provider.loadAssets(
-        chartYears: _selectedYears,
-        targetCurrency: currencySymbol,
-        getAssetOriginalCurrency: (assetId) =>
-            _getAssetOriginalCurrency(assetId, appProvider),
-      );
+      // 은퇴 시뮬에서 방금 import한 목록이 있으면 디스크 재로드로 덮어쓰지 않음
+      if (provider.assets.isEmpty) {
+        await provider.loadAssets(
+          chartYears: _selectedYears,
+          targetCurrency: currencySymbol,
+          getAssetOriginalCurrency: (assetId) =>
+              _getAssetOriginalCurrency(assetId, appProvider),
+        );
+      } else {
+        await provider.loadPortfolioChart(
+          years: _selectedYears,
+          targetCurrency: currencySymbol,
+          getAssetOriginalCurrency: (assetId) =>
+              _getAssetOriginalCurrency(assetId, appProvider),
+        );
+      }
     });
   }
 
@@ -117,21 +123,14 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
 
     // 상태바 투명하게 설정
     SystemChrome.setSystemUIOverlayStyle(
-          SystemUiOverlayStyle.light.copyWith(
+          SystemUiOverlayStyle.dark.copyWith(
             statusBarColor: Colors.transparent,
           ),
     );
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [AppColors.navyDark, AppColors.navyMedium],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: SingleChildScrollView(
+      backgroundColor: AppColors.bg,
+      body: SingleChildScrollView(
           padding: EdgeInsets.only(
             top: MediaQuery.of(context).padding.top + 24,
             bottom:
@@ -152,7 +151,7 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
                 l10n.myAssets,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                 ),
@@ -161,7 +160,7 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
                         child: Align(
                           alignment: Alignment.centerRight,
                           child: IconButton(
-                            icon: Icon(Icons.settings, color: Colors.white),
+                            icon: Icon(Icons.settings, color: AppColors.textPrimary),
                             onPressed: () {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
@@ -174,7 +173,42 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
                       ),
                     ],
               ),
-              SizedBox(height: 24),
+              SizedBox(height: 16),
+              // 자산 추가 (상단 — 추가/삭제 관리 진입점)
+              Align(
+                alignment: Alignment.centerRight,
+                child: Material(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(14),
+                  child: InkWell(
+                    onTap: () =>
+                        _showAddAssetDialog(context, provider, l10n),
+                    borderRadius: BorderRadius.circular(14),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.add, size: 18, color: Colors.white),
+                          const SizedBox(width: 4),
+                          Text(
+                            l10n.addAsset,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
               // 포트폴리오 그래프 (자산이 있을 때만 표시)
                   if (provider.assets.isNotEmpty) ...[
                     // 기간 선택 버튼
@@ -197,7 +231,7 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
                   child: provider.isLoadingPortfolio
                       ? Center(
                           child: CircularProgressIndicator(
-                            color: AppColors.gold,
+                            color: AppColors.primary,
                           ),
                         )
                       : provider.portfolioSpots != null &&
@@ -222,10 +256,10 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
                           final convertedTotalCurrentValue = snapshot.data;
                           return LiquidGlass(
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
+                      color: AppColors.surface,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.18),
+                        color: AppColors.border,
                         width: 1.5,
                       ),
                     ),
@@ -236,7 +270,7 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
                               Text(
                                   '${l10n.totalPurchaseAmount}: $currencySymbol${NumberFormat('#,##0.##').format(provider.totalPurchaseAmount)}',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: AppColors.textPrimary,
                                   fontSize: 16,
                                 ),
                               ),
@@ -246,7 +280,7 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
                                       ? '${l10n.currentValue}: $currencySymbol${NumberFormat('#,##0.##').format(convertedTotalCurrentValue)}'
                                       : '${l10n.currentValue}: ${l10n.loadingPrice}',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: AppColors.textPrimary,
                                   fontSize: 16,
                                 ),
                               ),
@@ -287,13 +321,13 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
                       Icon(
                         Icons.account_balance_wallet_outlined,
                         size: 64,
-                        color: AppColors.slate400,
+                        color: AppColors.textSecondary,
                       ),
                       SizedBox(height: 16),
                       Text(
                         l10n.noAssetsRegistered,
                         style: TextStyle(
-                          color: AppColors.slate400,
+                          color: AppColors.textSecondary,
                           fontSize: 18,
                         ),
                       ),
@@ -301,7 +335,7 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
                       Text(
                         l10n.addAssetToTrack,
                         style: TextStyle(
-                          color: AppColors.slate400,
+                          color: AppColors.textSecondary,
                           fontSize: 14,
                         ),
                       ),
@@ -309,31 +343,35 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
                   ),
                 ),
               SizedBox(height: 24),
-              // 자산 추가 버튼 (맨 마지막)
-              ElevatedButton.icon(
-                    onPressed: () =>
-                        _showAddAssetDialog(context, provider, l10n),
-                icon: Icon(Icons.add, color: AppColors.navyDark),
-                label: Text(
-                  l10n.addAsset,
-                  style: TextStyle(color: AppColors.navyDark),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.gold,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              // 하단에도 추가 버튼 (목록이 길 때)
+              if (provider.assets.isNotEmpty)
+                ElevatedButton.icon(
+                  onPressed: () =>
+                      _showAddAssetDialog(context, provider, l10n),
+                  icon: const Icon(Icons.add, color: Colors.white),
+                  label: Text(
+                    l10n.addAsset,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
                 ),
-              ),
               SizedBox(height: 24), // 하단 여백
             ],
           ),
         ),
-      ),
     );
       },
     );
@@ -367,19 +405,19 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.gold : Colors.white.withOpacity(0.1),
+          color: isSelected ? AppColors.primary : AppColors.surface,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? AppColors.gold : Colors.white.withOpacity(0.3),
+            color: isSelected ? AppColors.primary : AppColors.border,
             width: 1.5,
           ),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? AppColors.navyDark : Colors.white,
+            color: isSelected ? Colors.white : AppColors.textPrimary,
             fontSize: 14,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
           ),
         ),
       ),
@@ -436,10 +474,10 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
         margin: EdgeInsets.only(bottom: 16),
         child: LiquidGlass(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: Colors.white.withOpacity(0.18),
+              color: AppColors.border,
               width: 1.5,
             ),
           ),
@@ -451,17 +489,41 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
-                    child: Text(
-                      asset.assetName,
-                      style: TextStyle(
-                        color: AppColors.gold,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    child: Row(
+                      children: [
+                        AssetIcon(
+                          assetId: asset.assetId,
+                          size: 28,
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                asset.assetName,
+                                style: const TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              if (asset.assetId != 'cash')
+                                Text(
+                                  '${l10n.quantity}: ${NumberFormat('#,##0.####').format(asset.quantity)}${l10n.retireQtyUnit}',
+                                  style: const TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   IconButton(
-                    icon: Icon(Icons.delete_outline, color: Colors.red),
+                    icon: const Icon(Icons.delete_outline, color: Colors.red),
                     onPressed: () =>
                         _deleteAsset(context, asset.id, provider, l10n),
                   ),
@@ -470,7 +532,7 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
               SizedBox(height: 12),
               Text(
                         '${l10n.initialAmount}: $currencySymbol${NumberFormat('#,##0.##').format(asset.initialAmount)}',
-                style: TextStyle(color: Colors.white, fontSize: 16),
+                style: TextStyle(color: AppColors.textPrimary, fontSize: 16),
               ),
               SizedBox(height: 12),
                       if (convertedCurrentValue != null)
@@ -480,7 +542,7 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
                     Text(
                               '${l10n.currentValue}: $currencySymbol${NumberFormat('#,##0.##').format(convertedCurrentValue)}',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: AppColors.textPrimary,
                                 fontSize: 16,
                               ),
                     ),
@@ -502,7 +564,7 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
                 Text(
                   l10n.loadingPrice,
                           style: TextStyle(
-                            color: AppColors.slate400,
+                            color: AppColors.textSecondary,
                             fontSize: 14,
                           ),
                 ),

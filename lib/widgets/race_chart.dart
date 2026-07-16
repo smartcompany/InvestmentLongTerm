@@ -2,6 +2,18 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import '../utils/colors.dart';
+import 'asset_icon.dart';
+
+/// Dark race canvas에서 글자/아이콘이 묻히지 않도록 밝기를 보정합니다.
+Color readableOnDark(Color color) {
+  if (color.computeLuminance() >= 0.42) return color;
+  final hsl = HSLColor.fromColor(color);
+  return hsl
+      .withLightness(math.max(hsl.lightness, 0.72))
+      .withSaturation(hsl.saturation.clamp(0.5, 0.95))
+      .toColor();
+}
+
 
 class RacePoint {
   final double x;
@@ -181,42 +193,77 @@ class RaceChart extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: sorted.map((data) {
                 final isLeader = data.rank == 0;
+                final accent = readableOnDark(data.color);
                 return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.only(bottom: 10),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.max,
                     children: [
                       if (isLeader)
                         const Padding(
                           padding: EdgeInsets.only(right: 4),
-                          child: Text('🏆', style: TextStyle(fontSize: 15)),
-                        ),
-                      Text(data.icon, style: const TextStyle(fontSize: 20)),
-                      const SizedBox(width: 6),
-                      Flexible(
-                        child: Text(
-                          data.name,
-                          style: TextStyle(
-                            color: data.color.withValues(alpha: 1.0),
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            shadows: const [
-                              Shadow(blurRadius: 3, color: Colors.black87),
-                            ],
+                          child: Icon(
+                            Icons.emoji_events,
+                            size: 14,
+                            color: Color(0xFFFFD700),
                           ),
-                          overflow: TextOverflow.ellipsis,
+                        ),
+                      Container(
+                        width: 8,
+                        height: 8,
+                        margin: const EdgeInsets.only(right: 6),
+                        decoration: BoxDecoration(
+                          color: accent,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: accent.withValues(alpha: 0.55),
+                              blurRadius: 6,
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 6),
+                      AssetIcon(
+                        assetId: data.assetId,
+                        size: 18,
+                        color: accent,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          data.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            height: 1.15,
+                            shadows: [
+                              Shadow(blurRadius: 6, color: Colors.black),
+                              Shadow(
+                                offset: Offset(0, 1),
+                                blurRadius: 2,
+                                color: Colors.black87,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
                       Text(
                         '${data.currentGrowthRate >= 0 ? '+' : ''}${data.currentGrowthRate.toStringAsFixed(1)}%',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
+                        style: TextStyle(
+                          color: accent,
+                          fontSize: 13,
                           fontWeight: FontWeight.w800,
-                          shadows: [
-                            Shadow(blurRadius: 3, color: Colors.black87),
+                          height: 1.15,
+                          shadows: const [
+                            Shadow(blurRadius: 6, color: Colors.black),
+                            Shadow(
+                              offset: Offset(0, 1),
+                              blurRadius: 2,
+                              color: Colors.black87,
+                            ),
                           ],
                         ),
                       ),
@@ -542,10 +589,18 @@ class _RaceTrackPainter extends CustomPainter {
           ..color = Colors.white.withValues(alpha: 0.9),
       );
 
+      final label = AssetIcon.letterFor(data.assetId);
       final tp = TextPainter(
         text: TextSpan(
-          text: data.icon,
-          style: TextStyle(fontSize: isLeader ? 16 : 13),
+          text: label,
+          style: TextStyle(
+            fontSize: isLeader ? 14 : 12,
+            fontWeight: FontWeight.w800,
+            color: Colors.white,
+            shadows: const [
+              Shadow(blurRadius: 4, color: Colors.black87),
+            ],
+          ),
         ),
         textDirection: TextDirection.ltr,
       )..layout();

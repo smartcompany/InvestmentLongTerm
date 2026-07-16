@@ -114,7 +114,7 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
         Container(
           width: 40,
           height: 2,
-          color: _currentStep > 0 ? AppColors.gold : AppColors.slate700,
+          color: _currentStep > 0 ? AppColors.primary : AppColors.border,
         ),
         SizedBox(width: 8),
         _buildStepDot(1, l10n),
@@ -122,7 +122,7 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
         Container(
           width: 40,
           height: 2,
-          color: _currentStep > 1 ? AppColors.gold : AppColors.slate700,
+          color: _currentStep > 1 ? AppColors.primary : AppColors.border,
         ),
         SizedBox(width: 8),
         _buildStepDot(2, l10n),
@@ -139,15 +139,15 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
       height: 32,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: isActive || isCompleted ? AppColors.gold : AppColors.slate700,
+        color: isActive || isCompleted ? AppColors.primary : AppColors.border,
       ),
       child: Center(
         child: isCompleted
-            ? Icon(Icons.check, color: AppColors.navyDark, size: 20)
+            ? Icon(Icons.check, color: Colors.white, size: 20)
             : Text(
                 '${step + 1}',
                 style: TextStyle(
-                  color: isActive ? AppColors.navyDark : Colors.white,
+                  color: isActive ? Colors.white : AppColors.textSecondary,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -162,7 +162,7 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
         Text(
           l10n.retirementQuestionPart1,
           style: TextStyle(
-            color: Colors.white,
+            color: AppColors.textPrimary,
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
@@ -172,7 +172,7 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
           l10n.retirementSetupSubtitle,
           textAlign: TextAlign.center,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.7),
+            color: AppColors.textSecondary,
             fontSize: 16,
             height: 1.5,
           ),
@@ -183,22 +183,22 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
           focusNode: _initialAssetFocusNode,
           decoration: InputDecoration(
             hintText: '0',
-            hintStyle: TextStyle(color: AppColors.slate400),
+            hintStyle: TextStyle(color: AppColors.textSecondary),
             suffixText: widget.currencyUnit,
-            suffixStyle: TextStyle(color: AppColors.gold, fontSize: 20),
+            suffixStyle: TextStyle(color: AppColors.primary, fontSize: 20),
             filled: true,
-            fillColor: AppColors.slate800.withValues(alpha: 0.5),
+            fillColor: AppColors.bg,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.gold, width: 2),
+              borderSide: BorderSide(color: AppColors.primary, width: 2),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.gold, width: 2),
+              borderSide: BorderSide(color: AppColors.primary, width: 2),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.gold, width: 2),
+              borderSide: BorderSide(color: AppColors.primary, width: 2),
             ),
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
@@ -217,7 +217,7 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
               );
             }),
           ],
-          style: TextStyle(color: Colors.white, fontSize: 20),
+          style: TextStyle(color: AppColors.textPrimary, fontSize: 20),
           textAlign: TextAlign.right,
         ),
       ],
@@ -231,7 +231,7 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
         Text(
           '매월 인출 금액',
           style: TextStyle(
-            color: Colors.white,
+            color: AppColors.textPrimary,
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
@@ -242,22 +242,22 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
           focusNode: _monthlyWithdrawalFocusNode,
           decoration: InputDecoration(
             hintText: '0',
-            hintStyle: TextStyle(color: AppColors.slate400),
+            hintStyle: TextStyle(color: AppColors.textSecondary),
             suffixText: widget.currencyUnit,
-            suffixStyle: TextStyle(color: AppColors.gold, fontSize: 20),
+            suffixStyle: TextStyle(color: AppColors.primary, fontSize: 20),
             filled: true,
-            fillColor: AppColors.slate800.withValues(alpha: 0.5),
+            fillColor: AppColors.bg,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.gold, width: 2),
+              borderSide: BorderSide(color: AppColors.primary, width: 2),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.gold, width: 2),
+              borderSide: BorderSide(color: AppColors.primary, width: 2),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.gold, width: 2),
+              borderSide: BorderSide(color: AppColors.primary, width: 2),
             ),
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
@@ -276,7 +276,7 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
               );
             }),
           ],
-          style: TextStyle(color: Colors.white, fontSize: 20),
+          style: TextStyle(color: AppColors.textPrimary, fontSize: 20),
           textAlign: TextAlign.right,
         ),
       ],
@@ -290,7 +290,7 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
         Text(
           '시뮬레이션 기간',
           style: TextStyle(
-            color: Colors.white,
+            color: AppColors.textPrimary,
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
@@ -315,14 +315,14 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
                         BorderRadius.circular(12),
                       )
                     : BoxDecoration(
-                        color: AppColors.slate800.withValues(alpha: 0.5),
+                        color: AppColors.bg,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.slate700, width: 1),
+                        border: Border.all(color: AppColors.border, width: 1),
                       ),
                 child: Text(
                   '$years${l10n.year}',
                   style: TextStyle(
-                    color: isSelected ? AppColors.navyDark : Colors.white,
+                    color: isSelected ? Colors.white : AppColors.textPrimary,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -347,9 +347,9 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
         constraints: BoxConstraints(maxHeight: maxHeight, maxWidth: 400),
         child: LiquidGlass(
           decoration: BoxDecoration(
-            color: AppColors.navyDark.withValues(alpha: 0.9),
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppColors.gold.withValues(alpha: 0.3)),
+            border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
           ),
           child: Padding(
             padding: EdgeInsets.all(24),
@@ -386,7 +386,7 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
                         },
                         child: Text(
                           '이전',
-                          style: TextStyle(color: AppColors.slate400),
+                          style: TextStyle(color: AppColors.textSecondary),
                         ),
                       )
                     else
@@ -405,8 +405,8 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
                         _nextStep();
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.gold,
-                        foregroundColor: AppColors.navyDark,
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
                         padding: EdgeInsets.symmetric(
                           horizontal: 32,
                           vertical: 16,

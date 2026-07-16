@@ -4,6 +4,7 @@ import '../models/asset.dart';
 import '../models/asset_option.dart';
 import '../utils/colors.dart';
 import '../l10n/app_localizations.dart';
+import 'asset_icon.dart';
 import 'liquid_glass.dart';
 
 class AssetInputCard extends StatelessWidget {
@@ -16,8 +17,8 @@ class AssetInputCard extends StatelessWidget {
   final VoidCallback? onRetryLoadCagr; // CAGR 재시도 콜백
 
   // 폰트 크기 상수
-  static const double _assetIconFontSize = 24.0; // 자산 아이콘 크기 (비트코인, 테슬라 등 이모지)
-  static const double _assetNameFontSize = 20.0; // 자산 이름 텍스트 (비트코인, 테슬라 등)
+  static const double _assetIconSize = 24.0;
+  static const double _assetNameFontSize = 20.0;
   static const double _cagrLoadingFontSize = 20.0; // "연수익률 계산 중..." 텍스트
   static const double _cagrValueFontSize = 20.0; // "과거 연평균 수익률 (CAGR): XX%" 텍스트
   static const double _cagrErrorFontSize = 20.0; // "연수익률을 불러올 수 없습니다" 텍스트
@@ -53,9 +54,9 @@ class AssetInputCard extends StatelessWidget {
       child: LiquidGlass(
         blur: 10,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withOpacity(0.18), width: 1.5),
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.border, width: 1.5),
         ),
         padding: EdgeInsets.all(16),
         child: Column(
@@ -69,16 +70,17 @@ class AssetInputCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       if (assetOption != null)
-                        Text(
-                          assetOption!.icon,
-                          style: TextStyle(fontSize: _assetIconFontSize),
+                        AssetIcon(
+                          assetId: assetOption!.id,
+                          type: assetOption!.type,
+                          size: _assetIconSize,
                         ),
                       SizedBox(width: 8),
                       Flexible(
                         child: Text(
                           assetOption?.displayName() ?? asset.assetId,
                           style: TextStyle(
-                            color: AppColors.gold,
+                            color: AppColors.textPrimary,
                             fontSize: _assetNameFontSize,
                             fontWeight: FontWeight.bold,
                           ),
@@ -105,14 +107,14 @@ class AssetInputCard extends StatelessWidget {
                     height: 16,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: AppColors.gold,
+                      color: AppColors.primary,
                     ),
                   ),
                   SizedBox(width: 8),
                   Text(
                     l10n?.calculatingAnnualReturn ?? '연수익률 계산 중...',
                     style: TextStyle(
-                      color: AppColors.slate400,
+                      color: AppColors.textSecondary,
                       fontSize: _cagrLoadingFontSize,
                     ),
                   ),
@@ -204,7 +206,7 @@ class AssetInputCard extends StatelessWidget {
                     Text(
                       l10n?.allocation ?? '비중',
                       style: TextStyle(
-                        color: AppColors.slate400,
+                        color: AppColors.textSecondary,
                         fontSize: _allocationLabelFontSize,
                       ),
                     ),
@@ -217,7 +219,7 @@ class AssetInputCard extends StatelessWidget {
                           Text(
                             '${(asset.allocation * 100).toStringAsFixed(1)}%',
                             style: TextStyle(
-                              color: AppColors.gold,
+                              color: AppColors.primary,
                               fontSize: _allocationValueFontSize,
                               fontWeight: FontWeight.bold,
                             ),
@@ -230,7 +232,7 @@ class AssetInputCard extends StatelessWidget {
                               child: Text(
                                 '(${currencyFormat!.format((initialAsset! * asset.allocation).toInt())})',
                                 style: TextStyle(
-                                  color: AppColors.slate300,
+                                  color: AppColors.textSecondary,
                                   fontSize: _allocationValueFontSize - 2,
                                 ),
                                 maxLines: 2,
@@ -250,8 +252,8 @@ class AssetInputCard extends StatelessWidget {
                   max: 1.0,
                   divisions: 100,
                   onChanged: onAllocationChanged,
-                  activeColor: AppColors.gold,
-                  inactiveColor: AppColors.slate700,
+                  activeColor: AppColors.primary,
+                  inactiveColor: AppColors.border,
                 ),
               ],
             ),

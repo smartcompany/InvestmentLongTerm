@@ -78,7 +78,7 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
           onWillPop: () async => false, // 뒤로가기 버튼도 차단
           child: Center(
             child: CircularProgressIndicator(
-              color: AppColors.gold,
+              color: AppColors.primary,
               strokeWidth: 3,
             ),
           ),
@@ -156,12 +156,12 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
         final currencySymbol = CurrencyProvider.shared.getCurrencySymbol();
 
         return Scaffold(
-          backgroundColor: AppColors.navyDark,
+          backgroundColor: AppColors.bg,
           appBar: AppBar(
-            backgroundColor: Colors.transparent,
+            backgroundColor: AppColors.bg,
             elevation: 0,
             leading: IconButton(
-              icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+              icon: const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
@@ -186,20 +186,20 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
                 LiquidGlass(
                   blur: 10,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: AppColors.surface,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: AppColors.border,
                       width: 1.5,
                     ),
                   ),
                   padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   child: SliderTheme(
                     data: SliderThemeData(
-                      activeTrackColor: AppColors.gold,
-                      inactiveTrackColor: AppColors.slate700,
-                      thumbColor: AppColors.gold,
-                      overlayColor: AppColors.gold.withValues(alpha: 0.2),
+                      activeTrackColor: AppColors.primary,
+                      inactiveTrackColor: AppColors.border,
+                      thumbColor: AppColors.primary,
+                      overlayColor: AppColors.primary.withValues(alpha: 0.2),
                       trackHeight: 4,
                       thumbShape: RoundSliderThumbShape(enabledThumbRadius: 10),
                     ),
@@ -267,16 +267,16 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
                         message: l10n.currencySettings,
                         child: Icon(
                           Icons.currency_exchange,
-                          color: AppColors.gold,
+                          color: AppColors.primary,
                           size: 24,
                         ),
                       ),
                     ),
                     enabledBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: AppColors.slate700),
+                      borderSide: BorderSide(color: AppColors.border),
                     ),
                     focusedBorder: UnderlineInputBorder(
-                      borderSide: BorderSide(color: AppColors.gold),
+                      borderSide: BorderSide(color: AppColors.primary),
                     ),
                   ),
                 ),
@@ -296,10 +296,10 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
                     child: Container(
                       padding: EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.12),
+                        color: AppColors.surface,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.2),
+                          color: AppColors.border,
                           width: 1.5,
                         ),
                       ),
@@ -370,7 +370,7 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
                               Text(
                                 l10n.frequencySelectionHint,
                                 style: TextStyle(
-                                  color: AppColors.slate400,
+                                  color: AppColors.textSecondary,
                                   fontSize: 13,
                                 ),
                               ),
@@ -386,17 +386,17 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
                 LiquidGlass(
                   blur: 10,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.25),
+                    color: AppColors.border,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.3),
+                      color: AppColors.border,
                       width: 1.5,
                     ),
                   ),
                   padding: EdgeInsets.all(16),
                   child: Row(
                     children: [
-                      Icon(Icons.info_outline, color: AppColors.gold),
+                      Icon(Icons.info_outline, color: AppColors.primary),
                       SizedBox(width: 12),
                       Expanded(
                         child: Text(
@@ -406,7 +406,7 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
                             l10n,
                             currencySymbol,
                           ),
-                          style: TextStyle(color: AppColors.slate300),
+                          style: TextStyle(color: AppColors.textSecondary),
                         ),
                       ),
                     ],
@@ -435,7 +435,7 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
                             child: Text(
                               l10n.viewResults,
                               style: AppTextStyles.buttonTextPrimary.copyWith(
-                                color: AppColors.navyDark,
+                                color: Colors.white,
                               ),
                             ),
                           ),
@@ -477,17 +477,17 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
                 height: 20,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: AppColors.navyDark, width: 2),
-                  color: AppColors.navyDark,
+                  border: Border.all(color: Colors.white, width: 2),
+                  color: Colors.white,
                 ),
-                child: Icon(Icons.check, size: 14, color: AppColors.gold),
+                child: Icon(Icons.check, size: 14, color: AppColors.primary),
               ),
               SizedBox(width: 8),
             ],
             Text(
               label,
               style: TextStyle(
-                color: isSelected ? AppColors.navyDark : Colors.white,
+                color: isSelected ? Colors.white : AppColors.textPrimary,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
@@ -525,22 +525,22 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(4),
                           border: Border.all(
-                            color: AppColors.navyDark,
+                            color: Colors.white,
                             width: 2,
                           ),
-                          color: AppColors.navyDark,
+                          color: Colors.white,
                         ),
                         child: Icon(
                           Icons.check,
                           size: 14,
-                          color: AppColors.gold,
+                          color: AppColors.primary,
                         ),
                       ),
                       SizedBox(width: 8),
                       Text(
                         label,
                         style: TextStyle(
-                          color: AppColors.navyDark,
+                          color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -552,10 +552,10 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
           : LiquidGlass(
               blur: 10,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.18),
+                color: AppColors.surface,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.25),
+                  color: AppColors.border,
                   width: 1.5,
                 ),
               ),
@@ -568,7 +568,7 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
                     height: 20,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(4),
-                      border: Border.all(color: AppColors.slate400, width: 2),
+                      border: Border.all(color: AppColors.textSecondary, width: 2),
                       color: Colors.transparent,
                     ),
                   ),
@@ -576,7 +576,7 @@ class _InvestmentSettingsScreenState extends State<InvestmentSettingsScreen> {
                   Text(
                     label,
                     style: TextStyle(
-                      color: Colors.white,
+                      color: AppColors.textPrimary,
                       fontWeight: FontWeight.normal,
                     ),
                   ),

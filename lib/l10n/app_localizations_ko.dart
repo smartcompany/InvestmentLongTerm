@@ -359,6 +359,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get monthlyDetails => '월별 상세 내역';
 
   @override
+  String get expandView => '펼쳐보기';
+
+  @override
   String yearLabel(int year) {
     return '$year년';
   }
@@ -509,10 +512,37 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get retireInlineEditHint => '파란 칸을 탭하면 금액을 바꿀 수 있어요';
+
+  @override
+  String get retireFormSubtitle => '보유 현금·자산을 입력하고 매월 지출을 설정해보세요';
+
+  @override
+  String get retireCashLabel => '보유 현금';
+
+  @override
+  String get retireHoldingsLabel => '보유 자산';
+
+  @override
+  String get retireHoldingsEmpty => '아직 추가한 자산이 없어요. 주식·코인 등을 추가해보세요';
+
+  @override
+  String get retireMonthlySpendLabel => '매월 쓸 돈';
+
+  @override
+  String get retireTotalNetWorth => '총 자산 평가액';
+
+  @override
+  String get retireQtyUnit => '개';
+
+  @override
   String get adWillBeShown => '결과 보기 전에 광고가 표시됩니다';
 
   @override
   String get myAssets => '지금 내 자산';
+
+  @override
+  String get manageInMyAssets => '내 자산으로 관리';
 
   @override
   String get viewMyAssetsStatus => '광고 보고 내 자산 관리';
@@ -587,4 +617,48 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get watchAdAndStart => '광고 보고 시작';
+
+  @override
+  String get landingCryptoSimTitle => '암호화폐 시뮬레이션';
+
+  @override
+  String get landingCryptoSimDesc => '비트코인 등으로 그때 샀다면 얼마였을지 확인해보세요';
+
+  @override
+  String get landingMoreAssetsTitle => '더 많은 자산 보기';
+
+  @override
+  String get landingMoreAssetsDesc => '주식, ETF, 원자재 등 다양한 자산을 선택하세요';
+
+  @override
+  String get landingGuideTitle => '처음 오셨나요?';
+
+  @override
+  String get landingGuideDesc => '간단한 사용 방법을 안내해드릴게요';
+
+  @override
+  String get landingGuideSheetTitle => 'Time Capital 이용 가이드';
+
+  @override
+  String get landingGuideStep1 => '관심 있는 자산을 선택하세요';
+
+  @override
+  String get landingGuideStep2 => '투자 금액과 기간을 설정하세요';
+
+  @override
+  String get landingGuideStep3 => '결과 차트와 수익률을 확인하세요';
+
+  @override
+  String get selectAssetToCompare => '비교할 자산을 선택하세요';
+
+  @override
+  String get selectUpToAssets => '원하는 자산을 선택해 성장률을 비교해보세요';
+
+  @override
+  String compareSelectedAssets(int count) {
+    return '$count개 자산 비교하기';
+  }
+
+  @override
+  String get selectAssetsTitle => '자산 선택';
 }

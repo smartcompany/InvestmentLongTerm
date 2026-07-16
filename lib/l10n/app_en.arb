@@ -142,6 +142,7 @@
   "totalWithdrawn": "Total Withdrawn",
   "netProfit": "Net Profit",
   "monthlyDetails": "Monthly Details",
+  "expandView": "Expand",
   "yearLabel": "{year}",
   "@yearLabel": {
     "placeholders": {
@@ -203,8 +204,25 @@
   "retirementQuestionEnd": "monthly?",
   "inflationRate": "Annual Inflation Rate",
   "inflationRateDesc": "Set the rate at which living expenses increase annually",
+  "inflationRatePercent": "{rate}%",
+  "@inflationRatePercent": {
+    "placeholders": {
+      "rate": {
+        "type": "double"
+      }
+    }
+  },
+  "retireInlineEditHint": "Tap the blue boxes to edit amounts",
+  "retireFormSubtitle": "Enter your cash and holdings, then set monthly spending",
+  "retireCashLabel": "Cash on hand",
+  "retireHoldingsLabel": "Holdings",
+  "retireHoldingsEmpty": "No holdings yet. Add stocks, crypto, and more",
+  "retireMonthlySpendLabel": "Monthly spending",
+  "retireTotalNetWorth": "Total estimated value",
+  "retireQtyUnit": "qty",
   "adWillBeShown": "An ad will be shown before viewing results",
   "myAssets": "My Assets",
+  "manageInMyAssets": "Manage in My Assets",
   "viewMyAssetsStatus": "Watch Ad & Manage My Assets",
   "myAssetsSubtitle": "Record your assets\nand track their changes\nAds will only be shown once unless the app is restarted.",
   "retirementSetupSubtitle": "Thinking about retirement?\nPlease enter your expected assets at retirement",
@@ -229,6 +247,27 @@
   "currencyChangeWarning": "Currency Change",
   "currencyChangeMessage": "Changing the currency will alter the prices of assets you've already entered to match the new currency.\n\nTo display assets correctly, you need to re-enter them.",
   "understand": "I Understand",
-  "watchAdAndStart": "Watch Ad and Start"
+  "watchAdAndStart": "Watch Ad and Start",
+  "landingCryptoSimTitle": "Crypto Simulation",
+  "landingCryptoSimDesc": "See what Bitcoin and more would be worth if you bought them then",
+  "landingMoreAssetsTitle": "Browse more assets",
+  "landingMoreAssetsDesc": "Choose from stocks, ETFs, commodities, and more",
+  "landingGuideTitle": "New here?",
+  "landingGuideDesc": "We'll walk you through how to get started",
+  "landingGuideSheetTitle": "Time Capital quick guide",
+  "landingGuideStep1": "Pick an asset you're curious about",
+  "landingGuideStep2": "Set your amount and time horizon",
+  "landingGuideStep3": "Check the chart and return",
+  "selectAssetToCompare": "Select assets to compare",
+  "selectUpToAssets": "Pick assets and race their growth rates",
+  "compareSelectedAssets": "Compare {count} assets",
+  "@compareSelectedAssets": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "selectAssetsTitle": "Select an asset"
 }
 

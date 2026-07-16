@@ -710,6 +710,12 @@ abstract class AppLocalizations {
   /// **'월별 상세 내역'**
   String get monthlyDetails;
 
+  /// No description provided for @expandView.
+  ///
+  /// In ko, this message translates to:
+  /// **'펼쳐보기'**
+  String get expandView;
+
   /// No description provided for @yearLabel.
   ///
   /// In ko, this message translates to:
@@ -998,6 +1004,54 @@ abstract class AppLocalizations {
   /// **'{rate}%'**
   String inflationRatePercent(double rate);
 
+  /// No description provided for @retireInlineEditHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'파란 칸을 탭하면 금액을 바꿀 수 있어요'**
+  String get retireInlineEditHint;
+
+  /// No description provided for @retireFormSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'보유 현금·자산을 입력하고 매월 지출을 설정해보세요'**
+  String get retireFormSubtitle;
+
+  /// No description provided for @retireCashLabel.
+  ///
+  /// In ko, this message translates to:
+  /// **'보유 현금'**
+  String get retireCashLabel;
+
+  /// No description provided for @retireHoldingsLabel.
+  ///
+  /// In ko, this message translates to:
+  /// **'보유 자산'**
+  String get retireHoldingsLabel;
+
+  /// No description provided for @retireHoldingsEmpty.
+  ///
+  /// In ko, this message translates to:
+  /// **'아직 추가한 자산이 없어요. 주식·코인 등을 추가해보세요'**
+  String get retireHoldingsEmpty;
+
+  /// No description provided for @retireMonthlySpendLabel.
+  ///
+  /// In ko, this message translates to:
+  /// **'매월 쓸 돈'**
+  String get retireMonthlySpendLabel;
+
+  /// No description provided for @retireTotalNetWorth.
+  ///
+  /// In ko, this message translates to:
+  /// **'총 자산 평가액'**
+  String get retireTotalNetWorth;
+
+  /// No description provided for @retireQtyUnit.
+  ///
+  /// In ko, this message translates to:
+  /// **'개'**
+  String get retireQtyUnit;
+
   /// No description provided for @adWillBeShown.
   ///
   /// In ko, this message translates to:
@@ -1009,6 +1063,12 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'지금 내 자산'**
   String get myAssets;
+
+  /// No description provided for @manageInMyAssets.
+  ///
+  /// In ko, this message translates to:
+  /// **'내 자산으로 관리'**
+  String get manageInMyAssets;
 
   /// No description provided for @viewMyAssetsStatus.
   ///
@@ -1153,6 +1213,90 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'광고 보고 시작'**
   String get watchAdAndStart;
+
+  /// No description provided for @landingCryptoSimTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'암호화폐 시뮬레이션'**
+  String get landingCryptoSimTitle;
+
+  /// No description provided for @landingCryptoSimDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'비트코인 등으로 그때 샀다면 얼마였을지 확인해보세요'**
+  String get landingCryptoSimDesc;
+
+  /// No description provided for @landingMoreAssetsTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'더 많은 자산 보기'**
+  String get landingMoreAssetsTitle;
+
+  /// No description provided for @landingMoreAssetsDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'주식, ETF, 원자재 등 다양한 자산을 선택하세요'**
+  String get landingMoreAssetsDesc;
+
+  /// No description provided for @landingGuideTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'처음 오셨나요?'**
+  String get landingGuideTitle;
+
+  /// No description provided for @landingGuideDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'간단한 사용 방법을 안내해드릴게요'**
+  String get landingGuideDesc;
+
+  /// No description provided for @landingGuideSheetTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'Time Capital 이용 가이드'**
+  String get landingGuideSheetTitle;
+
+  /// No description provided for @landingGuideStep1.
+  ///
+  /// In ko, this message translates to:
+  /// **'관심 있는 자산을 선택하세요'**
+  String get landingGuideStep1;
+
+  /// No description provided for @landingGuideStep2.
+  ///
+  /// In ko, this message translates to:
+  /// **'투자 금액과 기간을 설정하세요'**
+  String get landingGuideStep2;
+
+  /// No description provided for @landingGuideStep3.
+  ///
+  /// In ko, this message translates to:
+  /// **'결과 차트와 수익률을 확인하세요'**
+  String get landingGuideStep3;
+
+  /// No description provided for @selectAssetToCompare.
+  ///
+  /// In ko, this message translates to:
+  /// **'비교할 자산을 선택하세요'**
+  String get selectAssetToCompare;
+
+  /// No description provided for @selectUpToAssets.
+  ///
+  /// In ko, this message translates to:
+  /// **'원하는 자산을 선택해 성장률을 비교해보세요'**
+  String get selectUpToAssets;
+
+  /// No description provided for @compareSelectedAssets.
+  ///
+  /// In ko, this message translates to:
+  /// **'{count}개 자산 비교하기'**
+  String compareSelectedAssets(int count);
+
+  /// No description provided for @selectAssetsTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'자산 선택'**
+  String get selectAssetsTitle;
 }
 
 class _AppLocalizationsDelegate

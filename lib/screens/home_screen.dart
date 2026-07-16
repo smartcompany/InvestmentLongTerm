@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
 import '../providers/app_state_provider.dart';
@@ -7,8 +6,6 @@ import '../models/asset_option.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
 import '../widgets/asset_button.dart';
-import '../widgets/common_share_ui.dart';
-import '../widgets/tab_navigation.dart';
 import 'investment_settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -18,42 +15,50 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  // 각 자산 타입별 펼침 상태 관리
+class _HomeScreenState extends State<HomeScreen> {
   final Map<String, bool> _expandedTypes = {};
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: Duration(seconds: 2),
-      vsync: this,
-    )..repeat(reverse: true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<AppStateProvider>().loadAssets();
     });
   }
 
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  AssetOption? _highlightAsset(AppStateProvider provider) {
+    if (provider.assets.isEmpty) return null;
+    try {
+      return provider.assets.firstWhere((a) => a.id == provider.config.asset);
+    } catch (_) {
+      final cryptos =
+          provider.assets.where((a) => a.type == 'crypto').toList();
+      if (cryptos.isEmpty) return provider.assets.first;
+      return cryptos.firstWhere(
+        (a) =>
+            a.id.toLowerCase().contains('btc') ||
+            a.id.toLowerCase().contains('bitcoin') ||
+            a.displayName().contains('비트코인') ||
+            a.displayName().toLowerCase().contains('bitcoin'),
+        orElse: () => cryptos.first,
+      );
+    }
   }
 
-  void _navigateToSettings(BuildContext context, String asset) {
-    context.read<AppStateProvider>().updateConfig(asset: asset);
+  void _openSettings(BuildContext context, AssetOption asset) {
+    final provider = context.read<AppStateProvider>();
+    provider.selectAsset(asset);
+    provider.updateConfig(asset: asset.id);
     Navigator.of(context).push(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
-            InvestmentSettingsScreen(),
+            const InvestmentSettingsScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(
             opacity: animation,
             child: SlideTransition(
               position: Tween<Offset>(
-                begin: Offset(0, 0.1),
+                begin: const Offset(0, 0.08),
                 end: Offset.zero,
               ).animate(animation),
               child: child,
@@ -64,334 +69,161 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  Widget _buildAnimatedIcon(IconData icon, double delay) {
-    return AnimatedBuilder(
-      animation: _controller,
-      builder: (context, child) {
-        // Better sine wave
-        double value = _controller.value + delay;
-        if (value > 1.0) value -= 1.0;
-        // Use sine for smooth oscillation
-        double yOffset = -10 * (value < 0.5 ? value * 2 : (1 - value) * 2);
-
-        return Transform.translate(
-          offset: Offset(0, yOffset),
-          child: Icon(icon, size: 40, color: AppColors.gold),
-        );
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AppStateProvider>();
-    final localeCode = Localizations.localeOf(context).languageCode;
-    final selectedAssetName = provider.assetNameForLocale(
-      assetId: provider.config.asset,
-    );
     final l10n = AppLocalizations.of(context)!;
+    final highlight = _highlightAsset(provider);
+    final highlightName = highlight?.displayName() ??
+        provider.assetNameForLocale(assetId: provider.config.asset);
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [AppColors.navyDark, AppColors.navyMedium],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final padding = MediaQuery.of(context).padding;
-            return SingleChildScrollView(
-              padding: EdgeInsets.only(
-                top: padding.top + 20,
-                bottom: padding.bottom + 30,
-                left: 24,
-                right: 24,
-              ),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight - 60,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+      backgroundColor: AppColors.bg,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 100),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text.rich(
+                TextSpan(
+                  style: AppTextStyles.homeMainQuestion,
                   children: [
-                    SizedBox(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildAnimatedIcon(Icons.trending_up, 0.0),
-                        SizedBox(width: 16),
-                        _buildAnimatedIcon(Icons.calendar_today, 0.3),
-                        SizedBox(width: 16),
-                        _buildAnimatedIcon(Icons.bar_chart, 0.6),
-                      ],
+                    TextSpan(
+                      text: l10n.homeQuestionPart1(provider.config.yearsAgo),
                     ),
-                    SizedBox(height: 32),
-                    Text(
-                      l10n.homeQuestionPart1(provider.config.yearsAgo),
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.homeMainQuestion.copyWith(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    const TextSpan(text: '\n'),
+                    TextSpan(
+                      text: highlightName,
+                      style: const TextStyle(color: AppColors.primary),
                     ),
-                    Text(
-                      l10n.homeQuestionPart2(selectedAssetName),
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.homeMainQuestion.copyWith(
-                        color: AppColors.gold,
-                        fontSize: 30,
-                        fontWeight: FontWeight.w800,
-                      ),
+                    TextSpan(
+                      text: _homeQuestionSuffix(l10n, highlightName),
                     ),
-                    SizedBox(height: 16),
-                    Text(
-                      l10n.homeDescription,
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.homeSubDescription,
-                    ),
-                    SizedBox(height: 36),
-                    if (provider.isAssetsLoading && provider.assets.isEmpty)
-                      Center(
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 40),
-                          child: CircularProgressIndicator(
-                            color: AppColors.gold,
-                          ),
-                        ),
-                      )
-                    else if (provider.assetsError != null &&
-                        provider.assets.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Column(
-                          children: [
-                            Text(
-                              l10n.failedToLoadAssetList,
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            SizedBox(height: 12),
-                            OutlinedButton(
-                              onPressed: () => provider.loadAssets(),
-                              style: OutlinedButton.styleFrom(
-                                side: BorderSide(color: AppColors.gold),
-                              ),
-                              child: Text(
-                                l10n.retry,
-                                style: TextStyle(color: AppColors.gold),
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    else
-                      _buildAssetButtons(provider, localeCode, l10n),
-                    // 디버그 모드일 때 공유하기 테스트 버튼
-                    if (kDebugMode) ...[
-                      SizedBox(height: 40),
-                      _buildDebugShareTestButton(context, l10n),
-                    ],
                   ],
                 ),
               ),
-            );
-          },
+              const SizedBox(height: 10),
+              Text(
+                l10n.homeDescription,
+                style: AppTextStyles.homeSubDescription.copyWith(
+                  color: AppColors.textPrimary.withValues(alpha: 0.78),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 24),
+              if (provider.isAssetsLoading && provider.assets.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.only(top: 40),
+                  child: Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  ),
+                )
+              else if (provider.assetsError != null && provider.assets.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 24),
+                  child: Column(
+                    children: [
+                      Text(
+                        l10n.failedToLoadAssetList,
+                        style: const TextStyle(color: AppColors.textPrimary),
+                      ),
+                      const SizedBox(height: 12),
+                      OutlinedButton(
+                        onPressed: () => provider.loadAssets(),
+                        child: Text(l10n.retry),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                ..._buildAssetSections(provider, l10n),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildDebugShareTestButton(
-    BuildContext context,
-    AppLocalizations l10n,
-  ) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16),
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.red.withOpacity(0.5), width: 2),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Icon(Icons.bug_report, color: Colors.red, size: 20),
-              SizedBox(width: 8),
-              Text(
-                'DEBUG MODE',
-                style: TextStyle(
-                  color: Colors.red,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () async {
-                // 더미 공유 텍스트 생성
-                final dummyShareText = '''
-╔═══════════════════════════════════╗
-║   📊 Time Capital 계산 결과      ║
-╚═══════════════════════════════════╝
-
-💎 만약 5년 전에 비트코인에 \$10,000를 투자했다면 지금 얼마일까?
-
-┌───────────────────────────────────┐
-│ 🏆 단일 투자
-│
-│   최종 가치: \$150,000
-│   수익률: 📈 1,400.0%
-│   수익: 💰 \$140,000
-└───────────────────────────────────┘
-
-💵 총 투자금액: \$10,000
-
-✨ 장기 투자 매매 계산 결과
-
-🔗 다운로드: https://investment-long-term-server.vercel.app/applink
-''';
-
-                await CommonShareUI.showShareOptionsDialog(
-                  context: context,
-                  shareText: dummyShareText,
-                );
-              },
-              icon: Icon(Icons.share, color: Colors.white),
-              label: Text(
-                '공유하기 테스트',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                padding: EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAssetButtons(
+  List<Widget> _buildAssetSections(
     AppStateProvider provider,
-    String localeCode,
     AppLocalizations l10n,
   ) {
     final widgets = <Widget>[];
-
-    // 자산을 타입별로 그룹화
-    final Map<String, List<AssetOption>> assetsByType = {};
+    final assetsByType = <String, List<AssetOption>>{};
     for (final asset in provider.assets) {
       assetsByType.putIfAbsent(asset.type, () => []).add(asset);
     }
 
-    // 타입별로 정렬된 순서대로 처리
+    final order = {
+      'crypto': 0,
+      'stock': 1,
+      'korean_stock': 2,
+      'real_estate': 3,
+      'commodity': 4,
+      'cash': 5,
+    };
     final sortedTypes = assetsByType.keys.toList()
-      ..sort((a, b) {
-        // 타입 순서: crypto, stock, korean_stock, real_estate, commodity, cash
-        final order = {
-          'crypto': 0,
-          'stock': 1,
-          'korean_stock': 2,
-          'real_estate': 3,
-          'commodity': 4,
-          'cash': 5,
-        };
-        return (order[a] ?? 99).compareTo(order[b] ?? 99);
-      });
+      ..sort((a, b) => (order[a] ?? 99).compareTo(order[b] ?? 99));
 
     for (final type in sortedTypes) {
       final assets = assetsByType[type]!;
       final isExpanded = _expandedTypes[type] ?? false;
 
-      // 타입 제목 추가
       widgets.add(
         Padding(
-          padding: const EdgeInsets.only(top: 12, bottom: 8),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              type == 'crypto'
-                  ? l10n.crypto
-                  : type == 'cash'
-                  ? l10n.cash
-                  : type == 'commodity'
-                  ? l10n.commodity
-                  : type == 'korean_stock'
-                  ? l10n.koreanStock
-                  : type == 'real_estate'
-                  ? l10n.realEstate
-                  : l10n.stock,
-              style: AppTextStyles.chartSectionTitle,
-            ),
+          padding: const EdgeInsets.only(top: 8, bottom: 10),
+          child: Text(
+            _typeLabel(type, l10n),
+            style: AppTextStyles.chartSectionTitle,
           ),
         ),
       );
 
-      // 처음 2개만 항상 표시
       final visibleCount = isExpanded
           ? assets.length
           : (assets.length > 2 ? 2 : assets.length);
 
-      for (int i = 0; i < visibleCount; i++) {
+      for (var i = 0; i < visibleCount; i++) {
         final asset = assets[i];
         widgets.add(
           Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.only(bottom: 10),
             child: AssetButton(
               assetName: asset.displayName(),
-              icon: asset.icon,
+              assetId: asset.id,
+              type: asset.type,
               isSelected: provider.config.asset == asset.id,
-              onTap: () {
-                provider.selectAsset(asset);
-                _navigateToSettings(context, asset.id);
-              },
+              onTap: () => _openSettings(context, asset),
             ),
           ),
         );
       }
 
-      // 나머지가 있으면 펼치기/접기 버튼 추가
       if (assets.length > 2) {
         widgets.add(
           Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Center(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Align(
+              alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: () {
-                  setState(() {
-                    _expandedTypes[type] = !isExpanded;
-                  });
+                  setState(() => _expandedTypes[type] = !isExpanded);
                 },
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       isExpanded ? l10n.showLess : l10n.showMore,
-                      style: TextStyle(
-                        color: AppColors.gold,
-                        fontSize: 14,
+                      style: const TextStyle(
+                        color: AppColors.primary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    SizedBox(width: 4),
                     Icon(
                       isExpanded ? Icons.expand_less : Icons.expand_more,
-                      color: AppColors.gold,
+                      color: AppColors.primary,
                       size: 20,
                     ),
                   ],
@@ -403,6 +235,31 @@ class _HomeScreenState extends State<HomeScreen>
       }
     }
 
-    return Column(children: widgets);
+    return widgets;
+  }
+
+  String _typeLabel(String type, AppLocalizations l10n) {
+    switch (type) {
+      case 'crypto':
+        return l10n.crypto;
+      case 'cash':
+        return l10n.cash;
+      case 'commodity':
+        return l10n.commodity;
+      case 'korean_stock':
+        return l10n.koreanStock;
+      case 'real_estate':
+        return l10n.realEstate;
+      default:
+        return l10n.stock;
+    }
+  }
+
+  String _homeQuestionSuffix(AppLocalizations l10n, String assetName) {
+    final full = l10n.homeQuestionPart2(assetName);
+    if (full.contains(assetName)) {
+      return full.replaceFirst(assetName, '');
+    }
+    return full;
   }
 }

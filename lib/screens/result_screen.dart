@@ -12,6 +12,7 @@ import '../widgets/common_share_ui.dart';
 import '../widgets/asset_price_chart.dart';
 import '../widgets/comparison_chart.dart';
 import '../widgets/liquid_glass.dart';
+import '../widgets/asset_icon.dart';
 import '../services/ad_service.dart';
 import '../services/app_review_service.dart';
 import '../utils/chart_image_utils.dart';
@@ -51,16 +52,16 @@ class _ResultScreenState extends State<ResultScreen> {
 
     if (provider.isLoading) {
       return Scaffold(
-        backgroundColor: AppColors.navyDark,
+        backgroundColor: AppColors.bg,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator(color: AppColors.gold),
+              CircularProgressIndicator(color: AppColors.primary),
               SizedBox(height: 20),
               Text(
                 l10n.fetchingPriceData,
-                style: TextStyle(color: AppColors.slate300),
+                style: TextStyle(color: AppColors.textSecondary),
               ),
             ],
           ),
@@ -70,12 +71,12 @@ class _ResultScreenState extends State<ResultScreen> {
 
     if (provider.error != null) {
       return Scaffold(
-        backgroundColor: AppColors.navyDark,
+        backgroundColor: AppColors.bg,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+            icon: Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
             onPressed: () => Navigator.pop(context),
           ),
         ),
@@ -90,7 +91,7 @@ class _ResultScreenState extends State<ResultScreen> {
                 Text(
                   l10n.errorOccurred,
                   style: TextStyle(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
@@ -99,14 +100,14 @@ class _ResultScreenState extends State<ResultScreen> {
                 Text(
                   provider.error!,
                   textAlign: TextAlign.center,
-                  style: TextStyle(color: AppColors.slate400),
+                  style: TextStyle(color: AppColors.textSecondary),
                 ),
                 SizedBox(height: 30),
                 ElevatedButton(
                   onPressed: () => Navigator.pop(context),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.gold,
-                    foregroundColor: AppColors.navyDark,
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
                   ),
                   child: Text(l10n.goBack),
                 ),
@@ -119,8 +120,8 @@ class _ResultScreenState extends State<ResultScreen> {
 
     if (result == null) {
       return Scaffold(
-        backgroundColor: AppColors.navyDark,
-        body: Center(child: CircularProgressIndicator(color: AppColors.gold)),
+        backgroundColor: AppColors.bg,
+        body: Center(child: CircularProgressIndicator(color: AppColors.primary)),
       );
     }
 
@@ -136,12 +137,12 @@ class _ResultScreenState extends State<ResultScreen> {
         : [];
 
     return Scaffold(
-      backgroundColor: AppColors.navyDark,
+      backgroundColor: AppColors.bg,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.bg,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(l10n.investmentResults, style: AppTextStyles.appBarTitle),
@@ -161,10 +162,10 @@ class _ResultScreenState extends State<ResultScreen> {
             LiquidGlass(
               blur: 10,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: AppColors.surface,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: Colors.white.withOpacity(0.18),
+                  color: AppColors.border,
                   width: 1.5,
                 ),
               ),
@@ -176,7 +177,7 @@ class _ResultScreenState extends State<ResultScreen> {
                     children: [
                       Icon(
                         Icons.calendar_today,
-                        color: AppColors.gold,
+                        color: AppColors.primary,
                         size: 20,
                       ),
                       SizedBox(width: 12),
@@ -187,7 +188,7 @@ class _ResultScreenState extends State<ResultScreen> {
                             provider.config.yearsAgo,
                           ),
                           style: AppTextStyles.resultStatValue.copyWith(
-                            color: AppColors.slate300,
+                            color: AppColors.textSecondary,
                             fontSize: 14,
                           ),
                         ),
@@ -198,16 +199,17 @@ class _ResultScreenState extends State<ResultScreen> {
                     SizedBox(height: 12),
                     Row(
                       children: [
-                        Text(
-                          provider.selectedAsset!.icon,
-                          style: TextStyle(fontSize: 20),
+                        AssetIcon(
+                          assetId: provider.selectedAsset!.id,
+                          type: provider.selectedAsset!.type,
+                          size: 20,
                         ),
                         SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             provider.assetNameForLocale(),
                             style: AppTextStyles.resultStatValue.copyWith(
-                              color: AppColors.slate300,
+                              color: AppColors.textSecondary,
                               fontSize: 14,
                             ),
                           ),
@@ -247,10 +249,10 @@ class _ResultScreenState extends State<ResultScreen> {
                   ? LiquidGlass(
                       blur: 10,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                        color: AppColors.surface,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.18),
+                          color: AppColors.border,
                           width: 1.5,
                         ),
                       ),
@@ -301,15 +303,15 @@ class _ResultScreenState extends State<ResultScreen> {
                   width: double.infinity,
                   padding: EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: AppColors.gold.withOpacity(0.15),
+                    color: AppColors.primarySoft,
                     border: Border.all(
-                      color: AppColors.gold.withOpacity(0.5),
+                      color: AppColors.primary.withOpacity(0.35),
                       width: 1.5,
                     ),
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.gold.withOpacity(0.2),
+                        color: AppColors.primary.withOpacity(0.2),
                         blurRadius: 20,
                         offset: Offset(0, 10),
                       ),
@@ -363,14 +365,14 @@ class _ResultScreenState extends State<ResultScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.share, color: AppColors.navyDark),
+                              Icon(Icons.share, color: Colors.white),
                               SizedBox(width: 8),
                               Flexible(
                                 child: Text(
                                   l10n.share,
                                   style: AppTextStyles.buttonTextPrimary
                                       .copyWith(
-                                        color: AppColors.navyDark,
+                                        color: Colors.white,
                                         fontSize: 16,
                                       ),
                                   textAlign: TextAlign.center,
@@ -411,14 +413,14 @@ class _ResultScreenState extends State<ResultScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.arrow_back, color: AppColors.navyDark),
+                              Icon(Icons.arrow_back, color: Colors.white),
                               SizedBox(width: 8),
                               Flexible(
                                 child: Text(
                                   l10n.retirementSimulation,
                                   style: AppTextStyles.buttonTextPrimary
                                       .copyWith(
-                                        color: AppColors.navyDark,
+                                        color: Colors.white,
                                         fontSize: 16,
                                       ),
                                   textAlign: TextAlign.center,
@@ -447,7 +449,7 @@ class _ResultScreenState extends State<ResultScreen> {
     String currencySymbol,
   ) {
     if (series.length < 2) {
-      return Center(child: CircularProgressIndicator(color: AppColors.gold));
+      return Center(child: CircularProgressIndicator(color: AppColors.primary));
     }
 
     return ComparisonChart(series: series, currencySymbol: currencySymbol);
@@ -467,10 +469,8 @@ class _ResultScreenState extends State<ResultScreen> {
     final gainPositive = gain >= 0;
     final gainText =
         "${gainPositive ? '+' : '-'}${currencyFormat.format(gain.abs())}";
-    final textColor = summary.highlight ? AppColors.navyDark : Colors.white;
-    final secondaryTextColor = summary.highlight
-        ? AppColors.navyDark.withValues(alpha: 0.7)
-        : AppColors.slate300;
+    final textColor = AppColors.textPrimary;
+    final secondaryTextColor = AppColors.textSecondary;
 
     final cardContent = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -488,8 +488,9 @@ class _ResultScreenState extends State<ResultScreen> {
               SizedBox(width: 8),
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: SelectedButtonStyle.solidBoxDecoration(
-                  BorderRadius.circular(999),
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(l10n.bestReturn, style: AppTextStyles.badgeText),
               ),
@@ -508,29 +509,18 @@ class _ResultScreenState extends State<ResultScreen> {
                 color: textColor,
               ),
             ),
-            Text(
+              Text(
               "${result.yieldRate >= 0 ? '+' : ''}${percentFormat.format(result.yieldRate / 100)}",
               style: AppTextStyles.resultCardYield.copyWith(
-                color: summary.highlight
-                    ? (result.yieldRate >= 0
-                          ? const Color.fromARGB(
-                              255,
-                              210,
-                              55,
-                              73,
-                            ).withValues(alpha: 0.9)
-                          : Colors.red.shade800)
-                    : (result.yieldRate >= 0
-                          ? AppColors.success
-                          : Colors.redAccent),
+                color: result.yieldRate >= 0
+                    ? AppColors.success
+                    : Colors.redAccent,
               ),
             ),
           ],
         ),
         Divider(
-          color: summary.highlight
-              ? AppColors.navyDark.withValues(alpha: 0.1)
-              : AppColors.slate700,
+          color: AppColors.border,
         ),
         SizedBox(height: 14),
         IntrinsicHeight(
@@ -569,7 +559,7 @@ class _ResultScreenState extends State<ResultScreen> {
             children: [
               Icon(
                 Icons.savings_outlined,
-                color: summary.highlight ? AppColors.navyDark : AppColors.gold,
+                color: AppColors.primary,
                 size: 16,
               ),
               SizedBox(width: 8),
@@ -598,27 +588,21 @@ class _ResultScreenState extends State<ResultScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         summary.highlight
-            ? ClipRRect(
-                borderRadius: BorderRadius.circular(24),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.all(20),
-                    decoration: SelectedButtonStyle.solidBoxDecoration(
-                      BorderRadius.circular(24),
-                    ),
-                    child: cardContent,
-                  ),
+            ? Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(20),
+                decoration: SelectedButtonStyle.softSelectedDecoration(
+                  BorderRadius.circular(24),
                 ),
+                child: cardContent,
               )
             : LiquidGlass(
                 blur: 10,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: AppColors.surface,
                   borderRadius: BorderRadius.circular(24),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.18),
+                    color: AppColors.border,
                     width: 1.5,
                   ),
                 ),
@@ -671,20 +655,17 @@ class _ResultScreenState extends State<ResultScreen> {
   }) {
     // value가 양수(+)인지 확인
     final isPositive = value.startsWith('+');
-    final valueColor = highlight
-        ? (isPositive
-              ? AppColors.navyDark.withValues(alpha: 0.9)
-              : Colors.red.shade800)
-        : (isPositive ? AppColors.success : Colors.redAccent);
+    final valueColor = isPositive ? AppColors.success : Colors.redAccent;
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: highlight
-          ? SelectedButtonStyle.solidBoxDecoration(BorderRadius.circular(16))
-          : BoxDecoration(
-              color: AppColors.navyDark.withValues(alpha: 0.4),
-              borderRadius: BorderRadius.circular(16),
-            ),
+      decoration: BoxDecoration(
+        color: highlight ? AppColors.primarySoft : AppColors.bg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: highlight ? AppColors.primary.withValues(alpha: 0.35) : AppColors.border,
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
@@ -715,7 +696,7 @@ class _ResultScreenState extends State<ResultScreen> {
     final List<ComparisonSeries> series = [
       ComparisonSeries(
         label: l10n.singleInvestment,
-        color: AppColors.gold,
+        color: AppColors.primary,
         spots: singleResult.valueSpots,
         highlightStart: true,
         renderPriority: 2,

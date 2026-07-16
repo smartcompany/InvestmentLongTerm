@@ -19,19 +19,19 @@ class SettingsScreen extends StatelessWidget {
       listenable: CurrencyProvider.shared,
       builder: (context, _) {
         return Scaffold(
-          backgroundColor: AppColors.navyDark,
+          backgroundColor: AppColors.bg,
           appBar: AppBar(
-            backgroundColor: Colors.transparent,
+            backgroundColor: AppColors.bg,
             elevation: 0,
             leading: IconButton(
-              icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+              icon: const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(l10n.settings, style: AppTextStyles.appBarTitle),
             centerTitle: true,
           ),
           body: SingleChildScrollView(
-            padding: EdgeInsets.all(24),
+            padding: const EdgeInsets.all(24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -39,18 +39,15 @@ class SettingsScreen extends StatelessWidget {
                   l10n.currencySettings,
                   style: AppTextStyles.chartSectionTitle,
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 LiquidGlass(
                   blur: 10,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: AppColors.surface,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.18),
-                      width: 1.5,
-                    ),
+                    border: Border.all(color: AppColors.border, width: 1.5),
                   ),
-                  padding: EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(16),
                   child: _buildCurrencyDropdown(
                     context,
                     CurrencyProvider.shared,
@@ -75,7 +72,6 @@ class SettingsScreen extends StatelessWidget {
     final selectedCurrency = currencyProvider.selectedCurrency;
     final defaultSymbol = currencyProvider.getCurrencySymbol();
 
-    // 통화 옵션 리스트
     final currencyOptions = [
       {'symbol': null, 'label': l10n.currencyDefault},
       {'symbol': '₩', 'label': l10n.currencyKRW},
@@ -87,14 +83,14 @@ class SettingsScreen extends StatelessWidget {
     return DropdownButton<String?>(
       value: selectedCurrency,
       isExpanded: true,
-      dropdownColor: AppColors.navyMedium,
-      style: TextStyle(
-        color: Colors.white,
+      dropdownColor: AppColors.surface,
+      style: const TextStyle(
+        color: AppColors.textPrimary,
         fontSize: 16,
         fontWeight: FontWeight.bold,
       ),
-      icon: Icon(Icons.arrow_drop_down, color: AppColors.gold),
-      underline: Container(height: 2, color: AppColors.gold),
+      icon: const Icon(Icons.arrow_drop_down, color: AppColors.primary),
+      underline: Container(height: 2, color: AppColors.primary),
       items: currencyOptions.map((option) {
         final symbol = option['symbol'];
         final label = option['label'] as String;
@@ -108,19 +104,18 @@ class SettingsScreen extends StatelessWidget {
                 child: Text(
                   label,
                   style: TextStyle(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontSize: 16,
-                    fontWeight: isSelected
-                        ? FontWeight.bold
-                        : FontWeight.normal,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
                   ),
                 ),
               ),
               if (symbol != null)
                 Text(
                   symbol,
-                  style: TextStyle(
-                    color: AppColors.gold,
+                  style: const TextStyle(
+                    color: AppColors.primary,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
@@ -128,58 +123,57 @@ class SettingsScreen extends StatelessWidget {
               else
                 Text(
                   defaultSymbol,
-                  style: TextStyle(color: AppColors.slate400, fontSize: 16),
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 16,
+                  ),
                 ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               if (isSelected)
-                Icon(Icons.check_circle, color: AppColors.gold, size: 20),
+                const Icon(Icons.check_circle, color: AppColors.primary, size: 20),
             ],
           ),
         );
       }).toList(),
       onChanged: (String? newValue) async {
-        // 통화 변경 전에 자산이 있는지 확인
         final myAssetsProvider = context.read<MyAssetsProvider>();
         if (myAssetsProvider.assets.isNotEmpty) {
-          // 자산이 있으면 경고 다이얼로그 표시
           final shouldProceed = await showDialog<bool>(
             context: context,
             builder: (context) => AlertDialog(
-              backgroundColor: AppColors.navyMedium,
+              backgroundColor: AppColors.surface,
               title: Text(
                 l10n.currencyChangeWarning,
-                style: TextStyle(color: Colors.white),
+                style: const TextStyle(color: AppColors.textPrimary),
               ),
               content: Text(
                 l10n.currencyChangeMessage,
-                style: TextStyle(color: AppColors.slate300),
+                style: const TextStyle(color: AppColors.textSecondary),
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
                   child: Text(
                     l10n.cancel,
-                    style: TextStyle(color: AppColors.slate400),
+                    style: const TextStyle(color: AppColors.textSecondary),
                   ),
                 ),
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(true),
                   child: Text(
                     l10n.understand,
-                    style: TextStyle(color: AppColors.gold),
+                    style: const TextStyle(color: AppColors.primary),
                   ),
                 ),
               ],
             ),
           );
 
-          // 사용자가 취소했으면 통화 변경하지 않음
           if (shouldProceed != true) {
             return;
           }
         }
 
-        // 통화 변경
         if (newValue == null) {
           await CurrencyProvider.shared.resetToDefault(localeCode);
         } else {

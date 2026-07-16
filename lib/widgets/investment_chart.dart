@@ -23,7 +23,7 @@ class InvestmentChart extends StatelessWidget {
           LineChartBarData(
             spots: investedSpots,
             isCurved: true,
-            color: AppColors.slate700,
+            color: AppColors.border,
             barWidth: 2,
             isStrokeCapRound: true,
             dotData: FlDotData(show: false),
@@ -32,19 +32,19 @@ class InvestmentChart extends StatelessWidget {
           LineChartBarData(
             spots: valueSpots,
             isCurved: true,
-            color: AppColors.gold,
+            color: AppColors.primary,
             barWidth: 4,
             isStrokeCapRound: true,
             dotData: FlDotData(show: false),
             belowBarData: BarAreaData(
               show: true,
-              color: AppColors.gold.withValues(alpha: 0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
             ),
           ),
         ],
         lineTouchData: LineTouchData(
           touchTooltipData: LineTouchTooltipData(
-            getTooltipColor: (touchedSpot) => AppColors.navyMedium,
+            getTooltipColor: (touchedSpot) => AppColors.navyDark,
             tooltipPadding: EdgeInsets.all(12),
             tooltipMargin: 16,
             getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
@@ -54,8 +54,8 @@ class InvestmentChart extends StatelessWidget {
                   '\$${flSpot.y.toStringAsFixed(0)}',
                   TextStyle(
                     color: barSpot.barIndex == 1
-                        ? AppColors.gold
-                        : AppColors.slate400,
+                        ? AppColors.primary
+                        : AppColors.textSecondary,
                     fontWeight: FontWeight.bold,
                   ),
                 );

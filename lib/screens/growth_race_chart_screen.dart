@@ -117,25 +117,25 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
     final appProvider = context.watch<AppStateProvider>();
 
     return Scaffold(
-      backgroundColor: AppColors.navyDark,
+      backgroundColor: AppColors.bg,
       appBar: AppBar(
-        backgroundColor: AppColors.navyDark,
+        backgroundColor: AppColors.bg,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () {
             provider.stopRace();
             Navigator.of(context).pop();
           },
         ),
-        title: Text(l10n.growthRace, style: TextStyle(color: Colors.white)),
+        title: Text(l10n.growthRace, style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
       ),
       body: SafeArea(
         child: provider.priceData.isEmpty
             ? Center(
                 child: Text(
                   '데이터를 불러오는 중...',
-                  style: TextStyle(color: AppColors.slate400),
+                  style: TextStyle(color: AppColors.textSecondary),
                 ),
               )
             : _buildRaceChart(provider, appProvider, localeCode, l10n),
@@ -183,16 +183,16 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
       } catch (_) {}
     }
 
-    // 색상은 순위가 아니라 선택 순서 기준으로 고정 (그래프·종목명 동일)
+    // 색상은 순위가 아니라 선택 순서 기준으로 고정 (어두운 캔버스에서도 구분되게 밝은 톤)
     const colors = [
-      AppColors.gold,
-      AppColors.success,
-      Colors.blue,
-      Colors.purple,
-      Colors.pink,
-      Colors.orange,
-      Colors.cyan,
-      Colors.teal,
+      Color(0xFF5B8FF7), // primary light
+      Color(0xFF4ADE80), // green
+      Color(0xFF38BDF8), // sky
+      Color(0xFFC084FC), // purple
+      Color(0xFFF472B6), // pink
+      Color(0xFFFB923C), // orange
+      Color(0xFF22D3EE), // cyan
+      Color(0xFF2DD4BF), // teal
     ];
     final assetColors = <String, Color>{};
     var colorIndex = 0;
@@ -317,18 +317,25 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
                   ? Center(
                       child: Text(
                         '데이터를 불러오는 중...',
-                        style: TextStyle(color: AppColors.slate400),
+                        style: TextStyle(color: AppColors.textSecondary),
                       ),
                     )
-                  : RaceChart(
-                      series: raceSeries,
-                      maxX: hasXData ? maxX : 0.0,
-                      minX: hasXData ? minX : 0.0,
-                      maxY: maxY,
-                      minY: minY,
-                      raceStartX: hasRaceRange ? raceStartX : minX,
-                      raceEndX: hasRaceRange ? raceEndX : maxX,
-                      isRaceComplete: raceComplete,
+                  : Container(
+                      decoration: BoxDecoration(
+                        color: AppColors.navyDark,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: RaceChart(
+                        series: raceSeries,
+                        maxX: hasXData ? maxX : 0.0,
+                        minX: hasXData ? minX : 0.0,
+                        maxY: maxY,
+                        minY: minY,
+                        raceStartX: hasRaceRange ? raceStartX : minX,
+                        raceEndX: hasRaceRange ? raceEndX : maxX,
+                        isRaceComplete: raceComplete,
+                      ),
                     ),
             ),
           ),
@@ -402,8 +409,8 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
           );
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.gold,
-          foregroundColor: AppColors.navyDark,
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
           padding: EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),

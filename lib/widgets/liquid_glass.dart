@@ -1,79 +1,56 @@
 import 'package:flutter/material.dart';
-import 'dart:ui';
 import '../utils/colors.dart';
 
-/// 선택된 버튼/카드의 공통 스타일 설정
+/// 선택된 버튼/카드의 공통 스타일 (라이트·블루)
 class SelectedButtonStyle {
-  /// 선택된 버튼의 배경색
-  static const Color backgroundColor = AppColors.goldLight;
-
-  /// 선택된 버튼의 투명도
-  static const double opacity = 0.6;
-
-  /// 선택된 버튼의 테두리 색상
-  static Color get borderColor => AppColors.gold.withValues(alpha: 0.7);
-
-  /// 선택된 버튼의 테두리 두께
+  static const Color backgroundColor = AppColors.primarySoft;
+  static const double opacity = 1.0;
+  static Color get borderColor => AppColors.primary;
   static const double borderWidth = 2.0;
 
-  /// 선택된 버튼의 그라디언트 색상
   static List<Color> get gradientColors => [
-    AppColors.gold.withValues(alpha: 0.6),
-    AppColors.goldLight.withValues(alpha: 0.5),
+    AppColors.primary,
+    AppColors.primaryLight,
   ];
 
-  /// 선택된 버튼의 그라디언트 (LiquidGlass용)
   static LinearGradient get gradient => LinearGradient(
     colors: gradientColors,
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  /// 선택된 버튼의 그라디언트 (Container용 - 더 불투명)
-  static LinearGradient get solidGradient => LinearGradient(
-    colors: [
-      AppColors.gold.withOpacity(0.9),
-      AppColors.goldLight.withOpacity(0.85),
-    ],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
+  static LinearGradient get solidGradient => gradient;
 
-  /// 선택된 버튼의 테두리
   static Border get border =>
       Border.all(color: borderColor, width: borderWidth);
 
-  /// 선택된 버튼의 그림자
   static List<BoxShadow> get boxShadow => [
     BoxShadow(
-      color: AppColors.gold.withValues(alpha: 0.4),
-      blurRadius: 20,
-      offset: Offset(0, 10),
+      color: AppColors.primary.withValues(alpha: 0.18),
+      blurRadius: 12,
+      offset: const Offset(0, 4),
     ),
   ];
 
-  /// 선택된 버튼의 BoxDecoration (더 불투명한 그라디언트 사용)
   static BoxDecoration solidBoxDecoration([BorderRadius? borderRadius]) {
-    final gradient = LinearGradient(
-      colors: [
-        AppColors.gold.withOpacity(0.9),
-        AppColors.goldLight.withOpacity(0.85),
-      ],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    );
-
     return BoxDecoration(
-      gradient: gradient,
-      borderRadius: borderRadius ?? BorderRadius.circular(12),
-      border: border,
+      color: AppColors.primary,
+      borderRadius: borderRadius ?? BorderRadius.circular(16),
+      border: Border.all(color: AppColors.primary, width: borderWidth),
       boxShadow: boxShadow,
+    );
+  }
+
+  static BoxDecoration softSelectedDecoration([BorderRadius? borderRadius]) {
+    return BoxDecoration(
+      color: AppColors.primarySoft,
+      borderRadius: borderRadius ?? BorderRadius.circular(16),
+      border: Border.all(color: AppColors.primary, width: borderWidth),
     );
   }
 }
 
-/// Liquid Glass 효과를 제공하는 위젯
-/// iOS 18+ 스타일의 glass morphism 효과를 구현합니다.
+/// 라이트 카드 컨테이너 (구 LiquidGlass 대체)
 class LiquidGlass extends StatelessWidget {
   final Widget child;
   final double? blur;
@@ -83,7 +60,7 @@ class LiquidGlass extends StatelessWidget {
   const LiquidGlass({
     super.key,
     required this.child,
-    this.blur = 10.0,
+    this.blur,
     required this.decoration,
     this.padding,
   });
@@ -93,21 +70,26 @@ class LiquidGlass extends StatelessWidget {
     final borderRadius =
         decoration.borderRadius as BorderRadius? ?? BorderRadius.circular(20);
 
-    return ClipRRect(
-      borderRadius: borderRadius,
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: blur!, sigmaY: blur!),
-        child: Container(
-          padding: padding,
-          decoration: decoration,
-          child: child,
-        ),
+    return Container(
+      padding: padding,
+      decoration: decoration.copyWith(
+        color: decoration.color ?? AppColors.surface,
+        borderRadius: borderRadius,
+        boxShadow: decoration.boxShadow ??
+            [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
       ),
+      child: child,
     );
   }
 }
 
-/// 선택된 상태의 Liquid Glass 버튼 스타일
+/// 선택 가능 카드 버튼
 class LiquidGlassButton extends StatelessWidget {
   final Widget child;
   final VoidCallback? onTap;
@@ -121,39 +103,38 @@ class LiquidGlassButton extends StatelessWidget {
     required this.child,
     this.onTap,
     this.isSelected = false,
-    this.blur = 30.0,
+    this.blur,
     this.borderRadius,
     this.padding,
   });
 
   @override
   Widget build(BuildContext context) {
-    final defaultBorderRadius = borderRadius ?? BorderRadius.circular(22);
-
-    // isSelected에 따라 공통 스타일 또는 기본 스타일 사용
-    final borderColor = isSelected
-        ? SelectedButtonStyle.borderColor
-        : Colors.white.withValues(alpha: 0.25);
-
-    final borderWidth = isSelected ? SelectedButtonStyle.borderWidth : 1.5;
+    final radius = borderRadius ?? BorderRadius.circular(20);
 
     final decoration = isSelected
-        ? SelectedButtonStyle.solidBoxDecoration(defaultBorderRadius)
+        ? SelectedButtonStyle.softSelectedDecoration(radius)
         : BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.2),
-          borderRadius: defaultBorderRadius,
-            border: Border.all(color: borderColor, width: borderWidth),
-      );
+            color: AppColors.surface,
+            borderRadius: radius,
+            border: Border.all(color: AppColors.border, width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          );
 
-      return GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: LiquidGlass(
-          blur: blur,
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: LiquidGlass(
         decoration: decoration,
-          padding: padding,
-          child: child,
-        ),
-      );
+        padding: padding,
+        child: child,
+      ),
+    );
   }
 }

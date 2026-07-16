@@ -18,9 +18,9 @@ class CommonShareUI {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.navyMedium,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.slate700),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -30,17 +30,17 @@ class CommonShareUI {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: AppColors.gold.withValues(alpha: 0.15),
+                  color: AppColors.primarySoft,
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(Icons.ios_share, color: AppColors.gold),
+                child: Icon(Icons.ios_share, color: AppColors.primary),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   title,
                   style: AppTextStyles.resultCardTitle.copyWith(
-                    color: Colors.white,
+                    color: AppColors.textPrimary,
                     fontSize: 18,
                   ),
                 ),
@@ -51,7 +51,7 @@ class CommonShareUI {
           Text(
             description,
             style: AppTextStyles.homeSubDescription.copyWith(
-              color: AppColors.slate300,
+              color: AppColors.textSecondary,
               fontSize: 14,
             ),
           ),
@@ -64,8 +64,8 @@ class CommonShareUI {
                 shareText: shareText,
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.gold,
-                foregroundColor: AppColors.navyDark,
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -105,11 +105,11 @@ class CommonShareUI {
               child: Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.12),
+                  color: AppColors.surface,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
                   border: Border(
                     top: BorderSide(
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: AppColors.border,
                       width: 1.5,
                     ),
                   ),
@@ -122,14 +122,14 @@ class CommonShareUI {
                         width: 40,
                         height: 4,
                         decoration: BoxDecoration(
-                          color: Colors.white24,
+                          color: AppColors.border,
                           borderRadius: BorderRadius.circular(999),
                         ),
                       ),
                       const SizedBox(height: 16),
                       Text(
                         l10n.shareResults,
-                        style: AppTextStyles.buttonTextPrimary,
+                        style: AppTextStyles.appBarTitle,
                       ),
                       const SizedBox(height: 20),
                       _ShareOptionTile(
@@ -253,10 +253,10 @@ class _ShareOptionTile extends StatelessWidget {
         child: Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.08),
+            color: AppColors.bg,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.15),
+              color: AppColors.border,
               width: 1.5,
             ),
           ),
@@ -265,21 +265,21 @@ class _ShareOptionTile extends StatelessWidget {
             leading: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AppColors.gold.withValues(alpha: 0.15),
+                color: AppColors.primarySoft,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: AppColors.gold),
+              child: Icon(icon, color: AppColors.primary),
             ),
             title: Text(
               title,
               style: AppTextStyles.resultCardTitle.copyWith(
-                color: Colors.white,
+                color: AppColors.textPrimary,
               ),
             ),
             subtitle: Text(subtitle, style: AppTextStyles.chartLegend),
             trailing: const Icon(
               Icons.arrow_forward_ios,
-              color: Colors.white54,
+              color: AppColors.textSecondary,
             ),
           ),
         ),

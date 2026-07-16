@@ -33,7 +33,7 @@ class AssetPriceChart extends StatelessWidget {
       return Container(
         height: height ?? 200,
         child: Center(
-          child: Text('데이터가 없습니다', style: TextStyle(color: AppColors.slate400)),
+          child: Text('데이터가 없습니다', style: TextStyle(color: AppColors.textSecondary)),
         ),
       );
     }
@@ -47,7 +47,7 @@ class AssetPriceChart extends StatelessWidget {
                 horizontalInterval: _calculatePriceInterval(spots),
                 getDrawingHorizontalLine: (value) {
                   return FlLine(
-                    color: AppColors.slate700.withOpacity(0.2),
+                    color: AppColors.border.withOpacity(0.2),
                     strokeWidth: 1,
                   );
                 },
@@ -85,7 +85,7 @@ class AssetPriceChart extends StatelessWidget {
                               child: Text(
                                 DateFormat('MM/dd').format(date),
                                 style: TextStyle(
-                                  color: AppColors.slate400,
+                                  color: AppColors.textSecondary,
                                   fontSize: 10,
                                 ),
                               ),
@@ -103,7 +103,7 @@ class AssetPriceChart extends StatelessWidget {
                             return Text(
                               NumberFormat('#,###').format(value),
                               style: TextStyle(
-                                color: AppColors.slate400,
+                                color: AppColors.textSecondary,
                                 fontSize: 10,
                               ),
                             );
@@ -118,11 +118,11 @@ class AssetPriceChart extends StatelessWidget {
                 show: true,
                 border: Border(
                   bottom: BorderSide(
-                    color: AppColors.slate700.withOpacity(0.3),
+                    color: AppColors.border.withOpacity(0.3),
                     width: 1,
                   ),
                   left: BorderSide(
-                    color: AppColors.slate700.withOpacity(0.3),
+                    color: AppColors.border.withOpacity(0.3),
                     width: 1,
                   ),
                 ),
@@ -132,19 +132,19 @@ class AssetPriceChart extends StatelessWidget {
           LineChartBarData(
             spots: spots,
             isCurved: true,
-            color: AppColors.gold,
+            color: AppColors.primary,
             barWidth: 3,
             isStrokeCapRound: true,
             dotData: FlDotData(show: false),
             belowBarData: BarAreaData(
               show: true,
-              color: AppColors.gold.withOpacity(0.1),
+              color: AppColors.primary.withOpacity(0.1),
             ),
           ),
         ],
         lineTouchData: LineTouchData(
           touchTooltipData: LineTouchTooltipData(
-            getTooltipColor: (touchedSpot) => AppColors.navyMedium,
+            getTooltipColor: (touchedSpot) => AppColors.navyDark,
             tooltipPadding: EdgeInsets.all(12),
             tooltipMargin: 16,
             getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
@@ -174,7 +174,7 @@ class AssetPriceChart extends StatelessWidget {
               return touchedBarSpots.map((barSpot) {
                 return LineTooltipItem(
                   tooltipText,
-                  TextStyle(color: AppColors.gold, fontWeight: FontWeight.bold),
+                  TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
                 );
               }).toList();
             },
@@ -188,10 +188,10 @@ class AssetPriceChart extends StatelessWidget {
         height: height,
         child: LiquidGlass(
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: Colors.white.withOpacity(0.18),
+              color: AppColors.border,
               width: 1.5,
             ),
           ),
@@ -203,9 +203,9 @@ class AssetPriceChart extends StatelessWidget {
 
     return LiquidGlass(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.18), width: 1.5),
+        border: Border.all(color: AppColors.border, width: 1.5),
       ),
       padding: EdgeInsets.all(16),
       child: chartWidget,

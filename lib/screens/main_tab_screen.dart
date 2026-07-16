@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dart:ui';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'home_screen.dart';
 import 'retire_simulator.dart';
 import 'my_assets_screen.dart';
@@ -7,11 +8,21 @@ import 'growth_race_screen.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/colors.dart';
 import '../services/ad_service.dart';
+import '../providers/my_assets_provider.dart';
+import '../providers/currency_provider.dart';
+import '../widgets/asset_icon.dart';
 
 class MainTabScreen extends StatefulWidget {
   final int? initialIndex;
 
-  const MainTabScreen({super.key, this.initialIndex});
+  /// true면 지금 내 자산 탭 진입 시 광고 게이트(자산 미리보기)를 표시합니다.
+  final bool openMyAssetsGate;
+
+  const MainTabScreen({
+    super.key,
+    this.initialIndex,
+    this.openMyAssetsGate = false,
+  });
 
   @override
   State<MainTabScreen> createState() => _MainTabScreenState();
@@ -19,9 +30,9 @@ class MainTabScreen extends StatefulWidget {
 
 class _MainTabScreenState extends State<MainTabScreen> {
   late int _currentIndex;
-  bool _showMyAssetsButton = false;
+  bool _showMyAssetsGate = false;
   bool _isLoadingAd = false;
-  bool _hasShownAdButtonThisSession = false; // 앱 실행 중에만 유지
+  bool _hasUnlockedMyAssetsThisSession = false;
 
   List<Widget> get _screens => [
     const HomeScreen(),
@@ -33,61 +44,48 @@ class _MainTabScreenState extends State<MainTabScreen> {
   @override
   void initState() {
     super.initState();
-    // 초기 탭 인덱스 설정
     _currentIndex = widget.initialIndex ?? 0;
-  }
-
-  void _handleMyAssetsTabTap() {
-    // 앱 실행 중 한 번만 버튼 표시 (광고 없이)
-    if (!_hasShownAdButtonThisSession) {
-      setState(() {
-        _currentIndex = 3; // 탭 인덱스 즉시 업데이트 (성장률 경주 탭 추가로 인덱스 변경)
-        _showMyAssetsButton = true;
-      });
-    } else {
-      // 이미 본 경우 바로 페이지로 이동
-      setState(() {
-        _currentIndex = 3;
-        _showMyAssetsButton = false;
-      });
+    if (widget.openMyAssetsGate && _currentIndex == 3) {
+      _showMyAssetsGate = true;
     }
   }
 
-  Future<void> _handleViewMyAssetsButton() async {
-    // 버튼을 누르면 광고를 보고 페이지 진입
-    setState(() {
-      _isLoadingAd = true;
-    });
+  void _handleMyAssetsTabTap() {
+    if (_hasUnlockedMyAssetsThisSession) {
+      setState(() {
+        _currentIndex = 3;
+        _showMyAssetsGate = false;
+      });
+      return;
+    }
 
-    try {
-      await AdService.shared.showFullScreenAd(
-        onAdDismissed: () {
-          if (!mounted) return;
-          setState(() {
-            _isLoadingAd = false;
-            _showMyAssetsButton = false;
-            _hasShownAdButtonThisSession = true; // 앱 실행 중에만 유지
-            _currentIndex = 3; // 성장률 경주 탭 추가로 인덱스 변경
-          });
-        },
-        onAdFailedToShow: () {
-          if (!mounted) return;
-          setState(() {
-            _isLoadingAd = false;
-            _showMyAssetsButton = false;
-            _hasShownAdButtonThisSession = true; // 앱 실행 중에만 유지
-            _currentIndex = 3; // 성장률 경주 탭 추가로 인덱스 변경
-          });
-        },
-      );
-    } catch (e) {
+    // 광고 전: 게이트 화면에서 시뮬레이션/등록 자산 미리보기
+    setState(() {
+      _currentIndex = 3;
+      _showMyAssetsGate = true;
+    });
+  }
+
+  Future<void> _handleViewMyAssetsButton() async {
+    setState(() => _isLoadingAd = true);
+
+    void unlock() {
       if (!mounted) return;
       setState(() {
         _isLoadingAd = false;
-        _showMyAssetsButton = false;
-        _hasShownAdButtonThisSession = true; // 앱 실행 중에만 유지
-        _currentIndex = 3; // 성장률 경주 탭 추가로 인덱스 변경
+        _showMyAssetsGate = false;
+        _hasUnlockedMyAssetsThisSession = true;
+        _currentIndex = 3;
       });
+    }
+
+    try {
+      await AdService.shared.showFullScreenAd(
+        onAdDismissed: unlock,
+        onAdFailedToShow: unlock,
+      );
+    } catch (_) {
+      unlock();
     }
   }
 
@@ -96,116 +94,200 @@ class _MainTabScreenState extends State<MainTabScreen> {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      extendBody: true, // 탭바 뒤로 내용이 스크롤되도록 설정
+      extendBody: true,
       body: Stack(
         children: [
           IndexedStack(index: _currentIndex, children: _screens),
-          // 첫 진입 시 "내 자산 상태 보기" 버튼 오버레이
-          if (_showMyAssetsButton)
-            Container(
-              color: Colors.black,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      l10n.myAssets,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 32),
-                      child: Text(
-                        l10n.myAssetsSubtitle,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.8),
-                          fontSize: 16,
-                          height: 1.5,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 32),
-                    ElevatedButton(
-                      onPressed: _isLoadingAd
-                          ? null
-                          : _handleViewMyAssetsButton,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.gold,
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 32,
-                          vertical: 16,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: _isLoadingAd
-                          ? SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  AppColors.navyDark,
-                                ),
-                              ),
-                            )
-                          : Text(
-                              l10n.viewMyAssetsStatus,
-                              style: TextStyle(
-                                color: AppColors.navyDark,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          if (_showMyAssetsGate) _buildMyAssetsGate(l10n),
         ],
       ),
-      bottomNavigationBar: ClipRRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: AppColors.surface.withValues(alpha: 0.96),
+          border: Border(top: BorderSide(color: AppColors.border)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 12,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          top: false,
           child: Container(
-            color: Colors.transparent,
-            child: SafeArea(
-              top: false,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildTabItem(
-                      icon: Icons.history,
-                      label: l10n.pastAssetSimulation,
-                      index: 0,
-                    ),
-                    _buildTabItem(
-                      icon: Icons.trending_up,
-                      label: l10n.retirementSimulation,
-                      index: 1,
-                    ),
-                    _buildTabItem(
-                      icon: Icons.compare_arrows,
-                      label: l10n.growthRace,
-                      index: 2,
-                    ),
-                    _buildTabItem(
-                      icon: Icons.account_balance_wallet,
-                      label: l10n.myAssets,
-                      index: 3,
-                    ),
-                  ],
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildTabItem(
+                  icon: Icons.history,
+                  label: l10n.pastAssetSimulation,
+                  index: 0,
+                ),
+                _buildTabItem(
+                  icon: Icons.trending_up,
+                  label: l10n.retirementSimulation,
+                  index: 1,
+                ),
+                _buildTabItem(
+                  icon: Icons.compare_arrows,
+                  label: l10n.growthRace,
+                  index: 2,
+                ),
+                _buildTabItem(
+                  icon: Icons.account_balance_wallet,
+                  label: l10n.myAssets,
+                  index: 3,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 광고 보기 전 게이트: 시뮬레이션에서 넘긴 자산 목록을 보여줌
+  Widget _buildMyAssetsGate(AppLocalizations l10n) {
+    final myAssets = context.watch<MyAssetsProvider>();
+    final currencySymbol = CurrencyProvider.shared.getCurrencySymbol();
+    final currencyFormat = NumberFormat.currency(
+      symbol: currencySymbol,
+      decimalDigits: 0,
+    );
+
+    return Container(
+      color: AppColors.bg,
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                l10n.myAssets,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: AppColors.textPrimary,
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
+              const SizedBox(height: 8),
+              Text(
+                l10n.myAssetsSubtitle,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                  height: 1.45,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: myAssets.assets.isEmpty
+                    ? Center(
+                        child: Text(
+                          l10n.noAssetsRegistered,
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 15,
+                          ),
+                        ),
+                      )
+                    : ListView.separated(
+                        itemCount: myAssets.assets.length,
+                        separatorBuilder: (context, index) =>
+                            const SizedBox(height: 10),
+                        itemBuilder: (context, index) {
+                          final asset = myAssets.assets[index];
+                          final amount = asset.currentValue ?? asset.initialAmount;
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: AppColors.border),
+                            ),
+                            child: Row(
+                              children: [
+                                AssetIcon(assetId: asset.assetId, size: 26),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        asset.assetName,
+                                        style: const TextStyle(
+                                          color: AppColors.textPrimary,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                      if (asset.assetId != 'cash')
+                                        Text(
+                                          '${l10n.quantity}: ${NumberFormat('#,##0.####').format(asset.quantity)}${l10n.retireQtyUnit}',
+                                          style: const TextStyle(
+                                            color: AppColors.textSecondary,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                                Text(
+                                  currencyFormat.format(amount),
+                                  style: const TextStyle(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: _isLoadingAd ? null : _handleViewMyAssetsButton,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  child: _isLoadingAd
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          l10n.viewMyAssetsStatus,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -226,36 +308,37 @@ class _MainTabScreenState extends State<MainTabScreen> {
           highlightColor: Colors.transparent,
           onTap: () {
             if (index == 3) {
-              // "지금 내 자산" 탭 클릭 시
               _handleMyAssetsTabTap();
             } else {
               setState(() {
                 _currentIndex = index;
-                _showMyAssetsButton = false;
+                _showMyAssetsGate = false;
               });
             }
           },
           child: Container(
-            padding: EdgeInsets.symmetric(vertical: 4),
+            padding: const EdgeInsets.symmetric(vertical: 4),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   icon,
-                  color: isSelected ? AppColors.gold : AppColors.slate400,
+                  color:
+                      isSelected ? AppColors.primary : AppColors.textSecondary,
                   size: 22,
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 2),
                 Flexible(
                   child: Text(
                     label,
                     style: TextStyle(
-                      color: isSelected ? AppColors.gold : AppColors.slate400,
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.textSecondary,
                       fontSize: 10,
-                      fontWeight: isSelected
-                          ? FontWeight.bold
-                          : FontWeight.normal,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                     textAlign: TextAlign.center,
                     maxLines: 2,

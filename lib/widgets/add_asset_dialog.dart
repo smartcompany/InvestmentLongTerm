@@ -147,16 +147,16 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: isActive || isCompleted
-                ? AppColors.gold
-                : AppColors.slate700,
+                ? AppColors.primary
+                : AppColors.border,
           ),
           child: Center(
             child: isCompleted
-                ? Icon(Icons.check, color: AppColors.navyDark, size: 20)
+                ? Icon(Icons.check, color: Colors.white, size: 20)
                 : Text(
                     '${step + 1}',
                     style: TextStyle(
-                      color: isActive ? AppColors.navyDark : AppColors.slate400,
+                      color: isActive ? Colors.white : AppColors.textSecondary,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -167,8 +167,8 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
           label,
           style: TextStyle(
             color: isActive || isCompleted
-                ? AppColors.gold
-                : AppColors.slate400,
+                ? AppColors.primary
+                : AppColors.textSecondary,
             fontSize: 12,
           ),
         ),
@@ -187,7 +187,7 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
         Text(
           '자산 선택',
           style: TextStyle(
-            color: AppColors.slate300,
+            color: AppColors.textSecondary,
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
@@ -205,7 +205,7 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
         Text(
           l10n.initialAmount,
           style: TextStyle(
-            color: AppColors.slate300,
+            color: AppColors.textSecondary,
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
@@ -219,22 +219,22 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
           },
           decoration: InputDecoration(
             hintText: '0',
-            hintStyle: TextStyle(color: AppColors.slate400),
+            hintStyle: TextStyle(color: AppColors.textSecondary),
             suffixText: currencyUnit,
-            suffixStyle: TextStyle(color: AppColors.gold, fontSize: 20),
+            suffixStyle: TextStyle(color: AppColors.primary, fontSize: 20),
             filled: true,
-            fillColor: AppColors.slate800.withOpacity(0.5),
+            fillColor: AppColors.bg,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.gold, width: 2),
+              borderSide: BorderSide(color: AppColors.primary, width: 2),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.gold, width: 2),
+              borderSide: BorderSide(color: AppColors.primary, width: 2),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.gold, width: 2),
+              borderSide: BorderSide(color: AppColors.primary, width: 2),
             ),
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
@@ -253,14 +253,14 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
               );
             }),
           ],
-          style: TextStyle(color: Colors.white, fontSize: 20),
+          style: TextStyle(color: AppColors.textPrimary, fontSize: 20),
           textAlign: TextAlign.right,
         ),
         SizedBox(height: 24),
         Text(
           l10n.quantity,
           style: TextStyle(
-            color: AppColors.slate300,
+            color: AppColors.textSecondary,
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
@@ -274,20 +274,20 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
           },
           decoration: InputDecoration(
             hintText: '0',
-            hintStyle: TextStyle(color: AppColors.slate400),
+            hintStyle: TextStyle(color: AppColors.textSecondary),
             filled: true,
-            fillColor: AppColors.slate800.withOpacity(0.5),
+            fillColor: AppColors.bg,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.gold, width: 2),
+              borderSide: BorderSide(color: AppColors.primary, width: 2),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.gold, width: 2),
+              borderSide: BorderSide(color: AppColors.primary, width: 2),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.gold, width: 2),
+              borderSide: BorderSide(color: AppColors.primary, width: 2),
             ),
             contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           ),
@@ -324,7 +324,7 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
               return newValue;
             }),
           ],
-          style: TextStyle(color: Colors.white, fontSize: 20),
+          style: TextStyle(color: AppColors.textPrimary, fontSize: 20),
           textAlign: TextAlign.right,
         ),
       ],
@@ -380,7 +380,7 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
                   ? l10n.realEstate
                   : l10n.stock,
               style: TextStyle(
-                color: AppColors.slate300,
+                color: AppColors.textSecondary,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
@@ -413,7 +413,8 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
                     },
               child: AssetButton(
                 assetName: asset.displayName(),
-                icon: asset.icon,
+                assetId: asset.id,
+                type: asset.type,
                 isSelected: _selectedAssetId == asset.id,
                 isDisabled: _isLoading,
                 onTap: _isLoading
@@ -453,7 +454,7 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
                     Text(
                       isExpanded ? l10n.showLess : l10n.showMore,
                       style: TextStyle(
-                        color: AppColors.gold,
+                        color: AppColors.primary,
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
@@ -461,7 +462,7 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
                     SizedBox(width: 4),
                     Icon(
                       isExpanded ? Icons.expand_less : Icons.expand_more,
-                      color: AppColors.gold,
+                      color: AppColors.primary,
                       size: 20,
                     ),
                   ],
@@ -514,9 +515,9 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
             children: [
               LiquidGlass(
                 decoration: BoxDecoration(
-                  color: AppColors.navyDark.withOpacity(0.95),
+                  color: AppColors.surface,
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: AppColors.gold.withOpacity(0.3)),
+                  border: Border.all(color: AppColors.primary.withOpacity(0.3)),
                 ),
                 child: Container(
                   constraints: BoxConstraints(
@@ -535,13 +536,13 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
                           Text(
                             l10n.addAsset,
                             style: TextStyle(
-                              color: Colors.white,
+                              color: AppColors.textPrimary,
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           IconButton(
-                            icon: Icon(Icons.close, color: AppColors.slate400),
+                            icon: Icon(Icons.close, color: AppColors.textSecondary),
                             onPressed: _isLoading
                                 ? null
                                 : () => Navigator.pop(context),
@@ -560,8 +561,8 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
                             width: 40,
                             height: 2,
                             color: _currentStep >= 1
-                                ? AppColors.gold
-                                : AppColors.slate700,
+                                ? AppColors.primary
+                                : AppColors.border,
                           ),
                           _buildStepIndicator(1, '정보 입력'),
                         ],
@@ -595,7 +596,7 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
                                     },
                               child: Text(
                                 '이전',
-                                style: TextStyle(color: AppColors.slate400),
+                                style: TextStyle(color: AppColors.textSecondary),
                               ),
                             )
                           else
@@ -609,7 +610,7 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
                                     : () => Navigator.pop(context),
                                 child: Text(
                                   l10n.cancel,
-                                  style: TextStyle(color: AppColors.slate400),
+                                  style: TextStyle(color: AppColors.textSecondary),
                                 ),
                               ),
                               SizedBox(width: 12),
@@ -638,8 +639,8 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
                                                 ? () async => await _submit()
                                                 : null)),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.gold,
-                                  foregroundColor: AppColors.navyDark,
+                                  backgroundColor: AppColors.primary,
+                                  foregroundColor: Colors.white,
                                   padding: EdgeInsets.symmetric(
                                     horizontal: 32,
                                     vertical: 16,
@@ -673,7 +674,7 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
                       borderRadius: BorderRadius.circular(24),
                     ),
                     child: Center(
-                      child: CircularProgressIndicator(color: AppColors.gold),
+                      child: CircularProgressIndicator(color: AppColors.primary),
                     ),
                   ),
                 ),

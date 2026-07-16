@@ -359,6 +359,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get monthlyDetails => '月別詳細';
 
   @override
+  String get expandView => '展開する';
+
+  @override
   String yearLabel(int year) {
     return '$year年';
   }
@@ -498,10 +501,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get retirementQuestionEnd => '間遊んで食べられる？';
 
   @override
-  String get inflationRate => '연간 인플레이션율';
+  String get inflationRate => '年間インフレ率';
 
   @override
-  String get inflationRateDesc => '매년 생활비가 증가하는 비율을 설정하세요';
+  String get inflationRateDesc => '毎年の生活費の増加率を設定してください';
 
   @override
   String inflationRatePercent(double rate) {
@@ -509,10 +512,37 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get retireInlineEditHint => '青い枠をタップすると金額を変更できます';
+
+  @override
+  String get retireFormSubtitle => '現金と保有資産を入力し、毎月の支出を設定しましょう';
+
+  @override
+  String get retireCashLabel => '保有現金';
+
+  @override
+  String get retireHoldingsLabel => '保有資産';
+
+  @override
+  String get retireHoldingsEmpty => 'まだ資産がありません。株式や暗号資産などを追加してください';
+
+  @override
+  String get retireMonthlySpendLabel => '毎月の支出';
+
+  @override
+  String get retireTotalNetWorth => '総評価額';
+
+  @override
+  String get retireQtyUnit => '個';
+
+  @override
   String get adWillBeShown => '結果を見る前に広告が表示されます';
 
   @override
   String get myAssets => '現在の資産';
+
+  @override
+  String get manageInMyAssets => '資産管理へ';
 
   @override
   String get viewMyAssetsStatus => '広告を見て資産管理';
@@ -587,4 +617,48 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get watchAdAndStart => '広告を見て開始';
+
+  @override
+  String get landingCryptoSimTitle => '暗号資産シミュレーション';
+
+  @override
+  String get landingCryptoSimDesc => 'ビットコインなどをあの時買っていたらいくらだったか確認';
+
+  @override
+  String get landingMoreAssetsTitle => 'ほかの資産を見る';
+
+  @override
+  String get landingMoreAssetsDesc => '株式・ETF・コモディティなどから選べます';
+
+  @override
+  String get landingGuideTitle => '初めてですか？';
+
+  @override
+  String get landingGuideDesc => '使い方をかんたんに案内します';
+
+  @override
+  String get landingGuideSheetTitle => 'Time Capital ガイド';
+
+  @override
+  String get landingGuideStep1 => '気になる資産を選ぶ';
+
+  @override
+  String get landingGuideStep2 => '金額と期間を設定する';
+
+  @override
+  String get landingGuideStep3 => 'チャートと収益率を確認する';
+
+  @override
+  String get selectAssetToCompare => '比較する資産を選んでください';
+
+  @override
+  String get selectUpToAssets => '資産を選んで成長率を比較しましょう';
+
+  @override
+  String compareSelectedAssets(int count) {
+    return '$count件の資産を比較';
+  }
+
+  @override
+  String get selectAssetsTitle => '資産を選択';
 }

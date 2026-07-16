@@ -7,10 +7,13 @@ import 'dart:ui';
 import '../providers/retire_simulator_provider.dart';
 import '../providers/app_state_provider.dart';
 import '../providers/currency_provider.dart';
+import '../providers/my_assets_provider.dart';
 import '../models/asset_option.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
+import '../utils/retire_chart_style.dart';
 import '../widgets/liquid_glass.dart';
+import '../widgets/asset_icon.dart';
 import '../l10n/app_localizations.dart';
 import '../widgets/common_share_ui.dart';
 import '../services/ad_service.dart';
@@ -29,6 +32,7 @@ class _RetireSimulatorResultScreenState
     extends State<RetireSimulatorResultScreen> {
   bool _isMonthlyDetailsExpanded = false; // 월별 상세 내역 펼침 상태
   bool _hasRequestedReview = false;
+  bool _isImportingToMyAssets = false;
 
   @override
   void initState() {
@@ -81,12 +85,12 @@ class _RetireSimulatorResultScreenState
 
         if (totalPath.isEmpty) {
           return Scaffold(
-            backgroundColor: AppColors.navyDark,
+            backgroundColor: AppColors.bg,
             appBar: AppBar(
               backgroundColor: Colors.transparent,
               elevation: 0,
               leading: IconButton(
-                icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+                icon: Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
                 onPressed: () => Navigator.pop(context),
               ),
               title: Text(
@@ -98,7 +102,7 @@ class _RetireSimulatorResultScreenState
             body: Center(
               child: Text(
                 l10n.simulationResultNoData,
-                style: TextStyle(color: AppColors.slate400),
+                style: TextStyle(color: AppColors.textSecondary),
               ),
             ),
           );
@@ -111,7 +115,17 @@ class _RetireSimulatorResultScreenState
             .map((e) => FlSpot(e.key / 12.0, e.value))
             .toList();
 
-        // 각 자산별 그래프 데이터
+        // 애니메이션과 동일한 자산 색상 매핑
+        final orderedIds = provider.assets.map((a) => a.assetId).toList();
+        final nonCashIds =
+            orderedIds.where((id) => id != 'cash').toList();
+        final colorOrder =
+            nonCashIds.isNotEmpty ? nonCashIds : orderedIds;
+        final assetColorById = <String, Color>{
+          for (var i = 0; i < colorOrder.length; i++)
+            colorOrder[i]: RetireChartStyle.assetAt(i),
+        };
+
         final assetSpotsList = provider.assets.map((asset) {
           AssetOption? assetOption;
           try {
@@ -121,7 +135,8 @@ class _RetireSimulatorResultScreenState
           } catch (e) {
             assetOption = null;
           }
-          final assetName = assetOption?.displayName() ?? asset.assetId;
+          final assetName = assetOption?.displayName() ??
+              (asset.assetId == 'cash' ? l10n.cash : asset.assetId);
           final assetPath = assetPaths[asset.assetId] ?? [];
           final spots = assetPath
               .asMap()
@@ -129,10 +144,12 @@ class _RetireSimulatorResultScreenState
               .map((e) => FlSpot(e.key / 12.0, e.value))
               .toList();
           return {
+            'id': asset.assetId,
+            'type': assetOption?.type,
             'name': assetName,
-            'icon': assetOption?.icon ?? '📈',
             'spots': spots,
-            'color': _getAssetColor(asset.assetId),
+            'color': assetColorById[asset.assetId] ??
+                RetireChartStyle.assetAt(0),
           };
         }).toList();
 
@@ -144,12 +161,12 @@ class _RetireSimulatorResultScreenState
             : l10n.scenarioNeutral;
 
         return Scaffold(
-          backgroundColor: AppColors.navyDark,
+          backgroundColor: AppColors.bg,
           appBar: AppBar(
-            backgroundColor: Colors.transparent,
+            backgroundColor: AppColors.bg,
             elevation: 0,
             leading: IconButton(
-              icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+              icon: Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
@@ -170,10 +187,10 @@ class _RetireSimulatorResultScreenState
                   LiquidGlass(
                     blur: 10,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
+                      color: AppColors.surface,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.18),
+                        color: AppColors.border,
                         width: 1.5,
                       ),
                     ),
@@ -185,7 +202,7 @@ class _RetireSimulatorResultScreenState
                           children: [
                             Icon(
                               Icons.info_outline,
-                              color: AppColors.gold,
+                              color: AppColors.primary,
                               size: 20,
                             ),
                             SizedBox(width: 12),
@@ -195,7 +212,7 @@ class _RetireSimulatorResultScreenState
                                   Text(
                                     l10n.selectedScenario,
                                     style: TextStyle(
-                                      color: AppColors.slate300,
+                                      color: AppColors.textSecondary,
                                       fontSize: _simulationResultLabelFontSize,
                                     ),
                                   ),
@@ -209,7 +226,7 @@ class _RetireSimulatorResultScreenState
                                           : provider.selectedScenario ==
                                                 'negative'
                                           ? Colors.red
-                                          : AppColors.gold,
+                                          : AppColors.primary,
                                       fontSize: _simulationResultValueFontSize,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -239,7 +256,7 @@ class _RetireSimulatorResultScreenState
                                             ? l10n.monthlyWithdrawalWithInflation
                                             : l10n.monthlyWithdrawalLabel,
                                         style: TextStyle(
-                                          color: AppColors.slate300,
+                                          color: AppColors.textSecondary,
                                           fontSize:
                                               _simulationResultLabelFontSize,
                                         ),
@@ -263,7 +280,7 @@ class _RetireSimulatorResultScreenState
                                       children: [
                                         Icon(
                                           Icons.trending_up,
-                                          color: AppColors.gold,
+                                          color: AppColors.primary,
                                           size: 16,
                                         ),
                                         SizedBox(width: 4),
@@ -276,7 +293,7 @@ class _RetireSimulatorResultScreenState
                                               ),
                                             ),
                                             style: TextStyle(
-                                              color: AppColors.gold,
+                                              color: AppColors.primary,
                                               fontSize:
                                                   _simulationResultValueFontSize,
                                               fontWeight: FontWeight.w600,
@@ -363,7 +380,7 @@ class _RetireSimulatorResultScreenState
                                   children: [
                                     Icon(
                                       Icons.share,
-                                      color: AppColors.navyDark,
+                                      color: Colors.white,
                                     ),
                                     SizedBox(width: 8),
                                     Flexible(
@@ -371,7 +388,7 @@ class _RetireSimulatorResultScreenState
                                         l10n.share,
                                         style: AppTextStyles.buttonTextPrimary
                                             .copyWith(
-                                              color: AppColors.navyDark,
+                                              color: Colors.white,
                                               fontSize: 16,
                                             ),
                                         maxLines: 2,
@@ -393,18 +410,14 @@ class _RetireSimulatorResultScreenState
                           child: BackdropFilter(
                             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                             child: GestureDetector(
-                              onTap: () {
-                                // MainTabScreen의 홈 탭으로 이동 (인덱스 0)
-                                Navigator.of(context).pushAndRemoveUntil(
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const MainTabScreen(initialIndex: 0),
-                                  ),
-                                  (route) => route.isFirst, // 홈 화면까지만 유지
-                                );
-                              },
+                              onTap: _isImportingToMyAssets
+                                  ? null
+                                  : () => _goToMyAssets(
+                                        provider,
+                                        appProvider,
+                                      ),
                               child: Container(
-                                padding: EdgeInsets.symmetric(vertical: 14),
+                                padding: const EdgeInsets.symmetric(vertical: 14),
                                 decoration:
                                     SelectedButtonStyle.solidBoxDecoration(
                                       BorderRadius.circular(12),
@@ -412,17 +425,27 @@ class _RetireSimulatorResultScreenState
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(
-                                      Icons.arrow_back,
-                                      color: AppColors.navyDark,
-                                    ),
-                                    SizedBox(width: 8),
+                                    if (_isImportingToMyAssets)
+                                      const SizedBox(
+                                        width: 18,
+                                        height: 18,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    else
+                                      const Icon(
+                                        Icons.account_balance_wallet_outlined,
+                                        color: Colors.white,
+                                      ),
+                                    const SizedBox(width: 8),
                                     Flexible(
                                       child: Text(
-                                        l10n.pastAssetSimulation,
+                                        l10n.manageInMyAssets,
                                         style: AppTextStyles.buttonTextPrimary
                                             .copyWith(
-                                              color: AppColors.navyDark,
+                                              color: Colors.white,
                                               fontSize: 16,
                                             ),
                                         maxLines: 2,
@@ -449,17 +472,65 @@ class _RetireSimulatorResultScreenState
     );
   }
 
-  Color _getAssetColor(String assetId) {
-    // 자산별 색상 지정
-    switch (assetId.toLowerCase()) {
-      case 'bitcoin':
-        return AppColors.gold;
-      case 'tesla':
-        return AppColors.success;
-      case 'ethereum':
-        return AppColors.info;
-      default:
-        return AppColors.slate300;
+  Future<void> _goToMyAssets(
+    RetireSimulatorProvider provider,
+    AppStateProvider appProvider,
+  ) async {
+    if (_isImportingToMyAssets) return;
+    setState(() => _isImportingToMyAssets = true);
+
+    try {
+      final myAssets = context.read<MyAssetsProvider>();
+      final l10n = AppLocalizations.of(context)!;
+      final payload = <({
+        String assetId,
+        String assetName,
+        double quantity,
+        double valuation,
+      })>[];
+
+      // 보유 현금
+      if (provider.cash > 0) {
+        payload.add((
+          assetId: 'cash',
+          assetName: l10n.cash,
+          quantity: 1,
+          valuation: provider.cash,
+        ));
+      }
+
+      // 은퇴 시뮬에서 추가한 보유 자산
+      for (final h in provider.holdings) {
+        if (h.quantity <= 0) continue;
+        String name = h.assetId;
+        try {
+          name = appProvider.assets
+              .firstWhere((a) => a.id == h.assetId)
+              .displayName();
+        } catch (_) {}
+        payload.add((
+          assetId: h.assetId,
+          assetName: name,
+          quantity: h.quantity,
+          valuation: h.valuation > 0 ? h.valuation : 0,
+        ));
+      }
+
+      await myAssets.importRetireHoldings(payload);
+      if (!mounted) return;
+
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (_) => const MainTabScreen(
+            initialIndex: 3,
+            openMyAssetsGate: true,
+          ),
+        ),
+        (route) => route.isFirst,
+      );
+    } catch (e) {
+      debugPrint('Failed to import holdings to my assets: $e');
+      if (mounted) setState(() => _isImportingToMyAssets = false);
     }
   }
 
@@ -486,25 +557,31 @@ class _RetireSimulatorResultScreenState
       withdrawalSpots.add(FlSpot(year, cumulativeWithdrawal));
     }
 
+    final lineLabels = <String>[
+      l10n.totalAssets,
+      l10n.cumulativeWithdrawal,
+      ...assetSpotsList.map((a) => a['name'] as String),
+    ];
+
     // 모든 라인 데이터 준비
     final lineBarsData = <LineChartBarData>[
       // 전체 자산 라인
       LineChartBarData(
         spots: totalSpots,
         isCurved: true,
-        color: Colors.white,
+        color: RetireChartStyle.total,
         barWidth: 4,
-        dotData: FlDotData(show: false),
+        dotData: const FlDotData(show: false),
         isStrokeCapRound: true,
       ),
       // 누적 인출액 라인 (점선으로 표시)
       LineChartBarData(
         spots: withdrawalSpots,
         isCurved: true,
-        color: Colors.orange.withValues(alpha: 0.7),
+        color: RetireChartStyle.withdrawal,
         barWidth: 2,
-        dotData: FlDotData(show: false),
-        dashArray: [5, 5], // 점선
+        dotData: const FlDotData(show: false),
+        dashArray: const [5, 5],
       ),
     ];
 
@@ -518,7 +595,7 @@ class _RetireSimulatorResultScreenState
           isCurved: true,
           color: color,
           barWidth: 2,
-          dotData: FlDotData(show: false),
+          dotData: const FlDotData(show: false),
         ),
       );
     }
@@ -527,20 +604,20 @@ class _RetireSimulatorResultScreenState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(l10n.assetValueTrend, style: AppTextStyles.chartSectionTitle),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         LiquidGlass(
           blur: 10,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.white.withValues(alpha: 0.18),
+              color: AppColors.border,
               width: 1.5,
             ),
           ),
           child: Container(
             height: 350,
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: LineChart(
               LineChartData(
                 minX: 0,
@@ -549,15 +626,15 @@ class _RetireSimulatorResultScreenState
                   show: true,
                   drawVerticalLine: false,
                   getDrawingHorizontalLine: (value) {
-                    return FlLine(color: AppColors.slate700, strokeWidth: 1);
+                    return FlLine(color: AppColors.border, strokeWidth: 1);
                   },
                 ),
                 titlesData: FlTitlesData(
                   show: true,
-                  rightTitles: AxisTitles(
+                  rightTitles: const AxisTitles(
                     sideTitles: SideTitles(showTitles: false),
                   ),
-                  topTitles: AxisTitles(
+                  topTitles: const AxisTitles(
                     sideTitles: SideTitles(showTitles: false),
                   ),
                   bottomTitles: AxisTitles(
@@ -569,17 +646,16 @@ class _RetireSimulatorResultScreenState
                         final yearOffset = value.round();
                         if (yearOffset >= 0 &&
                             yearOffset <= provider.simulationYears) {
-                          // 5년 간격으로 표시하거나, 시작/끝 표시
                           if (yearOffset == 0 ||
                               yearOffset == provider.simulationYears ||
                               yearOffset % 5 == 0) {
                             final actualYear = 2025 + yearOffset;
                             return Padding(
-                              padding: EdgeInsets.only(top: 8),
+                              padding: const EdgeInsets.only(top: 8),
                               child: Text(
                                 l10n.yearLabel(actualYear),
-                                style: TextStyle(
-                                  color: AppColors.slate300,
+                                style: const TextStyle(
+                                  color: AppColors.textSecondary,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -587,27 +663,32 @@ class _RetireSimulatorResultScreenState
                             );
                           }
                         }
-                        return Text('');
+                        return const Text('');
                       },
                     ),
                   ),
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      reservedSize: 80,
+                      reservedSize: 52,
                       interval: _calculateYAxisInterval(totalSpots),
                       getTitlesWidget: (value, meta) {
-                        if (value <= 0) return Text('');
+                        if (value <= 0) return const SizedBox.shrink();
                         return Padding(
-                          padding: EdgeInsets.only(right: 8),
+                          padding: const EdgeInsets.only(right: 4),
                           child: Text(
-                            currencyFormat.format(value),
-                            style: TextStyle(
-                              color: AppColors.slate300,
-                              fontSize: 11,
+                            _compactAxisLabel(
+                              value,
+                              currencyFormat.currencySymbol,
+                            ),
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 10,
                               fontWeight: FontWeight.w500,
                             ),
                             textAlign: TextAlign.right,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         );
                       },
@@ -618,21 +699,30 @@ class _RetireSimulatorResultScreenState
                 lineBarsData: lineBarsData,
                 lineTouchData: LineTouchData(
                   touchTooltipData: LineTouchTooltipData(
-                    getTooltipColor: (touchedSpot) => AppColors.navyMedium,
-                    tooltipPadding: EdgeInsets.all(12),
+                    getTooltipColor: (touchedSpot) => AppColors.navyDark,
+                    tooltipPadding: const EdgeInsets.all(12),
                     tooltipMargin: 16,
-                    maxContentWidth: 200, // 툴팁 최대 너비 설정 (길면 자동 줄바꿈)
+                    maxContentWidth: 220,
                     getTooltipItems: (List<LineBarSpot> touchedSpots) {
                       return touchedSpots.map((LineBarSpot touchedSpot) {
-                        final formattedValue = currencyFormat.format(
-                          touchedSpot.y,
-                        );
+                        final barIndex = touchedSpot.barIndex;
+                        final name = (barIndex >= 0 &&
+                                barIndex < lineLabels.length)
+                            ? lineLabels[barIndex]
+                            : '';
+                        final formattedValue =
+                            currencyFormat.format(touchedSpot.y);
+                        final lineColor = barIndex >= 0 &&
+                                barIndex < lineBarsData.length
+                            ? (lineBarsData[barIndex].color ?? Colors.white)
+                            : Colors.white;
                         return LineTooltipItem(
-                          formattedValue,
+                          '$name\n$formattedValue',
                           TextStyle(
-                            color: Colors.white,
+                            color: lineColor,
                             fontWeight: FontWeight.bold,
-                            fontSize: 14,
+                            fontSize: 13,
+                            height: 1.35,
                           ),
                         );
                       }).toList();
@@ -643,7 +733,7 @@ class _RetireSimulatorResultScreenState
             ),
           ),
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         // 범례
         _buildLegend(totalSpots, assetSpotsList, l10n),
       ],
@@ -660,35 +750,60 @@ class _RetireSimulatorResultScreenState
       spacing: 16,
       runSpacing: 12,
       children: [
-        _buildLegendItem(l10n.totalAssets, Colors.white, false),
+        _buildLegendItem(l10n.totalAssets, RetireChartStyle.total, false),
         _buildLegendItem(
           l10n.cumulativeWithdrawal,
-          Colors.orange.withValues(alpha: 0.7),
+          RetireChartStyle.withdrawal,
           true,
         ),
         ...assetSpotsList.map((assetData) {
+          final id = assetData['id'] as String? ?? '';
+          final type = assetData['type'] as String?;
           final name = assetData['name'] as String;
-          final icon = assetData['icon'] as String;
           final color = assetData['color'] as Color;
-          return _buildLegendItem('$icon $name', color, false);
+          return _buildLegendItem(
+            name,
+            color,
+            false,
+            assetId: id,
+            assetType: type,
+          );
         }),
       ],
     );
   }
 
-  Widget _buildLegendItem(String label, Color color, bool isDashed) {
+  Widget _buildLegendItem(
+    String label,
+    Color color,
+    bool isDashed, {
+    String? assetId,
+    String? assetType,
+  }) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         if (isDashed)
           CustomPaint(
-            size: Size(16, 3),
+            size: const Size(16, 3),
             painter: DashedLinePainter(color: color),
           )
         else
           Container(width: 16, height: 3, color: color),
-        SizedBox(width: 8),
-        Text(label, style: TextStyle(color: AppColors.slate300, fontSize: 12)),
+        const SizedBox(width: 8),
+        if (assetId != null && assetId.isNotEmpty) ...[
+          AssetIcon(
+            assetId: assetId,
+            type: assetType,
+            size: 14,
+            color: color,
+          ),
+          const SizedBox(width: 4),
+        ],
+        Text(
+          label,
+          style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+        ),
       ],
     );
   }
@@ -759,10 +874,10 @@ class _RetireSimulatorResultScreenState
     return LiquidGlass(
       blur: 10,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Colors.white.withValues(alpha: 0.18),
+          color: AppColors.border,
           width: 1.5,
         ),
       ),
@@ -772,12 +887,12 @@ class _RetireSimulatorResultScreenState
         children: [
           Row(
             children: [
-              Icon(Icons.description_outlined, color: AppColors.gold, size: 20),
+              Icon(Icons.description_outlined, color: AppColors.primary, size: 20),
               SizedBox(width: 8),
               Text(
                 l10n.simulationResultTitle,
                 style: TextStyle(
-                  color: AppColors.gold,
+                  color: AppColors.primary,
                   fontSize: _simulationResultTitleFontSize,
                   fontWeight: FontWeight.bold,
                 ),
@@ -788,7 +903,7 @@ class _RetireSimulatorResultScreenState
           RichText(
             text: TextSpan(
               style: TextStyle(
-                color: Colors.white,
+                color: AppColors.textPrimary,
                 fontSize: _simulationResultValueFontSize,
                 height: 1.6, // 줄 간격
               ),
@@ -833,7 +948,7 @@ class _RetireSimulatorResultScreenState
           TextSpan(
             text: value,
             style: TextStyle(
-              color: AppColors.gold,
+              color: AppColors.primary,
               fontWeight: FontWeight.bold,
               fontSize: _simulationResultValueFontSize + 2,
             ),
@@ -861,7 +976,7 @@ class _RetireSimulatorResultScreenState
         ? AppColors.success
         : scenario == 'negative'
         ? Colors.red
-        : AppColors.gold;
+        : AppColors.primary;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
@@ -940,7 +1055,7 @@ class _RetireSimulatorResultScreenState
         Text(
           label,
           style: TextStyle(
-            color: AppColors.slate400,
+            color: AppColors.textSecondary,
             fontSize: _simulationResultLabelFontSize,
           ),
         ),
@@ -948,7 +1063,7 @@ class _RetireSimulatorResultScreenState
         Text(
           value,
           style: TextStyle(
-            color: Colors.white,
+            color: AppColors.textPrimary,
             fontSize: _simulationResultValueFontSize,
             fontWeight: FontWeight.bold,
           ),
@@ -972,16 +1087,45 @@ class _RetireSimulatorResultScreenState
               _isMonthlyDetailsExpanded = !_isMonthlyDetailsExpanded;
             });
           },
+          behavior: HitTestBehavior.opaque,
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(l10n.monthlyDetails, style: AppTextStyles.chartSectionTitle),
-              Icon(
-                _isMonthlyDetailsExpanded
-                    ? Icons.keyboard_arrow_up
-                    : Icons.keyboard_arrow_down,
-                color: AppColors.gold,
-                size: 28,
+              Expanded(
+                child: Text(
+                  l10n.monthlyDetails,
+                  style: AppTextStyles.chartSectionTitle,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: AppColors.primarySoft,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.primary, width: 1.5),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _isMonthlyDetailsExpanded
+                          ? l10n.showLess
+                          : l10n.expandView,
+                      style: const TextStyle(
+                        color: AppColors.primary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(width: 2),
+                    Icon(
+                      _isMonthlyDetailsExpanded
+                          ? Icons.keyboard_arrow_up
+                          : Icons.keyboard_arrow_down,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -1014,10 +1158,10 @@ class _RetireSimulatorResultScreenState
                 return LiquidGlass(
                   blur: 8,
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.08),
+                    color: AppColors.surface,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.15),
+                      color: AppColors.border,
                       width: 1,
                     ),
                   ),
@@ -1033,14 +1177,14 @@ class _RetireSimulatorResultScreenState
                             Text(
                               l10n.yearLabel(year),
                               style: TextStyle(
-                                color: AppColors.slate400,
+                                color: AppColors.textSecondary,
                                 fontSize: _monthlyCardYearFontSize,
                               ),
                             ),
                             Text(
                               l10n.monthLabel(monthInYear),
                               style: TextStyle(
-                                color: AppColors.gold,
+                                color: AppColors.primary,
                                 fontSize: _monthlyCardMonthFontSize,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -1060,7 +1204,7 @@ class _RetireSimulatorResultScreenState
                                 Text(
                                   l10n.asset,
                                   style: TextStyle(
-                                    color: AppColors.slate400,
+                                    color: AppColors.textSecondary,
                                     fontSize: _monthlyCardLabelFontSize,
                                   ),
                                 ),
@@ -1068,7 +1212,7 @@ class _RetireSimulatorResultScreenState
                                   child: Text(
                                     currencyFormat.format(currentAsset),
                                     style: TextStyle(
-                                      color: Colors.white,
+                                      color: AppColors.textPrimary,
                                       fontSize: _monthlyCardValueFontSize,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -1114,7 +1258,7 @@ class _RetireSimulatorResultScreenState
                                   Text(
                                     l10n.change,
                                     style: TextStyle(
-                                      color: AppColors.slate400,
+                                      color: AppColors.textSecondary,
                                       fontSize: _monthlyCardLabelFontSize,
                                     ),
                                   ),
@@ -1149,6 +1293,26 @@ class _RetireSimulatorResultScreenState
         ],
       ],
     );
+  }
+
+  String _compactAxisLabel(double value, String symbol) {
+    final abs = value.abs();
+    if (symbol == '₩' || symbol == 'KRW') {
+      if (abs >= 100000000) {
+        return '$symbol${(value / 100000000).toStringAsFixed(1)}억';
+      }
+      if (abs >= 10000) {
+        return '$symbol${(value / 10000).toStringAsFixed(0)}만';
+      }
+    } else if (symbol == '\$' || symbol == 'USD') {
+      if (abs >= 1000000) {
+        return '$symbol${(value / 1000000).toStringAsFixed(1)}M';
+      }
+      if (abs >= 1000) {
+        return '$symbol${(value / 1000).toStringAsFixed(0)}K';
+      }
+    }
+    return NumberFormat.compact().format(value);
   }
 
   // Y축 간격 계산 (자동으로 적절한 간격 설정)

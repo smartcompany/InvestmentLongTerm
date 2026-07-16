@@ -364,6 +364,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get monthlyDetails => 'Monthly Details';
 
   @override
+  String get expandView => 'Expand';
+
+  @override
   String yearLabel(int year) {
     return '$year';
   }
@@ -515,10 +518,39 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get retireInlineEditHint => 'Tap the blue boxes to edit amounts';
+
+  @override
+  String get retireFormSubtitle =>
+      'Enter your cash and holdings, then set monthly spending';
+
+  @override
+  String get retireCashLabel => 'Cash on hand';
+
+  @override
+  String get retireHoldingsLabel => 'Holdings';
+
+  @override
+  String get retireHoldingsEmpty =>
+      'No holdings yet. Add stocks, crypto, and more';
+
+  @override
+  String get retireMonthlySpendLabel => 'Monthly spending';
+
+  @override
+  String get retireTotalNetWorth => 'Total estimated value';
+
+  @override
+  String get retireQtyUnit => 'qty';
+
+  @override
   String get adWillBeShown => 'An ad will be shown before viewing results';
 
   @override
   String get myAssets => 'My Assets';
+
+  @override
+  String get manageInMyAssets => 'Manage in My Assets';
 
   @override
   String get viewMyAssetsStatus => 'Watch Ad & Manage My Assets';
@@ -595,4 +627,50 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get watchAdAndStart => 'Watch Ad and Start';
+
+  @override
+  String get landingCryptoSimTitle => 'Crypto Simulation';
+
+  @override
+  String get landingCryptoSimDesc =>
+      'See what Bitcoin and more would be worth if you bought them then';
+
+  @override
+  String get landingMoreAssetsTitle => 'Browse more assets';
+
+  @override
+  String get landingMoreAssetsDesc =>
+      'Choose from stocks, ETFs, commodities, and more';
+
+  @override
+  String get landingGuideTitle => 'New here?';
+
+  @override
+  String get landingGuideDesc => 'We\'ll walk you through how to get started';
+
+  @override
+  String get landingGuideSheetTitle => 'Time Capital quick guide';
+
+  @override
+  String get landingGuideStep1 => 'Pick an asset you\'re curious about';
+
+  @override
+  String get landingGuideStep2 => 'Set your amount and time horizon';
+
+  @override
+  String get landingGuideStep3 => 'Check the chart and return';
+
+  @override
+  String get selectAssetToCompare => 'Select assets to compare';
+
+  @override
+  String get selectUpToAssets => 'Pick assets and race their growth rates';
+
+  @override
+  String compareSelectedAssets(int count) {
+    return 'Compare $count assets';
+  }
+
+  @override
+  String get selectAssetsTitle => 'Select an asset';
 }

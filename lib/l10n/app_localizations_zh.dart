@@ -359,6 +359,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get monthlyDetails => '月度详情';
 
   @override
+  String get expandView => '展开查看';
+
+  @override
   String yearLabel(int year) {
     return '$year年';
   }
@@ -498,10 +501,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get retirementQuestionEnd => '期间能玩多久、吃多久？';
 
   @override
-  String get inflationRate => '연간 인플레이션율';
+  String get inflationRate => '年通胀率';
 
   @override
-  String get inflationRateDesc => '매년 생활비가 증가하는 비율을 설정하세요';
+  String get inflationRateDesc => '设置生活费每年增长的比率';
 
   @override
   String inflationRatePercent(double rate) {
@@ -509,10 +512,37 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get retireInlineEditHint => '点按蓝色框即可修改金额';
+
+  @override
+  String get retireFormSubtitle => '填写现金与持仓，并设置每月支出';
+
+  @override
+  String get retireCashLabel => '持有现金';
+
+  @override
+  String get retireHoldingsLabel => '持有资产';
+
+  @override
+  String get retireHoldingsEmpty => '还没有添加资产，可添加股票、加密货币等';
+
+  @override
+  String get retireMonthlySpendLabel => '每月支出';
+
+  @override
+  String get retireTotalNetWorth => '总资产估值';
+
+  @override
+  String get retireQtyUnit => '个';
+
+  @override
   String get adWillBeShown => '查看结果前将显示广告';
 
   @override
   String get myAssets => '我的资产';
+
+  @override
+  String get manageInMyAssets => '到我的资产管理';
 
   @override
   String get viewMyAssetsStatus => '观看广告并管理我的资产';
@@ -586,4 +616,48 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get watchAdAndStart => '观看广告并开始';
+
+  @override
+  String get landingCryptoSimTitle => '加密货币模拟';
+
+  @override
+  String get landingCryptoSimDesc => '看看那时买入比特币等资产会值多少';
+
+  @override
+  String get landingMoreAssetsTitle => '查看更多资产';
+
+  @override
+  String get landingMoreAssetsDesc => '可选择股票、ETF、大宗商品等';
+
+  @override
+  String get landingGuideTitle => '第一次使用？';
+
+  @override
+  String get landingGuideDesc => '我们会简单说明使用方法';
+
+  @override
+  String get landingGuideSheetTitle => 'Time Capital 使用指南';
+
+  @override
+  String get landingGuideStep1 => '选择你感兴趣的资产';
+
+  @override
+  String get landingGuideStep2 => '设置金额和期限';
+
+  @override
+  String get landingGuideStep3 => '查看图表和收益率';
+
+  @override
+  String get selectAssetToCompare => '请选择要比较的资产';
+
+  @override
+  String get selectUpToAssets => '选择资产并比较增长率';
+
+  @override
+  String compareSelectedAssets(int count) {
+    return '比较 $count 项资产';
+  }
+
+  @override
+  String get selectAssetsTitle => '选择资产';
 }

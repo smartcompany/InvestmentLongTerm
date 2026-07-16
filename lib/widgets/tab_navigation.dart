@@ -60,10 +60,10 @@ class TabNavigation extends StatelessWidget {
               child: Container(
                 padding: EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.12),
+                  color: AppColors.surface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: AppColors.border,
                     width: 1.5,
                   ),
                 ),
@@ -144,7 +144,7 @@ class _TabButton extends StatelessWidget {
               label,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: isSelected ? AppColors.navyDark : AppColors.slate300,
+                color: isSelected ? Colors.white : AppColors.textSecondary,
                 fontSize: 14,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
               ),

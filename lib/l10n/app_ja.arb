@@ -142,6 +142,7 @@
   "totalWithdrawn": "総引出額",
   "netProfit": "純利益",
   "monthlyDetails": "月別詳細",
+  "expandView": "展開する",
   "yearLabel": "{year}年",
   "@yearLabel": {
     "placeholders": {
@@ -201,8 +202,27 @@
   "retirementQuestionMonthlyPrefix": "毎月",
   "retirementQuestionSuffix": "を使いながら",
   "retirementQuestionEnd": "間遊んで食べられる？",
+  "inflationRate": "年間インフレ率",
+  "inflationRateDesc": "毎年の生活費の増加率を設定してください",
+  "inflationRatePercent": "{rate}%",
+  "@inflationRatePercent": {
+    "placeholders": {
+      "rate": {
+        "type": "double"
+      }
+    }
+  },
+  "retireInlineEditHint": "青い枠をタップすると金額を変更できます",
+  "retireFormSubtitle": "現金と保有資産を入力し、毎月の支出を設定しましょう",
+  "retireCashLabel": "保有現金",
+  "retireHoldingsLabel": "保有資産",
+  "retireHoldingsEmpty": "まだ資産がありません。株式や暗号資産などを追加してください",
+  "retireMonthlySpendLabel": "毎月の支出",
+  "retireTotalNetWorth": "総評価額",
+  "retireQtyUnit": "個",
   "adWillBeShown": "結果を見る前に広告が表示されます",
   "myAssets": "現在の資産",
+  "manageInMyAssets": "資産管理へ",
   "viewMyAssetsStatus": "広告を見て資産管理",
   "myAssetsSubtitle": "保有資産を記録し\n変動推移を確認してください\nアプリを再起動しない限り、広告は1回だけ表示されます",
   "retirementSetupSubtitle": "退職を考えていますか？\n退職時の予想資産を入力してください",
@@ -227,6 +247,20 @@
   "currencyChangeWarning": "通貨変更",
   "currencyChangeMessage": "通貨を変更すると、既に入力した資産の価格が新しい通貨基準で変わります。\n\n資産を正しく表示するには、新しく入力する必要があります。",
   "understand": "理解しました",
-  "watchAdAndStart": "広告を見て開始"
+  "watchAdAndStart": "広告を見て開始",
+  "landingCryptoSimTitle": "暗号資産シミュレーション",
+  "landingCryptoSimDesc": "ビットコインなどをあの時買っていたらいくらだったか確認",
+  "landingMoreAssetsTitle": "ほかの資産を見る",
+  "landingMoreAssetsDesc": "株式・ETF・コモディティなどから選べます",
+  "landingGuideTitle": "初めてですか？",
+  "landingGuideDesc": "使い方をかんたんに案内します",
+  "landingGuideSheetTitle": "Time Capital ガイド",
+  "landingGuideStep1": "気になる資産を選ぶ",
+  "landingGuideStep2": "金額と期間を設定する",
+  "landingGuideStep3": "チャートと収益率を確認する",
+  "selectAssetToCompare": "比較する資産を選んでください",
+  "selectUpToAssets": "資産を選んで成長率を比較しましょう",
+  "compareSelectedAssets": "{count}件の資産を比較",
+  "selectAssetsTitle": "資産を選択"
 }
 

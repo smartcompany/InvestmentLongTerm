@@ -21,13 +21,13 @@ import 'services/ad_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Set system UI overlay style for Liquid Glass effect
-  // 상태바와 네비게이션 바를 투명하게 설정하여 배경이 전체 화면에 표시되도록 함
+  // Set system UI for light theme
   SystemChrome.setSystemUIOverlayStyle(
-    SystemUiOverlayStyle.light.copyWith(
+    SystemUiOverlayStyle.dark.copyWith(
       statusBarColor: Colors.transparent,
       systemNavigationBarColor: Colors.transparent,
       systemNavigationBarDividerColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.dark,
     ),
   );
 
@@ -95,17 +95,44 @@ class MyApp extends StatelessWidget {
         Locale('zh'), // Chinese
         Locale('ja'), // Japanese
       ],
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: AppColors.navyDark,
-        primaryColor: AppColors.gold,
-        colorScheme: ColorScheme.dark(
-          primary: AppColors.gold,
-          secondary: AppColors.goldLight,
-          surface: AppColors.navyMedium,
+      theme: ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.light,
+        scaffoldBackgroundColor: AppColors.bg,
+        primaryColor: AppColors.primary,
+        colorScheme: ColorScheme.light(
+          primary: AppColors.primary,
+          secondary: AppColors.primaryLight,
+          surface: AppColors.surface,
+          onPrimary: Colors.white,
+          onSurface: AppColors.textPrimary,
         ),
-        appBarTheme: AppBarTheme(
-          backgroundColor: AppColors.navyDark,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: AppColors.bg,
+          foregroundColor: AppColors.textPrimary,
           elevation: 0,
+          centerTitle: true,
+          iconTheme: IconThemeData(color: AppColors.textPrimary),
+          titleTextStyle: TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+        ),
+        sliderTheme: SliderThemeData(
+          activeTrackColor: AppColors.primary,
+          thumbColor: AppColors.primary,
+          inactiveTrackColor: AppColors.border,
         ),
       ),
       home: MainTabScreen(),

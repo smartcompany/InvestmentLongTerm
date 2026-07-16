@@ -7,6 +7,7 @@ import '../providers/app_state_provider.dart';
 import '../providers/currency_provider.dart';
 import '../utils/calculator.dart';
 import '../utils/colors.dart';
+import '../utils/text_styles.dart';
 import '../widgets/comparison_chart.dart';
 import '../widgets/liquid_glass.dart';
 
@@ -18,23 +19,21 @@ class ComparisonScreen extends StatelessWidget {
     final provider = context.watch<AppStateProvider>();
     final config = provider.config;
 
-    // Calculate for Single Investment
     final singleConfig = InvestmentConfig(
       asset: config.asset,
       yearsAgo: config.yearsAgo,
       amount: config.amount,
       type: InvestmentType.single,
-      frequency: Frequency.monthly, // Frequency doesn't matter for single
+      frequency: Frequency.monthly,
     );
     final singleResult = InvestmentCalculator.calculate(singleConfig);
 
-    // Calculate for Recurring Investment
     final recurringConfig = InvestmentConfig(
       asset: config.asset,
       yearsAgo: config.yearsAgo,
       amount: config.amount,
       type: InvestmentType.recurring,
-      frequency: Frequency.monthly, // Default to monthly for comparison
+      frequency: Frequency.monthly,
     );
     final recurringResult = InvestmentCalculator.calculate(recurringConfig);
 
@@ -47,7 +46,7 @@ class ComparisonScreen extends StatelessWidget {
       ComparisonSeries(
         label: "단일 투자",
         spots: singleResult.valueSpots,
-        color: AppColors.gold,
+        color: AppColors.primary,
         highlightStart: true,
       ),
       ComparisonSeries(
@@ -58,83 +57,68 @@ class ComparisonScreen extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: AppColors.navyDark,
+      backgroundColor: AppColors.bg,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.bg,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
+        title: const Text(
           "투자 방식 비교",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: AppTextStyles.appBarTitle,
         ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(24),
+        padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Chart
             Text(
               "자산 성장 비교",
-              style: TextStyle(
-                color: AppColors.slate300,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: AppTextStyles.chartSectionTitle,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             LiquidGlass(
               blur: 10,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
+                color: AppColors.surface,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.18),
-                  width: 1.5,
-                ),
+                border: Border.all(color: AppColors.border, width: 1.5),
               ),
               child: Container(
                 height: 300,
-                padding: EdgeInsets.only(right: 16, top: 10, bottom: 10),
+                padding: const EdgeInsets.only(right: 16, top: 10, bottom: 10),
                 child: ComparisonChart(
                   series: chartSeries,
                   currencySymbol: currencySymbol,
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildLegendItem("단일 투자", AppColors.gold),
-                SizedBox(width: 20),
+                _buildLegendItem("단일 투자", AppColors.primary),
+                const SizedBox(width: 20),
                 _buildLegendItem("정기 투자 (매월)", AppColors.success),
               ],
             ),
-
-            SizedBox(height: 40),
-
-            // Comparison Cards
+            const SizedBox(height: 40),
             Text(
               "최종 결과 비교",
-              style: TextStyle(
-                color: AppColors.slate300,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+              style: AppTextStyles.chartSectionTitle,
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             _buildComparisonCard(
               "단일 투자 (거치식)",
               singleResult,
               currencyFormat,
-              AppColors.gold,
+              AppColors.primary,
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             _buildComparisonCard(
               "정기 투자 (적립식)",
               recurringResult,
@@ -155,8 +139,11 @@ class ComparisonScreen extends StatelessWidget {
           height: 12,
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
-        SizedBox(width: 8),
-        Text(label, style: TextStyle(color: AppColors.slate300, fontSize: 14)),
+        const SizedBox(width: 8),
+        Text(
+          label,
+          style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
+        ),
       ],
     );
   }
@@ -172,11 +159,11 @@ class ComparisonScreen extends StatelessWidget {
     return LiquidGlass(
       blur: 10,
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: color.withValues(alpha: 0.4), width: 1.5),
       ),
-      padding: EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -188,22 +175,22 @@ class ComparisonScreen extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     "최종 가치",
-                    style: TextStyle(color: AppColors.slate400, fontSize: 14),
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     format.format(result.finalValue),
-                    style: TextStyle(
-                      color: Colors.white,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -213,11 +200,11 @@ class ComparisonScreen extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(
+                  const Text(
                     "수익률",
-                    style: TextStyle(color: AppColors.slate400, fontSize: 14),
+                    style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     "+${percentFormat.format(result.yieldRate / 100)}",
                     style: TextStyle(
@@ -230,17 +217,12 @@ class ComparisonScreen extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 12),
-          Divider(color: AppColors.slate700),
-          SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "총 투자금: ${format.format(result.totalInvested)}",
-                style: TextStyle(color: AppColors.slate400, fontSize: 14),
-              ),
-            ],
+          const SizedBox(height: 12),
+          const Divider(color: AppColors.border),
+          const SizedBox(height: 12),
+          Text(
+            "총 투자금: ${format.format(result.totalInvested)}",
+            style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
           ),
         ],
       ),

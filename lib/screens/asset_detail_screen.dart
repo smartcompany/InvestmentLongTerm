@@ -161,15 +161,8 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
         }
 
         return Scaffold(
-          body: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [AppColors.navyDark, AppColors.navyMedium],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
-            child: SafeArea(
+      backgroundColor: AppColors.bg,
+      body: SafeArea(
               child: Column(
                 children: [
                   // 헤더
@@ -178,14 +171,14 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                     child: Row(
                       children: [
                         IconButton(
-                          icon: Icon(Icons.arrow_back, color: Colors.white),
+                          icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
                           onPressed: () => Navigator.pop(context),
                         ),
                         Expanded(
                           child: Text(
                             asset.assetName,
                             style: TextStyle(
-                              color: Colors.white,
+                              color: AppColors.textPrimary,
                               fontSize: 24,
                               fontWeight: FontWeight.bold,
                             ),
@@ -201,10 +194,10 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                     padding: EdgeInsets.symmetric(horizontal: 24),
                     child: LiquidGlass(
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                        color: AppColors.surface,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.18),
+                          color: AppColors.border,
                           width: 1.5,
                         ),
                       ),
@@ -305,10 +298,10 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                     padding: EdgeInsets.symmetric(horizontal: 24),
                     child: LiquidGlass(
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                        color: AppColors.surface,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.18),
+                          color: AppColors.border,
                           width: 1.5,
                         ),
                       ),
@@ -361,7 +354,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                       child: _isLoading
                           ? Center(
                               child: CircularProgressIndicator(
-                                color: AppColors.gold,
+                                color: AppColors.primary,
                               ),
                             )
                           : _priceSpots != null && _priceSpots!.isNotEmpty
@@ -376,7 +369,7 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                           : Center(
                               child: Text(
                                 l10n.noPriceData,
-                                style: TextStyle(color: AppColors.slate400),
+                                style: TextStyle(color: AppColors.textSecondary),
                               ),
                             ),
                     ),
@@ -385,7 +378,6 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                 ],
               ),
             ),
-          ),
         );
       },
     );
@@ -395,11 +387,11 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: TextStyle(color: AppColors.slate300, fontSize: 14)),
+        Text(label, style: TextStyle(color: AppColors.textSecondary, fontSize: 14)),
         Text(
           value,
           style: TextStyle(
-            color: color ?? Colors.white,
+            color: color ?? AppColors.textPrimary,
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
