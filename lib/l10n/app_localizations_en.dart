@@ -173,7 +173,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get retirementSimulation => 'Can I retire?';
 
   @override
-  String get growthRace => 'Growth Race';
+  String get growthRace => 'Asset Showdown';
 
   @override
   String get crypto => 'Cryptocurrency';
@@ -312,6 +312,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get detailedStatistics => 'Detailed Statistics';
+
+  @override
+  String get viewAssetDetails => 'View details';
+
+  @override
+  String get fixedValue => 'Fixed';
 
   @override
   String get simulationResultNoData => 'No simulation results available.';
@@ -613,6 +619,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quantity => 'Quantity';
 
   @override
+  String get annualInterestRate => 'Annual interest rate';
+
+  @override
   String get averagePurchasePrice => 'Average Purchase Price';
 
   @override
@@ -673,4 +682,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectAssetsTitle => 'Select an asset';
+
+  @override
+  String get onboardingRaceTitle => 'What happened in 5 years?';
+
+  @override
+  String get onboardingRaceSubtitle =>
+      'Watch a growth race of representative assets';
+
+  @override
+  String get onboardingRaceStart => 'Start growth race';
+
+  @override
+  String get onboardingChartStart => 'Get started';
+
+  @override
+  String get onboardingRaceMatchup => 'Four assets race on one track';
+
+  @override
+  String get onboardingMyAssetsHint =>
+      'Register your holdings to track changes and discover insights over time';
+
+  @override
+  String onboardingRacePeriod(int years) {
+    return 'Last $years years · No ads';
+  }
 }

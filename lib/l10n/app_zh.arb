@@ -46,7 +46,7 @@
   "retirementDescription": "模拟退休后资产的变化。",
   "pastAssetSimulation": "如果那时买了？",
   "retirementSimulation": "能退休吗？",
-  "growthRace": "增长率竞赛",
+  "growthRace": "资产对决",
   "crypto": "加密货币",
   "stock": "美股",
   "koreanStock": "韩国股票",
@@ -119,6 +119,8 @@
   },
   "simulationResultTitle": "模拟结果",
   "detailedStatistics": "详细统计",
+  "viewAssetDetails": "查看详情",
+  "fixedValue": "固定值",
   "simulationResultNoData": "没有模拟结果。",
   "selectedScenario": "所选场景: ",
   "scenarioPositive": "积极 (+20%)",
@@ -243,6 +245,7 @@
   "cancel": "取消",
   "noPriceData": "无价格数据",
   "quantity": "数量",
+  "annualInterestRate": "年利率",
   "averagePurchasePrice": "平均买入价",
   "currencyChangeWarning": "货币更改",
   "currencyChangeMessage": "更改货币将使已输入的资产价格按新货币基准发生变化。\n\n要正确显示资产，需要重新输入。",
@@ -261,6 +264,20 @@
   "selectAssetToCompare": "请选择要比较的资产",
   "selectUpToAssets": "选择资产并比较增长率",
   "compareSelectedAssets": "比较 {count} 项资产",
-  "selectAssetsTitle": "选择资产"
+  "selectAssetsTitle": "选择资产",
+  "onboardingRaceTitle": "5年间发生了什么？",
+  "onboardingRaceSubtitle": "看看代表资产的成长竞赛",
+  "onboardingRaceStart": "开始成长竞赛",
+  "onboardingChartStart": "开始",
+  "onboardingRaceMatchup": "4种代表资产在同一条赛道上比拼",
+  "onboardingMyAssetsHint": "注册持有资产，即可追踪变化并获取投资洞察",
+  "onboardingRacePeriod": "最近{years}年 · 无广告立即开始",
+  "@onboardingRacePeriod": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  }
 }
 

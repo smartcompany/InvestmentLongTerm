@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart' hide TextDirection;
 import '../utils/colors.dart';
 import 'asset_icon.dart';
 
@@ -12,6 +13,12 @@ Color readableOnDark(Color color) {
       .withLightness(math.max(hsl.lightness, 0.72))
       .withSaturation(hsl.saturation.clamp(0.5, 0.95))
       .toColor();
+}
+
+String formatGrowthRatePercent(double rate) {
+  final formatted = NumberFormat('#,##0.0').format(rate.abs());
+  if (rate >= 0) return '+$formatted%';
+  return '-$formatted%';
 }
 
 
@@ -251,7 +258,7 @@ class RaceChart extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        '${data.currentGrowthRate >= 0 ? '+' : ''}${data.currentGrowthRate.toStringAsFixed(1)}%',
+                        formatGrowthRatePercent(data.currentGrowthRate),
                         style: TextStyle(
                           color: accent,
                           fontSize: 13,

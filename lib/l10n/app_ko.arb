@@ -46,7 +46,7 @@
   "retirementDescription": "은퇴 후 자산 변화를 시뮬레이션해보세요.",
   "pastAssetSimulation": "그때 샀다면?",
   "retirementSimulation": "은퇴 가능할까?",
-  "growthRace": "성장률 경주",
+  "growthRace": "자산 대결",
   "crypto": "암호화폐",
   "stock": "미국 주식",
   "koreanStock": "한국 주식",
@@ -119,6 +119,8 @@
   },
   "simulationResultTitle": "시뮬레이션 결과",
   "detailedStatistics": "상세 통계",
+  "viewAssetDetails": "상세 보기",
+  "fixedValue": "고정값",
   "simulationResultNoData": "시뮬레이션 결과가 없습니다.",
   "selectedScenario": "선택한 시나리오: ",
   "scenarioPositive": "긍정적 (+20%)",
@@ -243,6 +245,7 @@
   "cancel": "취소",
   "noPriceData": "가격 데이터가 없습니다",
   "quantity": "수량",
+  "annualInterestRate": "연 금리",
   "averagePurchasePrice": "평균 매수가",
   "currencyChangeWarning": "통화 변경",
   "currencyChangeMessage": "통화를 변경하면 기존에 입력한 자산의 가격이 새 통화 기준으로 달라집니다.\n\n자산을 올바르게 표시하려면 새로 입력해야 합니다.",
@@ -268,6 +271,20 @@
       }
     }
   },
-  "selectAssetsTitle": "자산 선택"
+  "selectAssetsTitle": "자산 선택",
+  "onboardingRaceTitle": "5년 간 무슨 일이 있었나?",
+  "onboardingRaceSubtitle": "대표 자산의 성장 레이스를 확인해 보세요",
+  "onboardingRaceStart": "성장 레이스 시작하기",
+  "onboardingChartStart": "시작하기",
+  "onboardingRaceMatchup": "대표 4개 자산이 한 트랙에서 겨룹니다",
+  "onboardingMyAssetsHint": "보유 자산을 등록하면 변화를 추적하고 인사이트를 받아볼 수 있어요",
+  "onboardingRacePeriod": "최근 {years}년 · 광고 없이 바로 시작",
+  "@onboardingRacePeriod": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  }
 }
 

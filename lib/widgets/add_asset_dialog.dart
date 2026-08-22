@@ -23,6 +23,8 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
   String? _selectedAssetId;
   final TextEditingController _principalController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
+  final TextEditingController _annualRateController =
+      TextEditingController(text: '0');
   final Map<String, bool> _expandedTypes = {};
   int _currentStep = 0; // 0: 자산 선택, 1: 투자 원금 및 보유 갯수
   bool _isLoading = false;
@@ -31,6 +33,7 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
   void dispose() {
     _principalController.dispose();
     _quantityController.dispose();
+    _annualRateController.dispose();
     super.dispose();
   }
 
@@ -43,13 +46,37 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
     return double.tryParse(text.replaceAll(',', '')) ?? 0.0;
   }
 
+  double _parseAnnualRate(String text) {
+    if (text.trim().isEmpty) return 0;
+    return double.tryParse(text.replaceAll(',', '')) ?? 0;
+  }
+
+  bool get _isCashSelected => _selectedAssetId == 'cash';
+
+  void _selectAsset(String assetId) {
+    setState(() {
+      _selectedAssetId = assetId;
+      if (assetId == 'cash') {
+        if (_annualRateController.text.trim().isEmpty) {
+          _annualRateController.text = '0';
+        }
+      } else if (_quantityController.text == '1') {
+        _quantityController.clear();
+      }
+      if (_currentStep == 0) {
+        _currentStep = 1;
+      }
+    });
+  }
+
+  bool get _canSubmitStep1 {
+    if (_selectedAssetId == null || _isLoading) return false;
+    if (_parseCurrency(_principalController.text) <= 0) return false;
+    return _isCashSelected || _parseQuantity(_quantityController.text) > 0;
+  }
+
   Future<void> _submit() async {
-    if (_selectedAssetId == null ||
-        _parseCurrency(_principalController.text) == 0 ||
-        _parseQuantity(_quantityController.text) == 0 ||
-        _isLoading) {
-      return;
-    }
+    if (!_canSubmitStep1) return;
 
     setState(() {
       _isLoading = true;
@@ -58,64 +85,66 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
     try {
       final appProvider = context.read<AppStateProvider>();
       final myAssetsProvider = context.read<MyAssetsProvider>();
-      final localeCode = Localizations.localeOf(context).languageCode;
 
       final asset = appProvider.assets.firstWhere(
         (a) => a.id == _selectedAssetId!,
       );
       final assetName = asset.displayName();
       final principal = _parseCurrency(_principalController.text);
-      final quantity = _parseQuantity(_quantityController.text);
+      final quantity =
+          _isCashSelected ? 1.0 : _parseQuantity(_quantityController.text);
+      final double annualInterestRate = _isCashSelected
+          ? _parseAnnualRate(_annualRateController.text)
+          : 0.0;
 
-      // 현재 가격 가져오기
-      double? currentPrice;
-      try {
-        final priceData = await ApiService.fetchDailyPrices(
-          _selectedAssetId!,
-          1,
-        );
-        if (priceData.isNotEmpty) {
-          currentPrice = (priceData.last['price'] as num?)?.toDouble();
-        }
-      } catch (e) {
-        // 가격을 가져올 수 없으면 에러 표시
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('현재 가격을 가져올 수 없습니다. 다시 시도해주세요.'),
-              backgroundColor: Colors.red,
-            ),
+      if (!_isCashSelected) {
+        double? currentPrice;
+        try {
+          final priceData = await ApiService.fetchDailyPrices(
+            _selectedAssetId!,
+            1,
           );
+          if (priceData.isNotEmpty) {
+            currentPrice = (priceData.last['price'] as num?)?.toDouble();
+          }
+        } catch (e) {
+          if (mounted) {
+            setState(() {
+              _isLoading = false;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('현재 가격을 가져올 수 없습니다. 다시 시도해주세요.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
         }
-        return;
+
+        if (currentPrice == null || currentPrice <= 0) {
+          if (mounted) {
+            setState(() {
+              _isLoading = false;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('유효한 현재 가격을 가져올 수 없습니다.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
       }
 
-      if (currentPrice == null || currentPrice <= 0) {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('유효한 현재 가격을 가져올 수 없습니다.'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-        return;
-      }
-
-      // 현재 평가 금액 계산: 수량 * 현재 가격
-      // (이 값은 addAsset 내부에서 _updateCurrentValue에서 다시 계산되므로 여기서는 참고용)
       await myAssetsProvider.addAsset(
         assetId: _selectedAssetId!,
         assetName: assetName,
         initialAmount: principal,
-        registeredDate: DateTime.now(), // 현재 시점을 기준으로 설정
+        registeredDate: DateTime.now(),
         quantity: quantity,
+        annualInterestRate: annualInterestRate,
       );
 
       if (mounted) {
@@ -258,7 +287,7 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
         ),
         SizedBox(height: 24),
         Text(
-          l10n.quantity,
+          _isCashSelected ? l10n.annualInterestRate : l10n.quantity,
           style: TextStyle(
             color: AppColors.textSecondary,
             fontSize: 16,
@@ -266,7 +295,43 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
           ),
         ),
         SizedBox(height: 12),
-        TextField(
+        if (_isCashSelected)
+          TextField(
+            controller: _annualRateController,
+            enabled: !_isLoading,
+            onChanged: (_) => setState(() {}),
+            decoration: InputDecoration(
+              hintText: '0',
+              hintStyle: TextStyle(color: AppColors.textSecondary),
+              suffixText: '%',
+              suffixStyle: TextStyle(color: AppColors.primary, fontSize: 20),
+              filled: true,
+              fillColor: AppColors.bg,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppColors.primary, width: 2),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppColors.primary, width: 2),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppColors.primary, width: 2),
+              ),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            ),
+            keyboardType:
+                const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
+            ],
+            style: TextStyle(color: AppColors.textPrimary, fontSize: 20),
+            textAlign: TextAlign.right,
+          )
+        else
+          TextField(
           controller: _quantityController,
           enabled: !_isLoading,
           onChanged: (value) {
@@ -402,32 +467,14 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
             child: GestureDetector(
               onTap: _isLoading
                   ? null
-                  : () {
-                      setState(() {
-                        _selectedAssetId = asset.id;
-                        // 자산 선택 시 자동으로 다음 단계로 이동
-                        if (_currentStep == 0) {
-                          _currentStep = 1;
-                        }
-                      });
-                    },
+                  : () => _selectAsset(asset.id),
               child: AssetButton(
                 assetName: asset.displayName(),
                 assetId: asset.id,
                 type: asset.type,
                 isSelected: _selectedAssetId == asset.id,
                 isDisabled: _isLoading,
-                onTap: _isLoading
-                    ? () {}
-                    : () {
-                        setState(() {
-                          _selectedAssetId = asset.id;
-                          // 자산 선택 시 자동으로 다음 단계로 이동
-                          if (_currentStep == 0) {
-                            _currentStep = 1;
-                          }
-                        });
-                      },
+                onTap: _isLoading ? () {} : () => _selectAsset(asset.id),
               ),
             ),
           ),
@@ -625,17 +672,7 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
                                                     });
                                                   }
                                                 : null)
-                                          : (_selectedAssetId != null &&
-                                                    _parseCurrency(
-                                                          _principalController
-                                                              .text,
-                                                        ) >
-                                                        0 &&
-                                                    _parseQuantity(
-                                                          _quantityController
-                                                              .text,
-                                                        ) >
-                                                        0
+                                          : (_canSubmitStep1
                                                 ? () async => await _submit()
                                                 : null)),
                                 style: ElevatedButton.styleFrom(

@@ -522,7 +522,7 @@ class _RetireSimulatorResultScreenState
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
           builder: (_) => const MainTabScreen(
-            initialIndex: 3,
+            initialIndex: 1,
             openMyAssetsGate: true,
           ),
         ),

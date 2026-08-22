@@ -1,0 +1,28 @@
+{
+  "appName": "Time Capital",
+  "bundleId": "com.smartcompany.longterminvestment",
+  "sku": "com.smartcompany.longterminvestment",
+  "packageName": "com.smartcompany.longterminvestment",
+  "serverBaseUrl": "https://investment-long-term-server.vercel.app",
+  "privacyPath": "/privacy",
+  "supportUrl": "https://smartcompany.github.io",
+  "marketingUrl": "https://smartcompany.github.io",
+  "copyright": "2026 Yong Geon Kim. All rights reserved.",
+  "supportEmail": "gunnylove@gmail.com",
+  "reviewContactFirstName": "Yong Geon",
+  "reviewContactLastName": "Kim",
+  "reviewContactEmail": "gunnylove@gmail.com",
+  "reviewContactPhone": "+821065912052",
+  "appleId": "gunnylove@gmail.com",
+  "itcTeamId": "117828562",
+  "developerTeamId": "NTCK5U8AWD",
+  "ascKeyId": "7FN57R567Z",
+  "ascKeyPath": "/Users/smart/Projects/auth/fastlaneAuthKeys/AuthKey_7FN57R567Z.p8",
+  "androidKeystorePath": "/Users/smart/Projects/auth/androidKey/my-release-key.jks",
+  "androidKeyAlias": "my-key-alias",
+  "notes": [
+    "Time Capital (장기 투자 시뮬레이터) deployment kit.",
+    "Metadata: ./deployment-kit/scripts/upload_ios_metadata.sh",
+    "Play metadata: ./deployment-kit/scripts/upload_android_metadata.sh"
+  ]
+}

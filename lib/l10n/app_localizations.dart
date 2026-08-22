@@ -387,7 +387,7 @@ abstract class AppLocalizations {
   /// No description provided for @growthRace.
   ///
   /// In ko, this message translates to:
-  /// **'성장률 경주'**
+  /// **'자산 대결'**
   String get growthRace;
 
   /// No description provided for @crypto.
@@ -613,6 +613,18 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'상세 통계'**
   String get detailedStatistics;
+
+  /// No description provided for @viewAssetDetails.
+  ///
+  /// In ko, this message translates to:
+  /// **'상세 보기'**
+  String get viewAssetDetails;
+
+  /// No description provided for @fixedValue.
+  ///
+  /// In ko, this message translates to:
+  /// **'고정값'**
+  String get fixedValue;
 
   /// No description provided for @simulationResultNoData.
   ///
@@ -1184,6 +1196,12 @@ abstract class AppLocalizations {
   /// **'수량'**
   String get quantity;
 
+  /// No description provided for @annualInterestRate.
+  ///
+  /// In ko, this message translates to:
+  /// **'연 금리'**
+  String get annualInterestRate;
+
   /// No description provided for @averagePurchasePrice.
   ///
   /// In ko, this message translates to:
@@ -1297,6 +1315,48 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'자산 선택'**
   String get selectAssetsTitle;
+
+  /// No description provided for @onboardingRaceTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'5년 간 무슨 일이 있었나?'**
+  String get onboardingRaceTitle;
+
+  /// No description provided for @onboardingRaceSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'대표 자산의 성장 레이스를 확인해 보세요'**
+  String get onboardingRaceSubtitle;
+
+  /// No description provided for @onboardingRaceStart.
+  ///
+  /// In ko, this message translates to:
+  /// **'성장 레이스 시작하기'**
+  String get onboardingRaceStart;
+
+  /// No description provided for @onboardingChartStart.
+  ///
+  /// In ko, this message translates to:
+  /// **'시작하기'**
+  String get onboardingChartStart;
+
+  /// No description provided for @onboardingRaceMatchup.
+  ///
+  /// In ko, this message translates to:
+  /// **'대표 4개 자산이 한 트랙에서 겨룹니다'**
+  String get onboardingRaceMatchup;
+
+  /// No description provided for @onboardingMyAssetsHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'보유 자산을 등록하면 변화를 추적하고 인사이트를 받아볼 수 있어요'**
+  String get onboardingMyAssetsHint;
+
+  /// No description provided for @onboardingRacePeriod.
+  ///
+  /// In ko, this message translates to:
+  /// **'최근 {years}년 · 광고 없이 바로 시작'**
+  String onboardingRacePeriod(int years);
 }
 
 class _AppLocalizationsDelegate

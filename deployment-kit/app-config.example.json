@@ -1,0 +1,19 @@
+{
+  "appName": "Your App Name",
+  "bundleId": "com.example.yourapp",
+  "sku": "com.example.yourapp",
+  "packageName": "com.example.yourapp",
+  "serverBaseUrl": "https://your-app-server.vercel.app",
+  "privacyPath": "/privacy",
+  "supportUrl": "https://smartcompany.github.io",
+  "marketingUrl": "https://smartcompany.github.io",
+  "copyright": "2026 Yong Geon Kim. All rights reserved.",
+  "supportEmail": "you@example.com",
+  "appleId": "you@example.com",
+  "itcTeamId": "YOUR_ITC_TEAM_ID",
+  "developerTeamId": "YOUR_APPLE_TEAM_ID",
+  "ascKeyId": "YOUR_ASC_KEY_ID",
+  "ascKeyPath": "/absolute/path/to/AuthKey_XXXXXX.p8",
+  "androidKeystorePath": "/absolute/path/to/your-release-key.jks",
+  "androidKeyAlias": "your-key-alias"
+}

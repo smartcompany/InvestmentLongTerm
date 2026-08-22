@@ -46,7 +46,7 @@
   "retirementDescription": "Simulate how your assets change after retirement.",
   "pastAssetSimulation": "If I bought it then?",
   "retirementSimulation": "Can I retire?",
-  "growthRace": "Growth Race",
+  "growthRace": "Asset Showdown",
   "crypto": "Cryptocurrency",
   "stock": "US Stock",
   "koreanStock": "Korean Stock",
@@ -119,6 +119,8 @@
   },
   "simulationResultTitle": "Simulation Result",
   "detailedStatistics": "Detailed Statistics",
+  "viewAssetDetails": "View details",
+  "fixedValue": "Fixed",
   "simulationResultNoData": "No simulation results available.",
   "selectedScenario": "Selected Scenario: ",
   "scenarioPositive": "Positive (+20%)",
@@ -243,6 +245,7 @@
   "cancel": "Cancel",
   "noPriceData": "No price data available",
   "quantity": "Quantity",
+  "annualInterestRate": "Annual interest rate",
   "averagePurchasePrice": "Average Purchase Price",
   "currencyChangeWarning": "Currency Change",
   "currencyChangeMessage": "Changing the currency will alter the prices of assets you've already entered to match the new currency.\n\nTo display assets correctly, you need to re-enter them.",
@@ -268,6 +271,20 @@
       }
     }
   },
-  "selectAssetsTitle": "Select an asset"
+  "selectAssetsTitle": "Select an asset",
+  "onboardingRaceTitle": "What happened in 5 years?",
+  "onboardingRaceSubtitle": "Watch a growth race of representative assets",
+  "onboardingRaceStart": "Start growth race",
+  "onboardingChartStart": "Get started",
+  "onboardingRaceMatchup": "Four assets race on one track",
+  "onboardingMyAssetsHint": "Register your holdings to track changes and discover insights over time",
+  "onboardingRacePeriod": "Last {years} years · No ads",
+  "@onboardingRacePeriod": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  }
 }
 

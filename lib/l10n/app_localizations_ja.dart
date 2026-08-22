@@ -170,7 +170,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get retirementSimulation => '退職できる？';
 
   @override
-  String get growthRace => '成長率レース';
+  String get growthRace => '資産対決';
 
   @override
   String get crypto => '暗号資産';
@@ -307,6 +307,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get detailedStatistics => '詳細統計';
+
+  @override
+  String get viewAssetDetails => '詳細を見る';
+
+  @override
+  String get fixedValue => '固定';
 
   @override
   String get simulationResultNoData => 'シミュレーション結果がありません。';
@@ -603,6 +609,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get quantity => '数量';
 
   @override
+  String get annualInterestRate => '年利率';
+
+  @override
   String get averagePurchasePrice => '平均取得価格';
 
   @override
@@ -661,4 +670,27 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get selectAssetsTitle => '資産を選択';
+
+  @override
+  String get onboardingRaceTitle => '5年間で何が起きた？';
+
+  @override
+  String get onboardingRaceSubtitle => '代表資産の成長レースを見てみましょう';
+
+  @override
+  String get onboardingRaceStart => '成長レースを始める';
+
+  @override
+  String get onboardingChartStart => '始める';
+
+  @override
+  String get onboardingRaceMatchup => '代表4資産が1つのトラックで競います';
+
+  @override
+  String get onboardingMyAssetsHint => '保有資産を登録すると、変化を追跡してインサイトを得られます';
+
+  @override
+  String onboardingRacePeriod(int years) {
+    return '直近$years年 · 広告なしですぐ開始';
+  }
 }

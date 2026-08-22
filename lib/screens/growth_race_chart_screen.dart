@@ -10,9 +10,13 @@ import '../utils/chart_image_utils.dart';
 import '../widgets/common_share_ui.dart';
 import '../services/ad_service.dart';
 import '../widgets/race_chart.dart';
+import '../widgets/race_winner_celebration.dart';
 
 class GrowthRaceChartScreen extends StatefulWidget {
-  const GrowthRaceChartScreen({super.key});
+  /// 온보딩 데모 경주 — 완료 후 공유 대신 시작하기(뒤로가기와 동일).
+  final bool isOnboarding;
+
+  const GrowthRaceChartScreen({super.key, this.isOnboarding = false});
 
   @override
   State<GrowthRaceChartScreen> createState() => _GrowthRaceChartScreenState();
@@ -23,6 +27,8 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
   Timer? _raceTimer;
   late AnimationController _animationController;
   final GlobalKey _chartKey = GlobalKey();
+  bool _showCelebration = false;
+  int _celebrationGeneration = 0;
 
   @override
   void initState() {
@@ -33,12 +39,30 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
     );
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = context.read<GrowthRaceProvider>();
-      if (!provider.isRacing && provider.priceData.isNotEmpty) {
-        provider.startRace();
-        _animateRace();
-      }
+      _beginRaceAnimation();
     });
+  }
+
+  void _beginRaceAnimation() {
+    final provider = context.read<GrowthRaceProvider>();
+    if (provider.priceData.isEmpty) return;
+    if (!provider.isRacing) {
+      provider.startRace();
+    }
+    _animateRace();
+  }
+
+  void _restartRace() {
+    final provider = context.read<GrowthRaceProvider>();
+    if (provider.priceData.isEmpty) return;
+
+    _raceTimer?.cancel();
+    setState(() {
+      _showCelebration = false;
+      _celebrationGeneration++;
+    });
+    provider.startRace();
+    _animateRace();
   }
 
   @override
@@ -98,15 +122,23 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
       }
 
       if (currentDate.isAfter(end) || currentDate.isAtSameMomentAs(end)) {
-        // 마지막 날짜로 설정하여 완료 상태로 만듦
         provider.updateRaceDate(end);
         timer.cancel();
+        if (mounted) {
+          setState(() => _showCelebration = true);
+        }
         return;
       }
 
       provider.updateRaceDate(currentDate);
       currentDate = currentDate.add(stepDuration);
     });
+  }
+
+  void _goBack() {
+    final provider = context.read<GrowthRaceProvider>();
+    provider.stopRace();
+    Navigator.of(context).pop();
   }
 
   @override
@@ -123,22 +155,35 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
-          onPressed: () {
-            provider.stopRace();
-            Navigator.of(context).pop();
-          },
+          onPressed: _goBack,
         ),
         title: Text(l10n.growthRace, style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
+        actions: [
+          IconButton(
+            tooltip: l10n.retry,
+            icon: Icon(Icons.refresh, color: AppColors.textPrimary),
+            onPressed: provider.priceData.isEmpty ? null : _restartRace,
+          ),
+        ],
       ),
-      body: SafeArea(
-        child: provider.priceData.isEmpty
-            ? Center(
-                child: Text(
-                  '데이터를 불러오는 중...',
-                  style: TextStyle(color: AppColors.textSecondary),
-                ),
-              )
-            : _buildRaceChart(provider, appProvider, localeCode, l10n),
+      body: Stack(
+        children: [
+          SafeArea(
+            child: provider.priceData.isEmpty
+                ? Center(
+                    child: Text(
+                      '데이터를 불러오는 중...',
+                      style: TextStyle(color: AppColors.textSecondary),
+                    ),
+                  )
+                : _buildRaceChart(provider, appProvider, localeCode, l10n),
+          ),
+          if (_showCelebration)
+            FireworksOverlay(
+              key: ValueKey(_celebrationGeneration),
+              active: true,
+            ),
+        ],
       ),
     );
   }
@@ -303,16 +348,21 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
     }
 
     final raceComplete = _isRaceComplete(provider, priceData);
+    final winner = raceComplete && raceSeries.isNotEmpty
+        ? raceSeries.firstWhere(
+            (s) => s.rank == 0,
+            orElse: () => raceSeries.first,
+          )
+        : null;
 
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(16),
-      child: Column(
-        children: [
-          RepaintBoundary(
-            key: _chartKey,
-            child: SizedBox(
-              width: double.infinity,
-              height: MediaQuery.of(context).size.height * 0.6,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: RepaintBoundary(
+              key: _chartKey,
               child: raceSeries.isEmpty
                   ? Center(
                       child: Text(
@@ -339,13 +389,27 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
                     ),
             ),
           ),
-          if (raceComplete) ...[
-            SizedBox(height: 32),
-            _buildShareButton(provider, appProvider, localeCode, l10n),
-            SizedBox(height: 16),
-          ],
-        ],
-      ),
+        ),
+        if (raceComplete)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (winner != null)
+                  RaceWinnerBanner(
+                    assetId: winner.assetId,
+                    assetName: winner.name,
+                    growthRate: winner.currentGrowthRate,
+                    accentColor: readableOnDark(winner.color),
+                  ),
+                if (winner != null) const SizedBox(height: 16),
+                _buildBottomActionButton(provider, appProvider, localeCode, l10n),
+              ],
+            ),
+          ),
+      ],
     );
   }
 
@@ -377,6 +441,36 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
     if (latestDate == null) return false;
     return currentDate.isAfter(latestDate) ||
         currentDate.isAtSameMomentAs(latestDate);
+  }
+
+  Widget _buildBottomActionButton(
+    GrowthRaceProvider provider,
+    AppStateProvider appProvider,
+    String localeCode,
+    AppLocalizations l10n,
+  ) {
+    if (widget.isOnboarding) {
+      return SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: _goBack,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+          child: Text(
+            l10n.onboardingChartStart,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+        ),
+      );
+    }
+
+    return _buildShareButton(provider, appProvider, localeCode, l10n);
   }
 
   Widget _buildShareButton(
@@ -463,7 +557,7 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
         buffer.writeln(
           '$emoji ${i + 1}위: ${asset.displayName()} ${asset.icon}',
         );
-        buffer.writeln('   수익률: ${growthRate.toStringAsFixed(2)}%');
+        buffer.writeln('   수익률: ${formatGrowthRatePercent(growthRate)}');
         buffer.writeln('');
       }
     }

@@ -196,7 +196,8 @@ class MyAssetsProvider with ChangeNotifier {
       if (asset.assetId == 'cash') {
         final index = _assets.indexWhere((a) => a.id == asset.id);
         if (index >= 0) {
-          _assets[index] = asset.copyWith(currentValue: asset.initialAmount);
+          final value = asset.cashValueAt(DateTime.now());
+          _assets[index] = asset.copyWith(currentValue: value);
           notifyListeners();
         }
         return;
@@ -245,6 +246,10 @@ class MyAssetsProvider with ChangeNotifier {
       final Map<String, Map<DateTime, double>> assetPricesByDate = {};
 
       for (final asset in _assets) {
+        if (asset.assetId == 'cash') {
+          continue;
+        }
+
         try {
           // 지정된 년수 전부터 현재까지의 가격 데이터 가져오기
           final priceData = await ApiService.fetchDailyPrices(
@@ -351,46 +356,41 @@ class MyAssetsProvider with ChangeNotifier {
         double totalValue = 0.0;
 
         for (final asset in _assets) {
-          final assetPrices = assetPricesByDate[asset.id];
-          if (assetPrices == null) continue;
+          double assetValue;
 
-          // 해당 날짜의 가격 찾기 (가장 가까운 이전 가격 사용)
-          double? price;
-          final availableDates = assetPrices.keys.toList()..sort();
-          for (final availableDate in availableDates.reversed) {
-            if (availableDate.isBefore(date) ||
-                availableDate.isAtSameMomentAs(date)) {
-              price = assetPrices[availableDate];
-              break;
-            }
-          }
+          if (asset.assetId == 'cash') {
+            if (date.isBefore(asset.registeredDate)) continue;
+            assetValue = asset.cashValueAt(date);
+          } else {
+            final assetPrices = assetPricesByDate[asset.id];
+            if (assetPrices == null) continue;
 
-          if (price != null) {
-            // 보유 주수 * 가격 = 현재 가치 (원본 통화 기준)
-            double assetValue = asset.quantity * price;
-
-            // 통화 변환 (targetCurrency가 제공된 경우)
-            if (targetCurrency != null && getAssetOriginalCurrency != null) {
-              final originalCurrency = getAssetOriginalCurrency(asset.assetId);
-              debugPrint(
-                '[PortfolioChart] 자산 ${asset.assetId}: 원본 통화=$originalCurrency, 목표 통화=$targetCurrency, 변환 전 가치=$assetValue',
-              );
-              if (originalCurrency != targetCurrency) {
-                // 동기 변환 사용 (현재 환율 기준)
-                final beforeValue = assetValue;
-                assetValue = CurrencyConverter.shared.convertSync(
-                  assetValue,
-                  originalCurrency,
-                  targetCurrency,
-                );
-                debugPrint(
-                  '[PortfolioChart] 변환 후: $beforeValue ($originalCurrency) -> $assetValue ($targetCurrency)',
-                );
+            double? price;
+            final availableDates = assetPrices.keys.toList()..sort();
+            for (final availableDate in availableDates.reversed) {
+              if (availableDate.isBefore(date) ||
+                  availableDate.isAtSameMomentAs(date)) {
+                price = assetPrices[availableDate];
+                break;
               }
             }
 
-            totalValue += assetValue;
+            if (price == null) continue;
+            assetValue = asset.quantity * price;
           }
+
+          if (targetCurrency != null && getAssetOriginalCurrency != null) {
+            final originalCurrency = getAssetOriginalCurrency(asset.assetId);
+            if (originalCurrency != targetCurrency) {
+              assetValue = CurrencyConverter.shared.convertSync(
+                assetValue,
+                originalCurrency,
+                targetCurrency,
+              );
+            }
+          }
+
+          totalValue += assetValue;
         }
 
         // x 좌표: 시작일부터의 일수 / 전체 기간
@@ -456,6 +456,7 @@ class MyAssetsProvider with ChangeNotifier {
     required double initialAmount,
     required DateTime registeredDate,
     required double quantity,
+    double annualInterestRate = 0,
   }) async {
     debugPrint('💾 [LocalStorage] 자산 추가 시작: $assetName ($assetId)');
 
@@ -466,6 +467,7 @@ class MyAssetsProvider with ChangeNotifier {
       initialAmount: initialAmount,
       registeredDate: registeredDate,
       quantity: quantity,
+      annualInterestRate: assetId == 'cash' ? annualInterestRate : 0,
     );
 
     _assets.add(newAsset);
@@ -541,10 +543,42 @@ class MyAssetsProvider with ChangeNotifier {
   }) async {
     try {
       final now = DateTime.now();
-      // 차트 시작일을 지정된 년수 전으로 설정 (기본값은 선택된 기간 사용)
       final chartYears = years ?? _selectedChartYears;
       final totalDays = chartYears * 365;
       final earliestDate = now.subtract(Duration(days: totalDays));
+
+      if (asset.assetId == 'cash') {
+        const steps = 40;
+        final spots = <FlSpot>[];
+        for (var i = 0; i <= steps; i++) {
+          final t = i / steps;
+          final date = earliestDate.add(
+            Duration(
+              milliseconds:
+                  (now.difference(earliestDate).inMilliseconds * t).round(),
+            ),
+          );
+          double value;
+          if (date.isBefore(asset.registeredDate)) {
+            value = asset.initialAmount;
+          } else {
+            value = asset.cashValueAt(date);
+          }
+
+          if (targetCurrency != null && getAssetOriginalCurrency != null) {
+            final originalCurrency = getAssetOriginalCurrency(asset.assetId);
+            if (originalCurrency != targetCurrency) {
+              value = await CurrencyConverter.shared.convert(
+                value,
+                originalCurrency,
+                targetCurrency,
+              );
+            }
+          }
+          spots.add(FlSpot(t, value));
+        }
+        return spots;
+      }
 
       // 지정된 년수 전부터 현재까지의 가격 데이터 가져오기
       debugPrint(

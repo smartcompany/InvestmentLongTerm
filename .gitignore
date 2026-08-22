@@ -58,3 +58,5 @@ app.*.map.json
 /ios/*.dSYM
 /ios/*.dSYM.zip
 /ios/*.ipa
+.env
+deployment-kit/play-metadata/node_modules

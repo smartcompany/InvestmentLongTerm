@@ -9,8 +9,10 @@ import '../providers/currency_provider.dart';
 import '../models/my_asset.dart';
 import '../utils/colors.dart';
 import '../utils/currency_converter.dart';
+import '../utils/text_styles.dart';
 import '../widgets/liquid_glass.dart';
 import '../widgets/add_asset_dialog.dart';
+import '../widgets/app_ui.dart';
 import '../widgets/asset_icon.dart';
 import '../widgets/asset_price_chart.dart';
 import 'asset_detail_screen.dart';
@@ -60,6 +62,11 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
     String assetId,
     AppStateProvider appProvider,
   ) {
+    // 현금은 입력·저장 모두 사용자 표시 통화 기준
+    if (assetId == 'cash') {
+      return CurrencyProvider.shared.getCurrencySymbol();
+    }
+
     try {
       final assetOption = appProvider.assets.firstWhere((a) => a.id == assetId);
       // 한국 주식과 부동산은 원화, 나머지는 달러
@@ -142,92 +149,14 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-                  // 타이틀과 설정 버튼
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Expanded(child: SizedBox()),
-              Text(
-                l10n.myAssets,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: AppColors.textPrimary,
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-                      ),
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: IconButton(
-                            icon: Icon(Icons.settings, color: AppColors.textPrimary),
-                            onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => SettingsScreen(),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-              ),
-              SizedBox(height: 16),
-              // 자산 추가 (상단 — 추가/삭제 관리 진입점)
-              Align(
-                alignment: Alignment.centerRight,
-                child: Material(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(14),
-                  child: InkWell(
-                    onTap: () =>
-                        _showAddAssetDialog(context, provider, l10n),
-                    borderRadius: BorderRadius.circular(14),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 10,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.add, size: 18, color: Colors.white),
-                          const SizedBox(width: 4),
-                          Text(
-                            l10n.addAsset,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 20),
-              // 포트폴리오 그래프 (자산이 있을 때만 표시)
-                  if (provider.assets.isNotEmpty) ...[
-                    // 기간 선택 버튼
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _buildPeriodButton('1Y', 1, provider),
-                        SizedBox(width: 8),
-                        _buildPeriodButton('3Y', 3, provider),
-                        SizedBox(width: 8),
-                        _buildPeriodButton('5Y', 5, provider),
-                        SizedBox(width: 8),
-                        _buildPeriodButton('10Y', 10, provider),
-                      ],
-                    ),
-                    SizedBox(height: 16),
+              _buildHeader(context, l10n, provider.assets.isEmpty),
+              if (provider.assets.isNotEmpty) ...[
+                const SizedBox(height: 20),
+                _buildPeriodSelector(provider),
+                const SizedBox(height: 16),
                 Container(
                   height: 200,
-                  margin: EdgeInsets.only(bottom: 24),
+                  margin: const EdgeInsets.only(bottom: 24),
                   child: provider.isLoadingPortfolio
                       ? Center(
                           child: CircularProgressIndicator(
@@ -236,16 +165,16 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
                         )
                       : provider.portfolioSpots != null &&
                             provider.portfolioSpots!.isNotEmpty
-                          ? AssetPriceChart(
-                                  spots: provider.portfolioSpots!,
-                              startDate: provider.portfolioStartDate,
-                              endDate: provider.portfolioEndDate,
-                              currencySymbol: currencySymbol,
-                              height: 200,
+                      ? AssetPriceChart(
+                          spots: provider.portfolioSpots!,
+                          startDate: provider.portfolioStartDate,
+                          endDate: provider.portfolioEndDate,
+                          currencySymbol: currencySymbol,
+                          height: 200,
                         )
-                      : SizedBox.shrink(),
+                      : const SizedBox.shrink(),
                 ),
-                  ],
+              ],
               // 통계 카드 (자산이 있을 때만 표시)
               if (provider.assets.isNotEmpty)
                 Container(
@@ -315,65 +244,128 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
               // 자산이 없을 때 빈 상태 메시지
               if (provider.assets.isEmpty)
                 Padding(
-                  padding: EdgeInsets.symmetric(vertical: 48),
+                  padding: const EdgeInsets.symmetric(vertical: 48),
                   child: Column(
                     children: [
                       Icon(
                         Icons.account_balance_wallet_outlined,
                         size: 64,
-                        color: AppColors.textSecondary,
+                        color: AppColors.textSecondary.withValues(alpha: 0.7),
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       Text(
                         l10n.noAssetsRegistered,
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
                           fontSize: 18,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
-                      SizedBox(height: 8),
+                      const SizedBox(height: 8),
                       Text(
                         l10n.addAssetToTrack,
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 14,
-                        ),
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.homeSubDescription,
+                      ),
+                      const SizedBox(height: 28),
+                      AppPrimaryButton(
+                        label: l10n.addAsset,
+                        onPressed: () =>
+                            _showAddAssetDialog(context, provider, l10n),
                       ),
                     ],
                   ),
                 ),
-              SizedBox(height: 24),
-              // 하단에도 추가 버튼 (목록이 길 때)
-              if (provider.assets.isNotEmpty)
-                ElevatedButton.icon(
-                  onPressed: () =>
-                      _showAddAssetDialog(context, provider, l10n),
-                  icon: const Icon(Icons.add, color: Colors.white),
-                  label: Text(
-                    l10n.addAsset,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 14,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                ),
-              SizedBox(height: 24), // 하단 여백
+              if (provider.assets.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                _buildAddAssetButton(context, provider, l10n),
+              ],
+              const SizedBox(height: 24),
             ],
           ),
         ),
     );
       },
+    );
+  }
+
+  Widget _buildHeader(
+    BuildContext context,
+    AppLocalizations l10n,
+    bool showSubtitle,
+  ) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.myAssets,
+                style: AppTextStyles.homeMainQuestion.copyWith(fontSize: 26),
+              ),
+              if (showSubtitle) ...[
+                const SizedBox(height: 4),
+                Text(
+                  l10n.addAssetToTrack,
+                  style: AppTextStyles.homeSubDescription.copyWith(fontSize: 14),
+                ),
+              ],
+            ],
+          ),
+        ),
+        IconButton(
+          visualDensity: VisualDensity.compact,
+          icon: const Icon(Icons.settings_outlined, color: AppColors.textSecondary),
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => SettingsScreen()),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPeriodSelector(MyAssetsProvider provider) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        children: [
+          Expanded(child: _buildPeriodButton('1Y', 1, provider)),
+          const SizedBox(width: 4),
+          Expanded(child: _buildPeriodButton('3Y', 3, provider)),
+          const SizedBox(width: 4),
+          Expanded(child: _buildPeriodButton('5Y', 5, provider)),
+          const SizedBox(width: 4),
+          Expanded(child: _buildPeriodButton('10Y', 10, provider)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddAssetButton(
+    BuildContext context,
+    MyAssetsProvider provider,
+    AppLocalizations l10n,
+  ) {
+    return OutlinedButton.icon(
+      onPressed: () => _showAddAssetDialog(context, provider, l10n),
+      icon: const Icon(Icons.add, size: 20),
+      label: Text(l10n.addAsset),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppColors.primary,
+        side: const BorderSide(color: AppColors.primary),
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+      ),
     );
   }
 
@@ -388,10 +380,8 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
         setState(() {
           _selectedYears = years;
         });
-        // Provider에도 선택된 기간 저장
         provider.setSelectedChartYears(years);
 
-        // 통화 정보 가져오기
         final appProvider = context.read<AppStateProvider>();
         final currencySymbol = CurrencyProvider.shared.getCurrencySymbol();
 
@@ -402,24 +392,63 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
               _getAssetOriginalCurrency(assetId, appProvider),
         );
       },
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : AppColors.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.border,
-            width: 1.5,
-          ),
+          color: isSelected ? AppColors.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
         ),
+        alignment: Alignment.center,
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : AppColors.textPrimary,
+            color: isSelected ? Colors.white : AppColors.textSecondary,
             fontSize: 14,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
           ),
         ),
+      ),
+    );
+  }
+
+  void _openAssetDetail(BuildContext context, MyAsset asset) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => AssetDetailScreen(asset: asset),
+      ),
+    );
+  }
+
+  Widget _buildAssetMetricRow(String label, String value, {Color? valueColor}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 14,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 3,
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                color: valueColor ?? AppColors.textPrimary,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -435,20 +464,8 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
       builder: (context, _) {
         final appProvider = context.watch<AppStateProvider>();
         final currencySymbol = CurrencyProvider.shared.getCurrencySymbol();
-
-        // 자산의 원본 통화 확인
-        String originalCurrency = '\$'; // 기본값
-        try {
-          final assetOption = appProvider.assets.firstWhere(
-            (a) => a.id == asset.assetId,
-          );
-          if (assetOption.type == 'korean_stock' ||
-              assetOption.type == 'real_estate') {
-            originalCurrency = '₩';
-          }
-        } catch (e) {
-          // 기본값 사용
-        }
+        final originalCurrency =
+            _getAssetOriginalCurrency(asset.assetId, appProvider);
 
         // 환율 변환된 현재 가치 (FutureBuilder로 처리)
         return FutureBuilder<double?>(
@@ -461,117 +478,191 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
               : Future.value(null),
           builder: (context, snapshot) {
             final convertedCurrentValue = snapshot.data;
+            final returnRate = convertedCurrentValue != null &&
+                    asset.initialAmount > 0
+                ? ((convertedCurrentValue / asset.initialAmount) - 1) * 100
+                : null;
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => AssetDetailScreen(asset: asset),
-          ),
-        );
-      },
-      child: Container(
-        margin: EdgeInsets.only(bottom: 16),
-        child: LiquidGlass(
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: AppColors.border,
-              width: 1.5,
-            ),
-          ),
-          padding: EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Row(
-                      children: [
-                        AssetIcon(
-                          assetId: asset.assetId,
-                          size: 28,
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                asset.assetName,
-                                style: const TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              if (asset.assetId != 'cash')
-                                Text(
-                                  '${l10n.quantity}: ${NumberFormat('#,##0.####').format(asset.quantity)}${l10n.retireQtyUnit}',
-                                  style: const TextStyle(
-                                    color: AppColors.textSecondary,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.red),
-                    onPressed: () =>
-                        _deleteAsset(context, asset.id, provider, l10n),
+            return Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.border),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.03),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
-              SizedBox(height: 12),
-              Text(
-                        '${l10n.initialAmount}: $currencySymbol${NumberFormat('#,##0.##').format(asset.initialAmount)}',
-                style: TextStyle(color: AppColors.textPrimary, fontSize: 16),
-              ),
-              SizedBox(height: 12),
-                      if (convertedCurrentValue != null)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                              '${l10n.currentValue}: $currencySymbol${NumberFormat('#,##0.##').format(convertedCurrentValue)}',
-                              style: TextStyle(
-                                color: AppColors.textPrimary,
-                                fontSize: 16,
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => _openAssetDetail(context, asset),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 8, 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                AssetIcon(assetId: asset.assetId, size: 32),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        asset.assetName,
+                                        style: const TextStyle(
+                                          color: AppColors.textPrimary,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                      ),
+                                      if (asset.assetId == 'cash')
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 2),
+                                          child: Text(
+                                            '${l10n.annualInterestRate}: ${NumberFormat('#,##0.##').format(asset.annualInterestRate)}%',
+                                            style: const TextStyle(
+                                              color: AppColors.textSecondary,
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                        )
+                                      else
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(top: 2),
+                                          child: Text(
+                                            '${l10n.quantity}: ${NumberFormat('#,##0.####').format(asset.quantity)}${l10n.retireQtyUnit}',
+                                            style: const TextStyle(
+                                              color: AppColors.textSecondary,
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                                PopupMenuButton<String>(
+                                  icon: const Icon(
+                                    Icons.more_horiz,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                  padding: EdgeInsets.zero,
+                                  onSelected: (value) {
+                                    if (value == 'delete') {
+                                      _deleteAsset(
+                                        context,
+                                        asset.id,
+                                        provider,
+                                        l10n,
+                                      );
+                                    }
+                                  },
+                                  itemBuilder: (context) => [
+                                    PopupMenuItem(
+                                      value: 'delete',
+                                      child: Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.delete_outline,
+                                            color: Colors.red,
+                                            size: 20,
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Text(
+                                            l10n.delete,
+                                            style: const TextStyle(
+                                              color: Colors.red,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 14),
+                            _buildAssetMetricRow(
+                              l10n.initialAmount,
+                              '$currencySymbol${NumberFormat('#,##0.##').format(asset.initialAmount)}',
+                            ),
+                            if (convertedCurrentValue != null) ...[
+                              if (asset.assetId != 'cash' && asset.quantity > 0)
+                                _buildAssetMetricRow(
+                                  l10n.currentPrice,
+                                  '$currencySymbol${NumberFormat('#,##0.##').format(convertedCurrentValue / asset.quantity)}',
+                                ),
+                              _buildAssetMetricRow(
+                                l10n.currentValue,
+                                '$currencySymbol${NumberFormat('#,##0.##').format(convertedCurrentValue)}',
                               ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                              '${l10n.returnRate}: ${NumberFormat('#,##0.00').format((convertedCurrentValue / asset.initialAmount - 1) * 100)}%',
-                      style: TextStyle(
-                                color:
-                                    convertedCurrentValue >= asset.initialAmount
-                            ? AppColors.success
-                            : Colors.red,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                              if (returnRate != null)
+                                _buildAssetMetricRow(
+                                  l10n.returnRate,
+                                  '${NumberFormat('#,##0.00').format(returnRate)}%',
+                                  valueColor: convertedCurrentValue >=
+                                          asset.initialAmount
+                                      ? AppColors.success
+                                      : Colors.red,
+                                ),
+                            ] else
+                              _buildAssetMetricRow(
+                                l10n.currentValue,
+                                l10n.loadingPrice,
+                              ),
+                          ],
+                        ),
                       ),
                     ),
-                  ],
-                )
-              else
-                Text(
-                  l10n.loadingPrice,
-                          style: TextStyle(
-                            color: AppColors.textSecondary,
-                            fontSize: 14,
-                          ),
-                ),
-            ],
-          ),
-        ),
-      ),
+                  ),
+                  Material(
+                    color: AppColors.primarySoft,
+                    child: InkWell(
+                      onTap: () => _openAssetDetail(context, asset),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 11,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.insights_outlined,
+                              size: 16,
+                              color: AppColors.primary.withValues(alpha: 0.9),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              l10n.viewAssetDetails,
+                              style: const TextStyle(
+                                color: AppColors.primary,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             );
           },
         );

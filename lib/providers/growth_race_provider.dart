@@ -40,6 +40,25 @@ class GrowthRaceProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  /// 온보딩/데모용 — 선택 자산·기간을 한 번에 설정합니다.
+  void prepareDemoRace({
+    required Iterable<String> assetIds,
+    required int years,
+  }) {
+    _selectedAssetIds
+      ..clear()
+      ..addAll(assetIds);
+    _selectedYears = years;
+    _isLoading = false;
+    _isRacing = false;
+    _priceData.clear();
+    _currentGrowthRates.clear();
+    _rankedAssetIds = assetIds.toList();
+    _raceStartDate = null;
+    _currentDate = null;
+    notifyListeners();
+  }
+
   Future<void> loadPriceData() async {
     if (_selectedAssetIds.isEmpty) return;
 

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 class MyAsset {
   final String id;
   final String assetId; // AssetOption의 id
@@ -5,6 +7,8 @@ class MyAsset {
   final double initialAmount; // 투자 원금
   final DateTime registeredDate;
   final double quantity; // 보유 주수 (현재 평가 금액 / 입력 시점의 현재 가격)
+  /// 현금 전용 연 이자율 (%). 예: 3.5 → 3.5%
+  final double annualInterestRate;
   double? currentValue; // 현재 가치 (quantity * 현재 가격으로 계산)
 
   MyAsset({
@@ -14,8 +18,36 @@ class MyAsset {
     required this.initialAmount,
     required this.registeredDate,
     required this.quantity,
+    this.annualInterestRate = 0,
     this.currentValue,
   });
+
+  /// 현금 잔액 — 등록일부터 [at]까지 연복리 적용
+  static double calculateCashValue({
+    required double initialAmount,
+    required double annualInterestRate,
+    required DateTime registeredDate,
+    required DateTime at,
+  }) {
+    if (at.isBefore(registeredDate)) return initialAmount;
+    if (annualInterestRate == 0) return initialAmount;
+
+    final days = at.difference(registeredDate).inDays;
+    if (days <= 0) return initialAmount;
+
+    final years = days / 365.0;
+    return initialAmount *
+        math.pow(1 + annualInterestRate / 100, years).toDouble();
+  }
+
+  double cashValueAt(DateTime at) {
+    return calculateCashValue(
+      initialAmount: initialAmount,
+      annualInterestRate: annualInterestRate,
+      registeredDate: registeredDate,
+      at: at,
+    );
+  }
 
   MyAsset copyWith({
     String? id,
@@ -24,6 +56,7 @@ class MyAsset {
     double? initialAmount,
     DateTime? registeredDate,
     double? quantity,
+    double? annualInterestRate,
     double? currentValue,
   }) {
     return MyAsset(
@@ -33,6 +66,7 @@ class MyAsset {
       initialAmount: initialAmount ?? this.initialAmount,
       registeredDate: registeredDate ?? this.registeredDate,
       quantity: quantity ?? this.quantity,
+      annualInterestRate: annualInterestRate ?? this.annualInterestRate,
       currentValue: currentValue ?? this.currentValue,
     );
   }
@@ -45,29 +79,34 @@ class MyAsset {
       'initialAmount': initialAmount,
       'registeredDate': registeredDate.toIso8601String(),
       'quantity': quantity,
+      'annualInterestRate': annualInterestRate,
       'currentValue': currentValue,
     };
   }
 
   factory MyAsset.fromJson(Map<String, dynamic> json) {
-    // 기존 데이터 호환성: quantity가 없으면 currentValue / initialAmount로 역산
     double quantity;
     if (json['quantity'] != null) {
       quantity = (json['quantity'] as num).toDouble();
     } else if (json['currentValue'] != null && json['initialAmount'] != null) {
-      // 기존 데이터: quantity를 추정하기 위해 1.0으로 설정 (나중에 업데이트됨)
       quantity = 1.0;
     } else {
       quantity = 1.0;
     }
 
+    final assetId = json['assetId'] as String;
+    final annualInterestRate = json['annualInterestRate'] != null
+        ? (json['annualInterestRate'] as num).toDouble()
+        : 0.0;
+
     return MyAsset(
       id: json['id'] as String,
-      assetId: json['assetId'] as String,
+      assetId: assetId,
       assetName: json['assetName'] as String,
       initialAmount: (json['initialAmount'] as num).toDouble(),
       registeredDate: DateTime.parse(json['registeredDate'] as String),
       quantity: quantity,
+      annualInterestRate: assetId == 'cash' ? annualInterestRate : 0,
       currentValue: json['currentValue'] != null
           ? (json['currentValue'] as num).toDouble()
           : null,

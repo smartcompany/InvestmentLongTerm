@@ -170,7 +170,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get retirementSimulation => '能退休吗？';
 
   @override
-  String get growthRace => '增长率竞赛';
+  String get growthRace => '资产对决';
 
   @override
   String get crypto => '加密货币';
@@ -307,6 +307,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get detailedStatistics => '详细统计';
+
+  @override
+  String get viewAssetDetails => '查看详情';
+
+  @override
+  String get fixedValue => '固定值';
 
   @override
   String get simulationResultNoData => '没有模拟结果。';
@@ -602,6 +608,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get quantity => '数量';
 
   @override
+  String get annualInterestRate => '年利率';
+
+  @override
   String get averagePurchasePrice => '平均买入价';
 
   @override
@@ -660,4 +669,27 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get selectAssetsTitle => '选择资产';
+
+  @override
+  String get onboardingRaceTitle => '5年间发生了什么？';
+
+  @override
+  String get onboardingRaceSubtitle => '看看代表资产的成长竞赛';
+
+  @override
+  String get onboardingRaceStart => '开始成长竞赛';
+
+  @override
+  String get onboardingChartStart => '开始';
+
+  @override
+  String get onboardingRaceMatchup => '4种代表资产在同一条赛道上比拼';
+
+  @override
+  String get onboardingMyAssetsHint => '注册持有资产，即可追踪变化并获取投资洞察';
+
+  @override
+  String onboardingRacePeriod(int years) {
+    return '最近$years年 · 无广告立即开始';
+  }
 }

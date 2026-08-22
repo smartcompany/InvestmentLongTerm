@@ -170,7 +170,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get retirementSimulation => '은퇴 가능할까?';
 
   @override
-  String get growthRace => '성장률 경주';
+  String get growthRace => '자산 대결';
 
   @override
   String get crypto => '암호화폐';
@@ -307,6 +307,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get detailedStatistics => '상세 통계';
+
+  @override
+  String get viewAssetDetails => '상세 보기';
+
+  @override
+  String get fixedValue => '고정값';
 
   @override
   String get simulationResultNoData => '시뮬레이션 결과가 없습니다.';
@@ -603,6 +609,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get quantity => '수량';
 
   @override
+  String get annualInterestRate => '연 금리';
+
+  @override
   String get averagePurchasePrice => '평균 매수가';
 
   @override
@@ -661,4 +670,27 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get selectAssetsTitle => '자산 선택';
+
+  @override
+  String get onboardingRaceTitle => '5년 간 무슨 일이 있었나?';
+
+  @override
+  String get onboardingRaceSubtitle => '대표 자산의 성장 레이스를 확인해 보세요';
+
+  @override
+  String get onboardingRaceStart => '성장 레이스 시작하기';
+
+  @override
+  String get onboardingChartStart => '시작하기';
+
+  @override
+  String get onboardingRaceMatchup => '대표 4개 자산이 한 트랙에서 겨룹니다';
+
+  @override
+  String get onboardingMyAssetsHint => '보유 자산을 등록하면 변화를 추적하고 인사이트를 받아볼 수 있어요';
+
+  @override
+  String onboardingRacePeriod(int years) {
+    return '최근 $years년 · 광고 없이 바로 시작';
+  }
 }

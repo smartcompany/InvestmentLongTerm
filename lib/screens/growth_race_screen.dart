@@ -110,151 +110,173 @@ class _GrowthRaceScreenState extends State<GrowthRaceScreen> {
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                l10n.selectAssetToCompare,
-                style: AppTextStyles.homeMainQuestion.copyWith(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                l10n.selectUpToAssets,
-                style: AppTextStyles.homeSubDescription,
-              ),
-              const SizedBox(height: 24),
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.selectAssetToCompare,
+                      style: AppTextStyles.homeMainQuestion.copyWith(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n.selectUpToAssets,
+                      style: AppTextStyles.homeSubDescription,
+                    ),
+                    const SizedBox(height: 24),
 
-              Text(l10n.duration, style: AppTextStyles.settingsSectionLabel),
-              const SizedBox(height: 12),
-              Row(
-                children: [1, 3, 5, 7, 10].map((years) {
-                  final isSelected = provider.selectedYears == years;
-                  return Expanded(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: GestureDetector(
-                        onTap: () => provider.setSelectedYears(years),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 160),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? AppColors.primary
-                                : AppColors.surface,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: isSelected
-                                  ? AppColors.primary
-                                  : AppColors.border,
-                              width: 1.5,
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              '${years}Y',
-                              style: TextStyle(
-                                color: isSelected
-                                    ? Colors.white
-                                    : AppColors.textPrimary,
-                                fontWeight: isSelected
-                                    ? FontWeight.bold
-                                    : FontWeight.w600,
+                    Text(l10n.duration, style: AppTextStyles.settingsSectionLabel),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [1, 3, 5, 7, 10].map((years) {
+                        final isSelected = provider.selectedYears == years;
+                        return Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: GestureDetector(
+                              onTap: () => provider.setSelectedYears(years),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 160),
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : AppColors.surface,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? AppColors.primary
+                                        : AppColors.border,
+                                    width: 1.5,
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    '${years}Y',
+                                    style: TextStyle(
+                                      color: isSelected
+                                          ? Colors.white
+                                          : AppColors.textPrimary,
+                                      fontWeight: isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 28),
+
+                    if (appProvider.isAssetsLoading)
+                      const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(32),
+                          child: CircularProgressIndicator(color: AppColors.primary),
                         ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 28),
-
-              if (appProvider.isAssetsLoading)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(32),
-                    child: CircularProgressIndicator(color: AppColors.primary),
-                  ),
-                )
-              else if (appProvider.assets.isEmpty)
-                Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Text(
-                      l10n.failedToLoadAssetList,
-                      style: const TextStyle(color: AppColors.textSecondary),
-                    ),
-                  ),
-                )
-              else
-                _buildAssetSelectionList(appProvider.assets, provider),
-
-              const SizedBox(height: 32),
-
-              if (kDebugMode) ...[
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: OutlinedButton(
-                    onPressed: provider.selectedAssetIds.isEmpty ||
-                            provider.isLoading ||
-                            _isLoadingAd ||
-                            _isStartingDirect
-                        ? null
-                        : _startRaceDirect,
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.primary,
-                      side: const BorderSide(color: AppColors.primary),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: _isStartingDirect
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              color: AppColors.primary,
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : const Text(
-                            '바로 시작 (Debug)',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                      )
+                    else if (appProvider.assets.isEmpty)
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(32),
+                          child: Text(
+                            l10n.failedToLoadAssetList,
+                            style: const TextStyle(color: AppColors.textSecondary),
                           ),
+                        ),
+                      )
+                    else
+                      _buildAssetSelectionList(appProvider.assets, provider),
+                  ],
+                ),
+              ),
+            ),
+            _buildFloatingActionBar(provider, l10n),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFloatingActionBar(
+    GrowthRaceProvider provider,
+    AppLocalizations l10n,
+  ) {
+    final disabled = provider.selectedAssetIds.isEmpty ||
+        provider.isLoading ||
+        _isLoadingAd ||
+        _isStartingDirect;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
+      decoration: BoxDecoration(
+        color: AppColors.bg.withValues(alpha: 0.97),
+        border: Border(top: BorderSide(color: AppColors.border)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (kDebugMode) ...[
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: OutlinedButton(
+                onPressed: disabled ? null : _startRaceDirect,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.primary,
+                  side: const BorderSide(color: AppColors.primary),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                const SizedBox(height: 12),
-              ],
-
-              AppPrimaryButton(
-                label: provider.selectedAssetIds.isEmpty
-                    ? l10n.watchAdAndStart
-                    : l10n.compareSelectedAssets(
-                        provider.selectedAssetIds.length,
+                child: _isStartingDirect
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        '바로 시작 (Debug)',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                loading: provider.isLoading || _isLoadingAd || _isStartingDirect,
-                onPressed: provider.selectedAssetIds.isEmpty ||
-                        provider.isLoading ||
-                        _isLoadingAd ||
-                        _isStartingDirect
-                    ? null
-                    : _startRace,
               ),
-
-              const SizedBox(height: 32),
-            ],
+            ),
+            const SizedBox(height: 10),
+          ],
+          AppPrimaryButton(
+            label: provider.selectedAssetIds.isEmpty
+                ? l10n.watchAdAndStart
+                : l10n.compareSelectedAssets(
+                    provider.selectedAssetIds.length,
+                  ),
+            loading: provider.isLoading || _isLoadingAd || _isStartingDirect,
+            onPressed: disabled ? null : _startRace,
           ),
-        ),
+        ],
       ),
     );
   }

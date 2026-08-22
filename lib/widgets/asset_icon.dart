@@ -37,6 +37,10 @@ class AssetIcon extends StatelessWidget {
         return (icon: Icons.hexagon_outlined, color: const Color(0xFF0033AD));
       case 'solana':
         return (icon: Icons.blur_on, color: const Color(0xFF9945FF));
+      case 'usdt':
+        return (icon: Icons.savings_outlined, color: const Color(0xFF26A17B));
+      case 'usdc':
+        return (icon: Icons.monetization_on_outlined, color: const Color(0xFF2775CA));
       case 'tesla':
         return (icon: Icons.bolt, color: const Color(0xFFE82127));
       case 'google':
@@ -129,6 +133,8 @@ class AssetIcon extends StatelessWidget {
       'binance': 'B',
       'cardano': 'A',
       'solana': 'S',
+      'usdt': 'Te',
+      'usdc': 'Uc',
       'tesla': 'T',
       'google': 'G',
       'apple': 'A',

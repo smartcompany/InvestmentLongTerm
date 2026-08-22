@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'home_screen.dart';
@@ -10,7 +11,11 @@ import '../utils/colors.dart';
 import '../services/ad_service.dart';
 import '../providers/my_assets_provider.dart';
 import '../providers/currency_provider.dart';
+import '../providers/growth_race_provider.dart';
+import '../services/onboarding_service.dart';
 import '../widgets/asset_icon.dart';
+import '../widgets/my_assets_tab_hint_overlay.dart';
+import 'growth_race_chart_screen.dart';
 
 class MainTabScreen extends StatefulWidget {
   final int? initialIndex;
@@ -18,10 +23,14 @@ class MainTabScreen extends StatefulWidget {
   /// true면 지금 내 자산 탭 진입 시 광고 게이트(자산 미리보기)를 표시합니다.
   final bool openMyAssetsGate;
 
+  /// true면 온보딩 직후 광고 없이 자산 대결 차트를 엽니다.
+  final bool openOnboardingRace;
+
   const MainTabScreen({
     super.key,
     this.initialIndex,
     this.openMyAssetsGate = false,
+    this.openOnboardingRace = false,
   });
 
   @override
@@ -29,31 +38,70 @@ class MainTabScreen extends StatefulWidget {
 }
 
 class _MainTabScreenState extends State<MainTabScreen> {
+  static const _myAssetsTabIndex = 1;
+  static const _retireTabIndex = 3;
+
   late int _currentIndex;
   bool _showMyAssetsGate = false;
   bool _isLoadingAd = false;
   bool _hasUnlockedMyAssetsThisSession = false;
+  bool _showMyAssetsHint = false;
+  final GlobalKey _myAssetsTabKey = GlobalKey();
 
   List<Widget> get _screens => [
-    const HomeScreen(),
-    RetireSimulatorScreen(isVisible: _currentIndex == 1),
     const GrowthRaceScreen(),
     const MyAssetsScreen(),
+    const HomeScreen(),
+    RetireSimulatorScreen(isVisible: _currentIndex == _retireTabIndex),
   ];
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex ?? 0;
-    if (widget.openMyAssetsGate && _currentIndex == 3) {
+    if (widget.openMyAssetsGate && _currentIndex == _myAssetsTabIndex) {
       _showMyAssetsGate = true;
+    }
+    if (widget.openOnboardingRace) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _openOnboardingRaceChart();
+      });
     }
   }
 
+  Future<void> _openOnboardingRaceChart() async {
+    final provider = context.read<GrowthRaceProvider>();
+    if (provider.priceData.isEmpty) return;
+
+    if (!mounted) return;
+
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const GrowthRaceChartScreen(isOnboarding: true),
+        fullscreenDialog: true,
+      ),
+    );
+
+    if (!mounted) return;
+    final shouldShowHint = await OnboardingService.shouldShowMyAssetsHint();
+    if (shouldShowHint && mounted) {
+      setState(() => _showMyAssetsHint = true);
+    }
+  }
+
+  Future<void> _dismissMyAssetsHint() async {
+    await OnboardingService.markMyAssetsHintShown();
+    if (mounted) setState(() => _showMyAssetsHint = false);
+  }
+
   void _handleMyAssetsTabTap() {
+    if (_showMyAssetsHint) {
+      _dismissMyAssetsHint();
+    }
+
     if (_hasUnlockedMyAssetsThisSession) {
       setState(() {
-        _currentIndex = 3;
+        _currentIndex = _myAssetsTabIndex;
         _showMyAssetsGate = false;
       });
       return;
@@ -61,7 +109,7 @@ class _MainTabScreenState extends State<MainTabScreen> {
 
     // 광고 전: 게이트 화면에서 시뮬레이션/등록 자산 미리보기
     setState(() {
-      _currentIndex = 3;
+      _currentIndex = _myAssetsTabIndex;
       _showMyAssetsGate = true;
     });
   }
@@ -75,7 +123,7 @@ class _MainTabScreenState extends State<MainTabScreen> {
         _isLoadingAd = false;
         _showMyAssetsGate = false;
         _hasUnlockedMyAssetsThisSession = true;
-        _currentIndex = 3;
+        _currentIndex = _myAssetsTabIndex;
       });
     }
 
@@ -89,11 +137,22 @@ class _MainTabScreenState extends State<MainTabScreen> {
     }
   }
 
+  void _handleViewMyAssetsWithoutAd() {
+    setState(() {
+      _isLoadingAd = false;
+      _showMyAssetsGate = false;
+      _hasUnlockedMyAssetsThisSession = true;
+      _currentIndex = _myAssetsTabIndex;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
+    return Stack(
+      children: [
+        Scaffold(
       extendBody: true,
       body: Stack(
         children: [
@@ -121,30 +180,41 @@ class _MainTabScreenState extends State<MainTabScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildTabItem(
+                  icon: Icons.compare_arrows,
+                  label: l10n.growthRace,
+                  index: 0,
+                ),
+                _buildTabItem(
+                  key: _myAssetsTabKey,
+                  icon: Icons.account_balance_wallet,
+                  label: l10n.myAssets,
+                  index: _myAssetsTabIndex,
+                ),
+                _buildTabItem(
                   icon: Icons.history,
                   label: l10n.pastAssetSimulation,
-                  index: 0,
+                  index: 2,
                 ),
                 _buildTabItem(
                   icon: Icons.trending_up,
                   label: l10n.retirementSimulation,
-                  index: 1,
-                ),
-                _buildTabItem(
-                  icon: Icons.compare_arrows,
-                  label: l10n.growthRace,
-                  index: 2,
-                ),
-                _buildTabItem(
-                  icon: Icons.account_balance_wallet,
-                  label: l10n.myAssets,
-                  index: 3,
+                  index: _retireTabIndex,
                 ),
               ],
             ),
           ),
         ),
       ),
+        ),
+        if (_showMyAssetsHint)
+          MyAssetsTabHintOverlay(
+            targetKey: _myAssetsTabKey,
+            message: l10n.onboardingMyAssetsHint,
+            dismissLabel: l10n.confirm,
+            onDismiss: _dismissMyAssetsHint,
+            onTargetTap: _handleMyAssetsTabTap,
+          ),
+      ],
     );
   }
 
@@ -287,6 +357,29 @@ class _MainTabScreenState extends State<MainTabScreen> {
                         ),
                 ),
               ),
+              if (kDebugMode) ...[
+                const SizedBox(height: 10),
+                SizedBox(
+                  height: 48,
+                  child: OutlinedButton(
+                    onPressed: _isLoadingAd ? null : _handleViewMyAssetsWithoutAd,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                      side: const BorderSide(color: AppColors.primary),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: const Text(
+                      '광고 없이 바로 보기 (Debug)',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -295,6 +388,7 @@ class _MainTabScreenState extends State<MainTabScreen> {
   }
 
   Widget _buildTabItem({
+    Key? key,
     required IconData icon,
     required String label,
     required int index,
@@ -307,9 +401,12 @@ class _MainTabScreenState extends State<MainTabScreen> {
           splashColor: Colors.transparent,
           highlightColor: Colors.transparent,
           onTap: () {
-            if (index == 3) {
+            if (index == _myAssetsTabIndex) {
               _handleMyAssetsTabTap();
             } else {
+              if (_showMyAssetsHint) {
+                _dismissMyAssetsHint();
+              }
               setState(() {
                 _currentIndex = index;
                 _showMyAssetsGate = false;
@@ -317,6 +414,7 @@ class _MainTabScreenState extends State<MainTabScreen> {
             }
           },
           child: Container(
+            key: key,
             padding: const EdgeInsets.symmetric(vertical: 4),
             child: Column(
               mainAxisSize: MainAxisSize.min,

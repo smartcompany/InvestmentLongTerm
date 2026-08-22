@@ -12,7 +12,7 @@ import 'l10n/app_localizations.dart';
 import 'providers/app_state_provider.dart';
 import 'providers/retire_simulator_provider.dart';
 import 'providers/currency_provider.dart';
-import 'screens/main_tab_screen.dart';
+import 'screens/app_startup_gate.dart';
 import 'providers/my_assets_provider.dart';
 import 'providers/growth_race_provider.dart';
 import 'utils/colors.dart';
@@ -135,7 +135,7 @@ class MyApp extends StatelessWidget {
           inactiveTrackColor: AppColors.border,
         ),
       ),
-      home: MainTabScreen(),
+      home: const AppStartupGate(),
       debugShowCheckedModeBanner: false,
       builder: (context, child) {
         return MediaQuery(

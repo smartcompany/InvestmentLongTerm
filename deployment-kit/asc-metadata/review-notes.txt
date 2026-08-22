@@ -1,0 +1,31 @@
+App Review Notes — AI Expiry Reminder (AI 유통기한 알리미)
+Bundle ID: com.smartcompany.useByDate
+
+1) CORE FLOW
+• Launch app
+• Home shows saved food items sorted by urgency
+• Tap Camera or Album and allow permission if prompted
+• Take/select a food package photo
+• AI analyzes the package and suggests item names / expiry dates
+• Review detected items, edit if needed, then Save
+• Home shows the saved item and local reminder settings can notify before expiry
+
+2) ACCESS / SETUP
+• No login or account required
+• No payment, subscription, or in-app purchase required
+• Reviewer can fully test with their own food package photos
+
+3) PERMISSIONS
+• Camera: to capture food package photos
+• Photo Library: to select existing food package photos
+• Notifications: to remind users before expiry dates
+
+4) AI / SERVER USAGE
+• Selected photos may be sent to our API for expiry analysis using Google Gemini
+• Photos are used only for analysis flow and are not used to build a social feed
+
+5) ADS
+• Interstitial ads may appear based on how often photos are added
+
+Privacy Policy: https://use-by-date-server.vercel.app/privacy
+Support: https://smartcompany.github.io

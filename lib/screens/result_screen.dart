@@ -395,11 +395,11 @@ class _ResultScreenState extends State<ResultScreen> {
                       filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                       child: GestureDetector(
                         onTap: () {
-                          // MainTabScreen의 은퇴 시뮬레이터 탭으로 이동 (인덱스 1)
+                          // MainTabScreen의 은퇴 시뮬레이터 탭으로 이동 (인덱스 3)
                           Navigator.of(context).pushAndRemoveUntil(
                             MaterialPageRoute(
                               builder: (context) =>
-                                  const MainTabScreen(initialIndex: 1),
+                                  const MainTabScreen(initialIndex: 3),
                             ),
                             (route) => route.isFirst, // 홈 화면까지만 유지
                           );
