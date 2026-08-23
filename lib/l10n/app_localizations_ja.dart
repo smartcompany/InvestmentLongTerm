@@ -477,6 +477,21 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settings => '設定';
 
   @override
+  String get notificationSettings => '通知設定';
+
+  @override
+  String get pushNotifications => 'プッシュ通知';
+
+  @override
+  String get pushNotificationsDesc => '1日1回のリマインダーと、資産価値の変動通知を受け取ります';
+
+  @override
+  String get pushDailyTitle => '保有資産トレンド';
+
+  @override
+  String get pushDailyBody => '今日の保有資産の流れを確認してみましょう';
+
+  @override
   String get currencySettings => '通貨設定';
 
   @override
@@ -607,6 +622,33 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get aiInsightRisks => '注意点';
+
+  @override
+  String get marketBriefingButton => '広告を見て保有資産トレンドを見る';
+
+  @override
+  String get marketBriefingTitle => '保有資産の最近トレンド';
+
+  @override
+  String get marketBriefingLoading => 'AIが保有資産のトレンドを整理中…';
+
+  @override
+  String get marketBriefingFailed => '保有資産トレンドを取得できませんでした。もう一度お試しください。';
+
+  @override
+  String get marketBriefingSummary => '保有資産の最近の流れ';
+
+  @override
+  String get marketBriefingHoldingsFocus => '銘柄ごとのポイント';
+
+  @override
+  String get marketBriefingOutlook => '保有資産ベースの今後の可能性';
+
+  @override
+  String get marketBriefingWatchPoints => '保有資産で注目する点';
+
+  @override
+  String get marketBriefingConditions => '保有資産の今日のコンディション';
 
   @override
   String get retirementSetupSubtitle => '退職を考えていますか？\n退職時の予想資産を入力してください';

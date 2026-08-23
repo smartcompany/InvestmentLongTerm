@@ -2,13 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/currency_provider.dart';
 import '../providers/my_assets_provider.dart';
+import '../services/push_notification_service.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
 import '../widgets/liquid_glass.dart';
 import '../l10n/app_localizations.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  bool? _pushEnabled;
+
+  @override
+  void initState() {
+    super.initState();
+    PushNotificationService.shared.isEnabled().then((enabled) {
+      if (mounted) setState(() => _pushEnabled = enabled);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +51,53 @@ class SettingsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(
+                  l10n.notificationSettings,
+                  style: AppTextStyles.chartSectionTitle,
+                ),
+                const SizedBox(height: 16),
+                LiquidGlass(
+                  blur: 10,
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.border, width: 1.5),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  child: SwitchListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+                    title: Text(
+                      l10n.pushNotifications,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    subtitle: Text(
+                      l10n.pushNotificationsDesc,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 13,
+                      ),
+                    ),
+                    value: _pushEnabled ?? true,
+                    activeThumbColor: AppColors.primary,
+                    onChanged: _pushEnabled == null
+                        ? null
+                        : (value) async {
+                            await PushNotificationService.shared.setEnabled(value);
+                            if (value) {
+                              await PushNotificationService.shared
+                                  .scheduleDailyReminder(
+                                title: l10n.pushDailyTitle,
+                                body: l10n.pushDailyBody,
+                              );
+                            }
+                            if (mounted) setState(() => _pushEnabled = value);
+                          },
+                  ),
+                ),
+                const SizedBox(height: 28),
                 Text(
                   l10n.currencySettings,
                   style: AppTextStyles.chartSectionTitle,

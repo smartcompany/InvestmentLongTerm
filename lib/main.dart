@@ -17,6 +17,8 @@ import 'providers/my_assets_provider.dart';
 import 'providers/growth_race_provider.dart';
 import 'utils/colors.dart';
 import 'services/ad_service.dart';
+import 'services/notification_navigation.dart';
+import 'services/push_notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -64,6 +66,15 @@ void main() async {
   // CurrencyProvider 초기화 (싱글톤)
   CurrencyProvider.shared;
 
+  // 로컬 푸시 (일일 리마인더 + 자산 변동)
+  await PushNotificationService.shared.initialize(
+    onTap: (payload) {
+      if (payload == PushNotificationService.payloadMyAssets) {
+        NotificationNavigation.openMyAssets();
+      }
+    },
+  );
+
   runApp(
     MultiProvider(
       providers: [
@@ -82,6 +93,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: NotificationNavigation.navigatorKey,
       title: 'Time Capital',
       localizationsDelegates: const [
         AppLocalizations.delegate,

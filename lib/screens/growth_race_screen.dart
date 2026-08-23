@@ -309,7 +309,7 @@ class _GrowthRaceScreenState extends State<GrowthRaceScreen> {
         final columns = (constraints.maxWidth / 78).floor().clamp(4, 5);
         final cardWidth =
             (constraints.maxWidth - spacing * (columns - 1)) / columns;
-        final cardHeight = cardWidth * 1.35;
+        final cardHeight = cardWidth; // 정사각형 카드
         final collapsedCount = columns; // 한 줄만 먼저 노출
 
         return Column(

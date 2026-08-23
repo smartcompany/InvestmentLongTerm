@@ -482,6 +482,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settings => 'Settings';
 
   @override
+  String get notificationSettings => 'Notifications';
+
+  @override
+  String get pushNotifications => 'Push notifications';
+
+  @override
+  String get pushNotificationsDesc =>
+      'Get a once-a-day reminder and alerts when holdings move';
+
+  @override
+  String get pushDailyTitle => 'My holdings trend';
+
+  @override
+  String get pushDailyBody => 'Check how your holdings are moving today';
+
+  @override
   String get currencySettings => 'Currency Settings';
 
   @override
@@ -616,6 +632,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aiInsightRisks => 'Watch-outs';
+
+  @override
+  String get marketBriefingButton => 'Watch Ad for My Holdings Trend';
+
+  @override
+  String get marketBriefingTitle => 'My Holdings Trend';
+
+  @override
+  String get marketBriefingLoading =>
+      'AI is summarizing trends for your holdings…';
+
+  @override
+  String get marketBriefingFailed =>
+      'Couldn\'t load holdings trends. Please try again.';
+
+  @override
+  String get marketBriefingSummary => 'Recent flow of your holdings';
+
+  @override
+  String get marketBriefingHoldingsFocus => 'Per-holding points';
+
+  @override
+  String get marketBriefingOutlook => 'Near-term outlook for your holdings';
+
+  @override
+  String get marketBriefingWatchPoints => 'What to watch in your holdings';
+
+  @override
+  String get marketBriefingConditions => 'Today\'s condition of your holdings';
 
   @override
   String get retirementSetupSubtitle =>

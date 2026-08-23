@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -17,6 +18,7 @@ import '../widgets/app_ui.dart';
 import '../widgets/asset_icon.dart';
 import '../widgets/asset_price_chart.dart';
 import '../widgets/investment_insight_dialog.dart';
+import '../widgets/market_briefing_dialog.dart';
 import '../services/ad_service.dart';
 import '../services/api_service.dart';
 import 'asset_detail_screen.dart';
@@ -31,7 +33,7 @@ class MyAssetsScreen extends StatefulWidget {
 
 class _MyAssetsScreenState extends State<MyAssetsScreen> {
   int _selectedYears = 1; // 기본값: 1년
-  bool _isLoadingInsightAd = false;
+  bool _isLoadingAi = false;
 
   @override
   void initState() {
@@ -292,7 +294,15 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
                 const SizedBox(height: 8),
                 _buildAddAssetButton(context, provider, l10n),
                 const SizedBox(height: 12),
+                _buildMarketBriefingButton(context, provider, l10n),
+                const SizedBox(height: 10),
                 _buildAiInsightButton(context, provider, l10n),
+                if (kDebugMode) ...[
+                  const SizedBox(height: 10),
+                  _buildMarketBriefingDebugButton(context, provider, l10n),
+                  const SizedBox(height: 8),
+                  _buildAiInsightDebugButton(context, provider, l10n),
+                ],
               ],
               const SizedBox(height: 24),
             ],
@@ -315,7 +325,7 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
       return;
     }
 
-    setState(() => _isLoadingInsightAd = true);
+    setState(() => _isLoadingAi = true);
 
     Future<void> afterAd() async {
       if (!mounted) return;
@@ -334,6 +344,23 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
     } catch (_) {
       await afterAd();
     }
+  }
+
+  Future<void> _handleAiInsightDebugTap(
+    BuildContext context,
+    MyAssetsProvider provider,
+    AppLocalizations l10n,
+  ) async {
+    if (provider.assets.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.aiInsightNeedAssets)),
+      );
+      return;
+    }
+
+    setState(() => _isLoadingAi = true);
+    debugPrint('[AI Insight][Debug] skip ad → fetch insight');
+    await _fetchAndShowInsight(context, provider, l10n);
   }
 
   Future<void> _fetchAndShowInsight(
@@ -430,6 +457,13 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
         });
       }
 
+      debugPrint(
+        '[AI Insight] request locale=$locale currency=$currencySymbol '
+        'holdings=${holdings.length} purchase=$totalPurchase '
+        'current=$totalCurrent return=$totalReturn',
+      );
+      debugPrint('[AI Insight] holdings payload: $holdings');
+
       final insight = await ApiService.fetchInvestmentInsight(
         locale: locale,
         displayCurrency: currencySymbol,
@@ -439,17 +473,32 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
         totalReturnRatePct: totalReturn,
       );
 
+      debugPrint(
+        '[AI Insight] success summaryLen=${insight.summary.length} '
+        'outlookLen=${insight.outlook.length} '
+        'suggestions=${insight.suggestions.length} '
+        'risks=${insight.risks.length}',
+      );
+      debugPrint('[AI Insight] summary: ${insight.summary}');
+      debugPrint('[AI Insight] outlook: ${insight.outlook}');
+
       if (!mounted) return;
       Navigator.of(context, rootNavigator: true).pop(); // loading
-      setState(() => _isLoadingInsightAd = false);
+      setState(() => _isLoadingAi = false);
       await showInvestmentInsightDialog(context, insight: insight);
-    } catch (e) {
-      debugPrint('AI insight failed: $e');
+    } catch (e, st) {
+      debugPrint('[AI Insight] failed: $e');
+      debugPrint('[AI Insight] stack: $st');
       if (!mounted) return;
       Navigator.of(context, rootNavigator: true).pop(); // loading
-      setState(() => _isLoadingInsightAd = false);
+      setState(() => _isLoadingAi = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.aiInsightFailed)),
+        SnackBar(
+          content: Text(
+            kDebugMode ? '${l10n.aiInsightFailed}\n$e' : l10n.aiInsightFailed,
+          ),
+          duration: kDebugMode ? const Duration(seconds: 8) : const Duration(seconds: 4),
+        ),
       );
     }
   }
@@ -463,10 +512,10 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
       width: double.infinity,
       height: 52,
       child: ElevatedButton.icon(
-        onPressed: _isLoadingInsightAd
+        onPressed: _isLoadingAi
             ? null
             : () => _handleAiInsightTap(context, provider, l10n),
-        icon: _isLoadingInsightAd
+        icon: _isLoadingAi
             ? const SizedBox(
                 width: 20,
                 height: 20,
@@ -487,6 +536,294 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
           disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.7),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAiInsightDebugButton(
+    BuildContext context,
+    MyAssetsProvider provider,
+    AppLocalizations l10n,
+  ) {
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: OutlinedButton.icon(
+        onPressed: _isLoadingAi
+            ? null
+            : () => _handleAiInsightDebugTap(context, provider, l10n),
+        icon: const Icon(Icons.bug_report_outlined, size: 18),
+        label: const Text(
+          '광고 없이 AI 인사이트 (Debug)',
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        ),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.primary,
+          side: const BorderSide(color: AppColors.primary),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleMarketBriefingTap(
+    BuildContext context,
+    MyAssetsProvider provider,
+    AppLocalizations l10n,
+  ) async {
+    if (provider.assets.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.aiInsightNeedAssets)),
+      );
+      return;
+    }
+
+    setState(() => _isLoadingAi = true);
+
+    Future<void> afterAd() async {
+      if (!mounted) return;
+      await _fetchAndShowMarketBriefing(context, provider, l10n);
+    }
+
+    try {
+      await AdService.shared.showFullScreenAd(
+        onAdDismissed: () {
+          afterAd();
+        },
+        onAdFailedToShow: () {
+          afterAd();
+        },
+      );
+    } catch (_) {
+      await afterAd();
+    }
+  }
+
+  Future<void> _handleMarketBriefingDebugTap(
+    BuildContext context,
+    MyAssetsProvider provider,
+    AppLocalizations l10n,
+  ) async {
+    if (provider.assets.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.aiInsightNeedAssets)),
+      );
+      return;
+    }
+
+    setState(() => _isLoadingAi = true);
+    debugPrint('[Market Briefing][Debug] skip ad → fetch briefing');
+    await _fetchAndShowMarketBriefing(context, provider, l10n);
+  }
+
+  Future<List<Map<String, dynamic>>> _buildHoldingsPayload(
+    MyAssetsProvider provider,
+    AppStateProvider appProvider,
+    String currencySymbol,
+  ) async {
+    final holdings = <Map<String, dynamic>>[];
+    for (final asset in provider.assets) {
+      final originalCurrency = _getAssetOriginalCurrency(
+        asset.assetId,
+        appProvider,
+        assetType: asset.assetType,
+      );
+      double? currentInDisplay;
+      if (asset.currentValue != null) {
+        currentInDisplay = await CurrencyConverter.shared.convert(
+          asset.currentValue!,
+          originalCurrency,
+          currencySymbol,
+        );
+      }
+      final returnRate = currentInDisplay != null && asset.initialAmount > 0
+          ? (currentInDisplay / asset.initialAmount - 1) * 100
+          : null;
+
+      final resolvedType = asset.assetType ??
+          () {
+            try {
+              return appProvider.assets
+                  .firstWhere((a) => a.id == asset.assetId)
+                  .type;
+            } catch (_) {
+              return null;
+            }
+          }();
+
+      holdings.add({
+        'name': asset.assetName,
+        'assetId': asset.assetId,
+        if (resolvedType != null) 'type': resolvedType,
+        'quantity': asset.quantity,
+        'initialAmount': asset.initialAmount,
+        if (currentInDisplay != null) 'currentValue': currentInDisplay,
+        if (returnRate != null) 'returnRatePct': returnRate,
+      });
+    }
+    return holdings;
+  }
+
+  Future<void> _fetchAndShowMarketBriefing(
+    BuildContext context,
+    MyAssetsProvider provider,
+    AppLocalizations l10n,
+  ) async {
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        content: Row(
+          children: [
+            const SizedBox(
+              width: 28,
+              height: 28,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                l10n.marketBriefingLoading,
+                style: const TextStyle(color: AppColors.textPrimary),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      final appProvider = context.read<AppStateProvider>();
+      final currencySymbol = CurrencyProvider.shared.getCurrencySymbol();
+      final localeCode = Localizations.localeOf(context).languageCode;
+      final locale = switch (localeCode) {
+        'ko' || 'ja' || 'zh' => localeCode,
+        _ => 'en',
+      };
+      final now = DateTime.now();
+      final asOfDate =
+          '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+
+      final holdings = await _buildHoldingsPayload(
+        provider,
+        appProvider,
+        currencySymbol,
+      );
+
+      debugPrint(
+        '[Market Briefing] request locale=$locale date=$asOfDate '
+        'holdings=${holdings.length}',
+      );
+
+      final briefing = await ApiService.fetchMarketBriefing(
+        locale: locale,
+        displayCurrency: currencySymbol,
+        assets: holdings,
+        asOfDate: asOfDate,
+      );
+
+      debugPrint(
+        '[Market Briefing] success headline=${briefing.todayHeadline} '
+        'conditions=${briefing.assetConditions.length}',
+      );
+
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop();
+      setState(() => _isLoadingAi = false);
+      await showMarketBriefingDialog(context, briefing: briefing);
+    } catch (e, st) {
+      debugPrint('[Market Briefing] failed: $e');
+      debugPrint('[Market Briefing] stack: $st');
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop();
+      setState(() => _isLoadingAi = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            kDebugMode
+                ? '${l10n.marketBriefingFailed}\n$e'
+                : l10n.marketBriefingFailed,
+          ),
+          duration:
+              kDebugMode ? const Duration(seconds: 8) : const Duration(seconds: 4),
+        ),
+      );
+    }
+  }
+
+  Widget _buildMarketBriefingButton(
+    BuildContext context,
+    MyAssetsProvider provider,
+    AppLocalizations l10n,
+  ) {
+    return SizedBox(
+      width: double.infinity,
+      height: 52,
+      child: ElevatedButton.icon(
+        onPressed: _isLoadingAi
+            ? null
+            : () => _handleMarketBriefingTap(context, provider, l10n),
+        icon: _isLoadingAi
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+            : const Icon(Icons.newspaper_outlined, size: 20),
+        label: Text(
+          l10n.marketBriefingButton,
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.7),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMarketBriefingDebugButton(
+    BuildContext context,
+    MyAssetsProvider provider,
+    AppLocalizations l10n,
+  ) {
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: OutlinedButton.icon(
+        onPressed: _isLoadingAi
+            ? null
+            : () => _handleMarketBriefingDebugTap(context, provider, l10n),
+        icon: const Icon(Icons.bug_report_outlined, size: 18),
+        label: const Text(
+          '광고 없이 내 자산 트렌드 (Debug)',
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        ),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.primary,
+          side: const BorderSide(color: AppColors.primary),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
@@ -772,44 +1109,25 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
                                     ],
                                   ),
                                 ),
-                                PopupMenuButton<String>(
+                                IconButton(
+                                  onPressed: () => _deleteAsset(
+                                    context,
+                                    asset.id,
+                                    provider,
+                                    l10n,
+                                  ),
+                                  tooltip: l10n.delete,
                                   icon: const Icon(
-                                    Icons.more_horiz,
-                                    color: AppColors.textSecondary,
+                                    Icons.delete_outline,
+                                    color: Colors.red,
+                                    size: 22,
                                   ),
                                   padding: EdgeInsets.zero,
-                                  onSelected: (value) {
-                                    if (value == 'delete') {
-                                      _deleteAsset(
-                                        context,
-                                        asset.id,
-                                        provider,
-                                        l10n,
-                                      );
-                                    }
-                                  },
-                                  itemBuilder: (context) => [
-                                    PopupMenuItem(
-                                      value: 'delete',
-                                      child: Row(
-                                        children: [
-                                          const Icon(
-                                            Icons.delete_outline,
-                                            color: Colors.red,
-                                            size: 20,
-                                          ),
-                                          const SizedBox(width: 10),
-                                          Text(
-                                            l10n.delete,
-                                            style: const TextStyle(
-                                              color: Colors.red,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
+                                  constraints: const BoxConstraints(
+                                    minWidth: 36,
+                                    minHeight: 36,
+                                  ),
+                                  visualDensity: VisualDensity.compact,
                                 ),
                               ],
                             ),

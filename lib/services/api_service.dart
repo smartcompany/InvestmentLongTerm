@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../models/investment_config.dart';
 import '../models/calculation_result.dart';
 import '../models/asset_option.dart';
 import '../models/investment_insight.dart';
+import '../models/market_briefing.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 class ApiService {
@@ -145,26 +147,38 @@ class ApiService {
     double? totalCurrentValue,
     double? totalReturnRatePct,
   }) async {
-    try {
-      final body = <String, dynamic>{
-        'locale': locale,
-        'displayCurrency': displayCurrency,
-        'assets': assets,
-      };
-      if (totalPurchaseAmount != null) {
-        body['totalPurchaseAmount'] = totalPurchaseAmount;
-      }
-      if (totalCurrentValue != null) {
-        body['totalCurrentValue'] = totalCurrentValue;
-      }
-      if (totalReturnRatePct != null) {
-        body['totalReturnRatePct'] = totalReturnRatePct;
-      }
+    final uri = Uri.parse('$baseUrl/api/insights');
+    final body = <String, dynamic>{
+      'locale': locale,
+      'displayCurrency': displayCurrency,
+      'assets': assets,
+    };
+    if (totalPurchaseAmount != null) {
+      body['totalPurchaseAmount'] = totalPurchaseAmount;
+    }
+    if (totalCurrentValue != null) {
+      body['totalCurrentValue'] = totalCurrentValue;
+    }
+    if (totalReturnRatePct != null) {
+      body['totalReturnRatePct'] = totalReturnRatePct;
+    }
 
+    debugPrint('[ApiService] POST $uri');
+    debugPrint('[ApiService] insight body: ${jsonEncode(body)}');
+
+    try {
       final response = await http.post(
-        Uri.parse('$baseUrl/api/insights'),
+        uri,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode(body),
+      );
+
+      debugPrint(
+        '[ApiService] insight status=${response.statusCode} '
+        'bodyLen=${response.body.length}',
+      );
+      debugPrint(
+        '[ApiService] insight response: ${response.body.length > 1200 ? '${response.body.substring(0, 1200)}…' : response.body}',
       );
 
       if (response.statusCode == 200) {
@@ -179,10 +193,75 @@ class ApiService {
         if (errorText != null && errorText.isNotEmpty) {
           message = errorText;
         }
-      } catch (_) {}
+      } catch (_) {
+        if (response.statusCode == 404) {
+          message =
+              'Insights API not found (404). Deploy /api/insights to the server.';
+        }
+      }
       throw Exception(message);
     } catch (e) {
+      debugPrint('[ApiService] insight exception: $e');
       throw Exception('Failed to fetch investment insight: $e');
+    }
+  }
+
+  static Future<MarketBriefing> fetchMarketBriefing({
+    required String locale,
+    required String displayCurrency,
+    required List<Map<String, dynamic>> assets,
+    String? asOfDate,
+  }) async {
+    final uri = Uri.parse('$baseUrl/api/market-briefing');
+    final body = <String, dynamic>{
+      'locale': locale,
+      'displayCurrency': displayCurrency,
+      'assets': assets,
+    };
+    if (asOfDate != null && asOfDate.isNotEmpty) {
+      body['asOfDate'] = asOfDate;
+    }
+
+    debugPrint('[ApiService] POST $uri');
+    debugPrint('[ApiService] market-briefing body: ${jsonEncode(body)}');
+
+    try {
+      final response = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(body),
+      );
+
+      debugPrint(
+        '[ApiService] market-briefing status=${response.statusCode} '
+        'bodyLen=${response.body.length}',
+      );
+      debugPrint(
+        '[ApiService] market-briefing response: ${response.body.length > 1200 ? '${response.body.substring(0, 1200)}…' : response.body}',
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        return MarketBriefing.fromJson(data);
+      }
+
+      String message = 'Server error: ${response.statusCode}';
+      try {
+        final err = jsonDecode(response.body) as Map<String, dynamic>;
+        final errorText = err['error'] as String?;
+        if (errorText != null && errorText.isNotEmpty) {
+          message = errorText;
+        }
+      } catch (_) {
+        if (response.statusCode == 404) {
+          message =
+              'Market briefing API not found (404). Deploy /api/market-briefing.';
+        }
+      }
+      throw Exception(message);
+    } catch (e) {
+      debugPrint('[ApiService] market-briefing exception: $e');
+      throw Exception('Failed to fetch market briefing: $e');
     }
   }
 

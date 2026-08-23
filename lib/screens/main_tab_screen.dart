@@ -7,6 +7,7 @@ import 'growth_race_screen.dart';
 import '../l10n/app_localizations.dart';
 import '../utils/colors.dart';
 import '../providers/growth_race_provider.dart';
+import '../services/notification_navigation.dart';
 import '../services/onboarding_service.dart';
 import '../widgets/my_assets_tab_hint_overlay.dart';
 import 'growth_race_chart_screen.dart';
@@ -53,11 +54,24 @@ class _MainTabScreenState extends State<MainTabScreen> {
     if (widget.openMyAssetsGate) {
       _currentIndex = _myAssetsTabIndex;
     }
+    NotificationNavigation.pendingTabIndex.addListener(_onPendingTab);
     if (widget.openOnboardingRace) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _openOnboardingRaceChart();
       });
     }
+  }
+
+  @override
+  void dispose() {
+    NotificationNavigation.pendingTabIndex.removeListener(_onPendingTab);
+    super.dispose();
+  }
+
+  void _onPendingTab() {
+    final tab = NotificationNavigation.pendingTabIndex.value;
+    if (tab == null || !mounted) return;
+    setState(() => _currentIndex = tab);
   }
 
   Future<void> _openOnboardingRaceChart() async {

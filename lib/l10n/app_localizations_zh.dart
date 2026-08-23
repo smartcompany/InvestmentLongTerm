@@ -477,6 +477,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settings => '设置';
 
   @override
+  String get notificationSettings => '通知设置';
+
+  @override
+  String get pushNotifications => '推送通知';
+
+  @override
+  String get pushNotificationsDesc => '每天一次提醒，以及持仓价值变动通知';
+
+  @override
+  String get pushDailyTitle => '我的持仓趋势';
+
+  @override
+  String get pushDailyBody => '看看今天持仓的走势吧';
+
+  @override
   String get currencySettings => '货币设置';
 
   @override
@@ -606,6 +621,33 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aiInsightRisks => '注意事项';
+
+  @override
+  String get marketBriefingButton => '观看广告查看我的持仓趋势';
+
+  @override
+  String get marketBriefingTitle => '我的持仓近期趋势';
+
+  @override
+  String get marketBriefingLoading => 'AI正在整理持仓趋势…';
+
+  @override
+  String get marketBriefingFailed => '无法加载持仓趋势，请重试。';
+
+  @override
+  String get marketBriefingSummary => '持仓近期走势';
+
+  @override
+  String get marketBriefingHoldingsFocus => '各标的要点';
+
+  @override
+  String get marketBriefingOutlook => '基于持仓的近期可能';
+
+  @override
+  String get marketBriefingWatchPoints => '持仓中需关注的点';
+
+  @override
+  String get marketBriefingConditions => '今日持仓状态';
 
   @override
   String get retirementSetupSubtitle => '考虑退休吗？\n请输入您退休时的预期资产';

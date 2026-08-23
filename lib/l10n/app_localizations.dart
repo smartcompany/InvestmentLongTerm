@@ -938,6 +938,36 @@ abstract class AppLocalizations {
   /// **'설정'**
   String get settings;
 
+  /// No description provided for @notificationSettings.
+  ///
+  /// In ko, this message translates to:
+  /// **'알림 설정'**
+  String get notificationSettings;
+
+  /// No description provided for @pushNotifications.
+  ///
+  /// In ko, this message translates to:
+  /// **'푸시 알림'**
+  String get pushNotifications;
+
+  /// No description provided for @pushNotificationsDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'하루 한 번 리마인더와 자산 가치 변동 알림을 받습니다'**
+  String get pushNotificationsDesc;
+
+  /// No description provided for @pushDailyTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'내 자산 트렌드'**
+  String get pushDailyTitle;
+
+  /// No description provided for @pushDailyBody.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘 내 보유 자산 흐름을 확인해 보세요'**
+  String get pushDailyBody;
+
   /// No description provided for @currencySettings.
   ///
   /// In ko, this message translates to:
@@ -1195,6 +1225,60 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'주의할 점'**
   String get aiInsightRisks;
+
+  /// No description provided for @marketBriefingButton.
+  ///
+  /// In ko, this message translates to:
+  /// **'광고 보고 내 자산 트렌드 보기'**
+  String get marketBriefingButton;
+
+  /// No description provided for @marketBriefingTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'내 자산 최근 트렌드'**
+  String get marketBriefingTitle;
+
+  /// No description provided for @marketBriefingLoading.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI가 내 보유 자산 트렌드를 정리 중…'**
+  String get marketBriefingLoading;
+
+  /// No description provided for @marketBriefingFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'내 자산 트렌드를 불러오지 못했습니다. 다시 시도해주세요.'**
+  String get marketBriefingFailed;
+
+  /// No description provided for @marketBriefingSummary.
+  ///
+  /// In ko, this message translates to:
+  /// **'내 자산 최근 흐름'**
+  String get marketBriefingSummary;
+
+  /// No description provided for @marketBriefingHoldingsFocus.
+  ///
+  /// In ko, this message translates to:
+  /// **'종목별 포인트'**
+  String get marketBriefingHoldingsFocus;
+
+  /// No description provided for @marketBriefingOutlook.
+  ///
+  /// In ko, this message translates to:
+  /// **'내 자산 기준 향후 가능성'**
+  String get marketBriefingOutlook;
+
+  /// No description provided for @marketBriefingWatchPoints.
+  ///
+  /// In ko, this message translates to:
+  /// **'내 자산에서 지켜볼 점'**
+  String get marketBriefingWatchPoints;
+
+  /// No description provided for @marketBriefingConditions.
+  ///
+  /// In ko, this message translates to:
+  /// **'내 자산 오늘 컨디션'**
+  String get marketBriefingConditions;
 
   /// No description provided for @retirementSetupSubtitle.
   ///

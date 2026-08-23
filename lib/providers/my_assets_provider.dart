@@ -6,6 +6,7 @@ import 'dart:io';
 import '../models/my_asset.dart';
 import '../services/api_service.dart';
 import '../services/icloud_service.dart';
+import '../services/push_notification_service.dart';
 import '../utils/currency_converter.dart';
 
 class MyAssetsProvider with ChangeNotifier {
@@ -164,6 +165,11 @@ class MyAssetsProvider with ChangeNotifier {
           getAssetOriginalCurrency: getAssetOriginalCurrency,
         );
       }
+
+      // 총 평가액이 의미 있게 변했으면 하루 1회 푸시
+      await PushNotificationService.shared.maybeNotifyPortfolioChange(
+        currentTotal: totalCurrentValue,
+      );
     } catch (e) {
       debugPrint('Failed to load assets: $e');
     } finally {

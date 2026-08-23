@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/onboarding_service.dart';
+import '../services/push_notification_service.dart';
 import '../utils/colors.dart';
 import 'main_tab_screen.dart';
 import 'onboarding_screen.dart';
@@ -15,6 +16,7 @@ class AppStartupGate extends StatefulWidget {
 class _AppStartupGateState extends State<AppStartupGate> {
   bool _loading = true;
   bool _showOnboarding = false;
+  int? _initialTabIndex;
 
   @override
   void initState() {
@@ -24,9 +26,12 @@ class _AppStartupGateState extends State<AppStartupGate> {
 
   Future<void> _checkOnboarding() async {
     final completed = await OnboardingService.isCompleted();
+    final fromPush = PushNotificationService.shared.launchPayload ==
+        PushNotificationService.payloadMyAssets;
     if (!mounted) return;
     setState(() {
       _showOnboarding = !completed;
+      _initialTabIndex = fromPush ? 1 : null;
       _loading = false;
     });
   }
@@ -46,6 +51,6 @@ class _AppStartupGateState extends State<AppStartupGate> {
       return const OnboardingScreen();
     }
 
-    return const MainTabScreen();
+    return MainTabScreen(initialIndex: _initialTabIndex);
   }
 }

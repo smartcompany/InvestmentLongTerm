@@ -477,6 +477,21 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settings => '설정';
 
   @override
+  String get notificationSettings => '알림 설정';
+
+  @override
+  String get pushNotifications => '푸시 알림';
+
+  @override
+  String get pushNotificationsDesc => '하루 한 번 리마인더와 자산 가치 변동 알림을 받습니다';
+
+  @override
+  String get pushDailyTitle => '내 자산 트렌드';
+
+  @override
+  String get pushDailyBody => '오늘 내 보유 자산 흐름을 확인해 보세요';
+
+  @override
   String get currencySettings => '통화 설정';
 
   @override
@@ -607,6 +622,33 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get aiInsightRisks => '주의할 점';
+
+  @override
+  String get marketBriefingButton => '광고 보고 내 자산 트렌드 보기';
+
+  @override
+  String get marketBriefingTitle => '내 자산 최근 트렌드';
+
+  @override
+  String get marketBriefingLoading => 'AI가 내 보유 자산 트렌드를 정리 중…';
+
+  @override
+  String get marketBriefingFailed => '내 자산 트렌드를 불러오지 못했습니다. 다시 시도해주세요.';
+
+  @override
+  String get marketBriefingSummary => '내 자산 최근 흐름';
+
+  @override
+  String get marketBriefingHoldingsFocus => '종목별 포인트';
+
+  @override
+  String get marketBriefingOutlook => '내 자산 기준 향후 가능성';
+
+  @override
+  String get marketBriefingWatchPoints => '내 자산에서 지켜볼 점';
+
+  @override
+  String get marketBriefingConditions => '내 자산 오늘 컨디션';
 
   @override
   String get retirementSetupSubtitle => '은퇴를 고민하나요?\n은퇴시 나의 예상 자산을 입력해 주세요';
