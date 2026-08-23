@@ -173,10 +173,19 @@ class MyAssetsProvider with ChangeNotifier {
   }
 
   // 현재 가격 가져오기
-  Future<double?> _getCurrentPrice(String assetId) async {
+  Future<double?> _getCurrentPrice(
+    String assetId, {
+    String? symbol,
+    String? type,
+  }) async {
     try {
       // 최근 1일 데이터를 가져와서 최신 가격 추출
-      final priceData = await ApiService.fetchDailyPrices(assetId, 1);
+      final priceData = await ApiService.fetchDailyPrices(
+        assetId,
+        1,
+        symbol: symbol,
+        type: type,
+      );
       if (priceData.isNotEmpty) {
         final latestPrice = (priceData.last['price'] as num?)?.toDouble();
         if (latestPrice != null && latestPrice.isFinite) {
@@ -203,7 +212,11 @@ class MyAssetsProvider with ChangeNotifier {
         return;
       }
 
-      final currentPrice = await _getCurrentPrice(asset.assetId);
+      final currentPrice = await _getCurrentPrice(
+        asset.assetId,
+        symbol: asset.symbol,
+        type: asset.assetType,
+      );
       if (currentPrice == null || currentPrice <= 0) {
         debugPrint('Failed to get current price for ${asset.id}');
         return;
@@ -255,6 +268,8 @@ class MyAssetsProvider with ChangeNotifier {
           final priceData = await ApiService.fetchDailyPrices(
             asset.assetId,
             totalDays, // 지정된 년수치 데이터
+            symbol: asset.symbol,
+            type: asset.assetType,
           );
 
           final assetPrices = <DateTime, double>{};
@@ -281,7 +296,11 @@ class MyAssetsProvider with ChangeNotifier {
           // 가격 데이터가 없으면 현재 가치를 사용
           if (assetPrices.isEmpty) {
             // 가격 데이터가 없으면 현재 가격을 가져와서 사용
-            final currentPrice = await _getCurrentPrice(asset.assetId);
+            final currentPrice = await _getCurrentPrice(
+              asset.assetId,
+              symbol: asset.symbol,
+              type: asset.assetType,
+            );
             if (currentPrice != null && currentPrice > 0) {
               assetPrices[now] = currentPrice;
               assetPrices[earliestDate] = currentPrice;
@@ -312,7 +331,11 @@ class MyAssetsProvider with ChangeNotifier {
         } catch (e) {
           debugPrint('Failed to load price data for ${asset.id}: $e');
           // 실패한 자산은 현재 가격을 가져와서 사용
-          final currentPrice = await _getCurrentPrice(asset.assetId);
+          final currentPrice = await _getCurrentPrice(
+            asset.assetId,
+            symbol: asset.symbol,
+            type: asset.assetType,
+          );
           if (currentPrice != null && currentPrice > 0) {
             assetPricesByDate[asset.id] = {
               earliestDate: currentPrice,
@@ -457,6 +480,8 @@ class MyAssetsProvider with ChangeNotifier {
     required DateTime registeredDate,
     required double quantity,
     double annualInterestRate = 0,
+    String? symbol,
+    String? assetType,
   }) async {
     debugPrint('💾 [LocalStorage] 자산 추가 시작: $assetName ($assetId)');
 
@@ -468,6 +493,8 @@ class MyAssetsProvider with ChangeNotifier {
       registeredDate: registeredDate,
       quantity: quantity,
       annualInterestRate: assetId == 'cash' ? annualInterestRate : 0,
+      symbol: symbol,
+      assetType: assetType,
     );
 
     _assets.add(newAsset);
@@ -587,6 +614,8 @@ class MyAssetsProvider with ChangeNotifier {
       final priceData = await ApiService.fetchDailyPrices(
         asset.assetId,
         totalDays,
+        symbol: asset.symbol,
+        type: asset.assetType,
       );
       debugPrint('[getPriceHistory] 가격 데이터 수신: ${priceData.length}개 포인트');
 
@@ -612,7 +641,11 @@ class MyAssetsProvider with ChangeNotifier {
 
       // 가격 데이터가 없으면 현재 가격 사용
       if (assetPrices.isEmpty) {
-        final currentPrice = await _getCurrentPrice(asset.assetId);
+        final currentPrice = await _getCurrentPrice(
+          asset.assetId,
+          symbol: asset.symbol,
+          type: asset.assetType,
+        );
         if (currentPrice != null && currentPrice > 0) {
           assetPrices[now] = currentPrice;
           assetPrices[earliestDate] = currentPrice;

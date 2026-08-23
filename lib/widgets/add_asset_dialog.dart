@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +12,7 @@ import '../models/asset_option.dart';
 import '../utils/colors.dart';
 import '../widgets/liquid_glass.dart';
 import '../widgets/asset_button.dart';
+import '../widgets/asset_icon.dart';
 import '../services/api_service.dart';
 
 class AddAssetDialog extends StatefulWidget {
@@ -21,6 +24,9 @@ class AddAssetDialog extends StatefulWidget {
 
 class _AddAssetDialogState extends State<AddAssetDialog> {
   String? _selectedAssetId;
+  String? _selectedAssetName;
+  String? _selectedSymbol;
+  String? _selectedAssetType;
   final TextEditingController _principalController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
   final TextEditingController _annualRateController =
@@ -28,6 +34,13 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
   final Map<String, bool> _expandedTypes = {};
   int _currentStep = 0; // 0: 자산 선택, 1: 투자 원금 및 보유 갯수
   bool _isLoading = false;
+
+  static const _searchableTypes = {
+    'crypto',
+    'stock',
+    'korean_stock',
+    'commodity',
+  };
 
   @override
   void dispose() {
@@ -53,9 +66,15 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
 
   bool get _isCashSelected => _selectedAssetId == 'cash';
 
-  void _selectAsset(String assetId) {
+  bool get _isCustomSelected =>
+      _selectedSymbol != null && _selectedSymbol!.isNotEmpty;
+
+  void _selectAsset(String assetId, {String? name}) {
     setState(() {
       _selectedAssetId = assetId;
+      _selectedAssetName = name;
+      _selectedSymbol = null;
+      _selectedAssetType = null;
       if (assetId == 'cash') {
         if (_annualRateController.text.trim().isEmpty) {
           _annualRateController.text = '0';
@@ -66,6 +85,24 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
       if (_currentStep == 0) {
         _currentStep = 1;
       }
+    });
+  }
+
+  void _selectCustomAsset({
+    required String id,
+    required String name,
+    required String symbol,
+    required String type,
+  }) {
+    setState(() {
+      _selectedAssetId = id;
+      _selectedAssetName = name;
+      _selectedSymbol = symbol;
+      _selectedAssetType = type;
+      if (_quantityController.text == '1') {
+        _quantityController.clear();
+      }
+      _currentStep = 1;
     });
   }
 
@@ -86,10 +123,16 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
       final appProvider = context.read<AppStateProvider>();
       final myAssetsProvider = context.read<MyAssetsProvider>();
 
-      final asset = appProvider.assets.firstWhere(
-        (a) => a.id == _selectedAssetId!,
-      );
-      final assetName = asset.displayName();
+      String assetName;
+      if (_isCustomSelected && _selectedAssetName != null) {
+        assetName = _selectedAssetName!;
+      } else {
+        final asset = appProvider.assets.firstWhere(
+          (a) => a.id == _selectedAssetId!,
+        );
+        assetName = asset.displayName();
+      }
+
       final principal = _parseCurrency(_principalController.text);
       final quantity =
           _isCashSelected ? 1.0 : _parseQuantity(_quantityController.text);
@@ -103,6 +146,8 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
           final priceData = await ApiService.fetchDailyPrices(
             _selectedAssetId!,
             1,
+            symbol: _selectedSymbol,
+            type: _selectedAssetType,
           );
           if (priceData.isNotEmpty) {
             currentPrice = (priceData.last['price'] as num?)?.toDouble();
@@ -145,6 +190,8 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
         registeredDate: DateTime.now(),
         quantity: quantity,
         annualInterestRate: annualInterestRate,
+        symbol: _selectedSymbol,
+        assetType: _selectedAssetType,
       );
 
       if (mounted) {
@@ -163,6 +210,24 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
         );
       }
     }
+  }
+
+  Future<void> _openAssetSearch(String type, AppLocalizations l10n) async {
+    final result = await showModalBottomSheet<Map<String, String>>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _AssetSearchSheet(assetType: type, l10n: l10n),
+    );
+
+    if (result == null || !mounted) return;
+
+    _selectCustomAsset(
+      id: result['id']!,
+      name: result['name']!,
+      symbol: result['symbol']!,
+      type: result['type']!,
+    );
   }
 
   Widget _buildStepIndicator(int step, String label) {
@@ -332,67 +397,82 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
           )
         else
           TextField(
-          controller: _quantityController,
-          enabled: !_isLoading,
-          onChanged: (value) {
-            setState(() {});
-          },
-          decoration: InputDecoration(
-            hintText: '0',
-            hintStyle: TextStyle(color: AppColors.textSecondary),
-            filled: true,
-            fillColor: AppColors.bg,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.primary, width: 2),
+            controller: _quantityController,
+            enabled: !_isLoading,
+            onChanged: (value) {
+              setState(() {});
+            },
+            decoration: InputDecoration(
+              hintText: '0',
+              hintStyle: TextStyle(color: AppColors.textSecondary),
+              filled: true,
+              fillColor: AppColors.bg,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppColors.primary, width: 2),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppColors.primary, width: 2),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppColors.primary, width: 2),
+              ),
+              contentPadding:
+                  EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.primary, width: 2),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: AppColors.primary, width: 2),
-            ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          ),
-          keyboardType: TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'[\d,.]')),
-            TextInputFormatter.withFunction((oldValue, newValue) {
-              if (newValue.text.isEmpty) return newValue;
-              // 소수점은 하나만 허용
-              final text = newValue.text;
-              final dotCount = text.split('.').length - 1;
-              if (dotCount > 1) return oldValue;
+            keyboardType: TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[\d,.]')),
+              TextInputFormatter.withFunction((oldValue, newValue) {
+                if (newValue.text.isEmpty) return newValue;
+                // 소수점은 하나만 허용
+                final text = newValue.text;
+                final dotCount = text.split('.').length - 1;
+                if (dotCount > 1) return oldValue;
 
-              // 쉼표 제거 후 파싱
-              final cleanText = text.replaceAll(',', '');
-              final number = double.tryParse(cleanText);
-              if (number == null && cleanText != '.') return oldValue;
+                // 쉼표 제거 후 파싱
+                final cleanText = text.replaceAll(',', '');
+                final number = double.tryParse(cleanText);
+                if (number == null && cleanText != '.') return oldValue;
 
-              // 포맷팅 (소수점이 있으면 포맷팅하지 않음)
-              if (text.contains('.')) {
-                return newValue;
-              } else {
-                final intValue = int.tryParse(cleanText);
-                if (intValue != null) {
-                  final formatted = NumberFormat('#,###').format(intValue);
-                  return TextEditingValue(
-                    text: formatted,
-                    selection: TextSelection.collapsed(
-                      offset: formatted.length,
-                    ),
-                  );
+                // 포맷팅 (소수점이 있으면 포맷팅하지 않음)
+                if (text.contains('.')) {
+                  return newValue;
+                } else {
+                  final intValue = int.tryParse(cleanText);
+                  if (intValue != null) {
+                    final formatted = NumberFormat('#,###').format(intValue);
+                    return TextEditingValue(
+                      text: formatted,
+                      selection: TextSelection.collapsed(
+                        offset: formatted.length,
+                      ),
+                    );
+                  }
                 }
-              }
-              return newValue;
-            }),
-          ],
-          style: TextStyle(color: AppColors.textPrimary, fontSize: 20),
-          textAlign: TextAlign.right,
-        ),
+                return newValue;
+              }),
+            ],
+            style: TextStyle(color: AppColors.textPrimary, fontSize: 20),
+            textAlign: TextAlign.right,
+          ),
       ],
+    );
+  }
+
+  Widget _buildEnterManuallyButton(String type, AppLocalizations l10n) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: AssetButton(
+        assetName: l10n.enterManually,
+        assetId: 'custom_search',
+        type: type,
+        isSelected: false,
+        isDisabled: _isLoading,
+        onTap: _isLoading ? () {} : () => _openAssetSearch(type, l10n),
+      ),
     );
   }
 
@@ -425,6 +505,7 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
     for (final type in sortedTypes) {
       final assets = assetsByType[type]!;
       final isExpanded = _expandedTypes[type] ?? false;
+      final canSearch = _searchableTypes.contains(type);
 
       // 타입 제목 추가
       widgets.add(
@@ -465,20 +546,25 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: GestureDetector(
-              onTap: _isLoading
-                  ? null
-                  : () => _selectAsset(asset.id),
+              onTap: _isLoading ? null : () => _selectAsset(asset.id),
               child: AssetButton(
                 assetName: asset.displayName(),
                 assetId: asset.id,
                 type: asset.type,
-                isSelected: _selectedAssetId == asset.id,
+                isSelected: _selectedAssetId == asset.id && !_isCustomSelected,
                 isDisabled: _isLoading,
                 onTap: _isLoading ? () {} : () => _selectAsset(asset.id),
               ),
             ),
           ),
         );
+      }
+
+      // 더보기 펼친 뒤(또는 항목이 2개 이하일 때) 직접 입력
+      final showManualEntry =
+          canSearch && (isExpanded || assets.length <= 2);
+      if (showManualEntry) {
+        widgets.add(_buildEnterManuallyButton(type, l10n));
       }
 
       // 나머지가 있으면 펼치기/접기 버튼 추가
@@ -589,7 +675,10 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
                             ),
                           ),
                           IconButton(
-                            icon: Icon(Icons.close, color: AppColors.textSecondary),
+                            icon: Icon(
+                              Icons.close,
+                              color: AppColors.textSecondary,
+                            ),
                             onPressed: _isLoading
                                 ? null
                                 : () => Navigator.pop(context),
@@ -643,7 +732,9 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
                                     },
                               child: Text(
                                 '이전',
-                                style: TextStyle(color: AppColors.textSecondary),
+                                style: TextStyle(
+                                  color: AppColors.textSecondary,
+                                ),
                               ),
                             )
                           else
@@ -657,7 +748,9 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
                                     : () => Navigator.pop(context),
                                 child: Text(
                                   l10n.cancel,
-                                  style: TextStyle(color: AppColors.textSecondary),
+                                  style: TextStyle(
+                                    color: AppColors.textSecondary,
+                                  ),
                                 ),
                               ),
                               SizedBox(width: 12),
@@ -711,11 +804,292 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
                       borderRadius: BorderRadius.circular(24),
                     ),
                     child: Center(
-                      child: CircularProgressIndicator(color: AppColors.primary),
+                      child: CircularProgressIndicator(
+                        color: AppColors.primary,
+                      ),
                     ),
                   ),
                 ),
             ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _AssetSearchSheet extends StatefulWidget {
+  final String assetType;
+  final AppLocalizations l10n;
+
+  const _AssetSearchSheet({
+    required this.assetType,
+    required this.l10n,
+  });
+
+  @override
+  State<_AssetSearchSheet> createState() => _AssetSearchSheetState();
+}
+
+class _AssetSearchSheetState extends State<_AssetSearchSheet> {
+  final TextEditingController _controller = TextEditingController();
+  Timer? _debounce;
+  bool _isSearching = false;
+  String? _error;
+  List<Map<String, dynamic>> _results = [];
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onQueryChanged(String value) {
+    _debounce?.cancel();
+    final query = value.trim();
+    if (query.isEmpty) {
+      setState(() {
+        _results = [];
+        _error = null;
+        _isSearching = false;
+      });
+      return;
+    }
+
+    setState(() => _isSearching = true);
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      _runSearch(query);
+    });
+  }
+
+  Future<void> _runSearch(String query) async {
+    try {
+      final lang = Localizations.localeOf(context).languageCode;
+      final results = await ApiService.searchAssets(
+        query,
+        type: widget.assetType,
+        lang: lang,
+      );
+      if (!mounted) return;
+      setState(() {
+        _results = results;
+        _error = null;
+        _isSearching = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _results = [];
+        _error = widget.l10n.searchAssetFailed;
+        _isSearching = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = widget.l10n;
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: bottomInset),
+      child: Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 10),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.border,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 8, 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      l10n.searchAssetTitle,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: AppColors.textSecondary),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: TextField(
+                controller: _controller,
+                autofocus: true,
+                onChanged: _onQueryChanged,
+                decoration: InputDecoration(
+                  hintText: l10n.searchAssetHint,
+                  hintStyle: const TextStyle(color: AppColors.textSecondary),
+                  prefixIcon: const Icon(
+                    Icons.search,
+                    color: AppColors.textSecondary,
+                  ),
+                  filled: true,
+                  fillColor: AppColors.bg,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppColors.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: AppColors.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(
+                      color: AppColors.primary,
+                      width: 2,
+                    ),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                ),
+                style: const TextStyle(color: AppColors.textPrimary),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: _buildBody(l10n),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBody(AppLocalizations l10n) {
+    if (_isSearching) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(color: AppColors.primary),
+            const SizedBox(height: 12),
+            Text(
+              l10n.searchingAssets,
+              style: const TextStyle(color: AppColors.textSecondary),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_error != null) {
+      return Center(
+        child: Text(
+          _error!,
+          style: const TextStyle(color: Colors.red),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
+
+    if (_controller.text.trim().isEmpty) {
+      return Center(
+        child: Text(
+          l10n.searchAssetHint,
+          style: const TextStyle(color: AppColors.textSecondary),
+        ),
+      );
+    }
+
+    if (_results.isEmpty) {
+      return Center(
+        child: Text(
+          l10n.noSearchResults,
+          style: const TextStyle(color: AppColors.textSecondary),
+        ),
+      );
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
+      itemCount: _results.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      itemBuilder: (context, index) {
+        final item = _results[index];
+        final id = item['id'] as String? ?? '';
+        final name = item['name'] as String? ?? '';
+        final symbol = item['symbol'] as String? ?? '';
+        final type = item['type'] as String? ?? widget.assetType;
+        final exchange = item['exchange'] as String?;
+
+        return Material(
+          color: AppColors.bg,
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () {
+              Navigator.pop(context, {
+                'id': id,
+                'name': name,
+                'symbol': symbol,
+                'type': type,
+              });
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: Row(
+                children: [
+                  AssetIcon(assetId: id, type: type, size: 28),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name,
+                          style: const TextStyle(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          exchange != null && exchange.isNotEmpty
+                              ? '$symbol · $exchange'
+                              : symbol,
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.chevron_right,
+                    color: AppColors.textSecondary,
+                  ),
+                ],
+              ),
+            ),
           ),
         );
       },

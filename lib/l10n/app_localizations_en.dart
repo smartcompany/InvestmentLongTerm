@@ -286,6 +286,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get showLess => 'Show Less';
 
   @override
+  String get enterManually => 'Enter Manually';
+
+  @override
+  String get searchAssetHint => 'Search by name or symbol';
+
+  @override
+  String get noSearchResults => 'No results found';
+
+  @override
+  String get searchAssetTitle => 'Search Assets';
+
+  @override
+  String get searchingAssets => 'Searching…';
+
+  @override
+  String get searchAssetFailed => 'Search failed. Please try again.';
+
+  @override
   String simulationResultPrefix(
     String initialAsset,
     String portfolio,
@@ -559,11 +577,45 @@ class AppLocalizationsEn extends AppLocalizations {
   String get manageInMyAssets => 'Manage in My Assets';
 
   @override
-  String get viewMyAssetsStatus => 'Watch Ad & Manage My Assets';
+  String get viewMyAssetsStatus => 'Watch Ad for AI Investment Insight';
 
   @override
-  String get myAssetsSubtitle =>
-      'Record your assets\nand track their changes\nAds will only be shown once unless the app is restarted.';
+  String get myAssetsSubtitle => 'Track your holdings and see how they change';
+
+  @override
+  String get aiInsightButton => 'Watch Ad for AI Investment Insight';
+
+  @override
+  String get aiInsightNeedAssets => 'Add assets first to get insights';
+
+  @override
+  String get aiInsightTitle => 'AI Investment Insight';
+
+  @override
+  String get aiInsightComingSoon =>
+      'Soon we\'ll guide you based on your holdings and current markets.\n\n※ For reference only — not investment advice.';
+
+  @override
+  String get aiInsightDisclaimer =>
+      '※ For reference only — not investment advice.';
+
+  @override
+  String get aiInsightLoading => 'AI is analyzing your portfolio and markets…';
+
+  @override
+  String get aiInsightFailed => 'Couldn\'t load insights. Please try again.';
+
+  @override
+  String get aiInsightSummary => 'Summary';
+
+  @override
+  String get aiInsightOutlook => 'Market outlook';
+
+  @override
+  String get aiInsightSuggestions => 'Suggested direction';
+
+  @override
+  String get aiInsightRisks => 'Watch-outs';
 
   @override
   String get retirementSetupSubtitle =>

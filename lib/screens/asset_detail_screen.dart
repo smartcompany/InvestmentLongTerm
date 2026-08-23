@@ -9,6 +9,7 @@ import '../providers/app_state_provider.dart';
 import '../providers/currency_provider.dart';
 import '../utils/colors.dart';
 import '../utils/currency_converter.dart';
+import '../utils/asset_currency.dart';
 import '../widgets/liquid_glass.dart';
 import '../widgets/asset_price_chart.dart';
 import '../services/api_service.dart';
@@ -64,22 +65,13 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
         years: years,
         targetCurrency: currencySymbol,
         getAssetOriginalCurrency: (assetId) {
-          if (assetId == 'cash') {
-            return CurrencyProvider.shared.getCurrencySymbol();
-          }
-          try {
-            final assetOption = appProvider.assets.firstWhere(
-              (a) => a.id == assetId,
-            );
-            if (assetOption.type == 'korean_stock' ||
-                assetOption.type == 'real_estate') {
-              return '₩';
-            } else {
-              return '\$';
-            }
-          } catch (e) {
-            return '\$';
-          }
+          return AssetCurrency.originalCurrency(
+            assetId,
+            appProvider,
+            assetType: widget.asset.assetId == assetId
+                ? widget.asset.assetType
+                : null,
+          );
         },
       );
 
@@ -109,6 +101,8 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
       final priceData = await ApiService.fetchDailyPrices(
         widget.asset.assetId,
         1,
+        symbol: widget.asset.symbol,
+        type: widget.asset.assetType,
       );
       if (priceData.isNotEmpty) {
         final latestPrice = (priceData.last['price'] as num?)?.toDouble();
@@ -160,23 +154,11 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
         }
 
         // 자산 타입에 따른 현재가 통화 결정
-        String currentPriceCurrency = '\$'; // 기본값은 달러
-        if (asset.assetId == 'cash') {
-          currentPriceCurrency = currentCurrencySymbol;
-        } else {
-          try {
-            final assetOption = appProvider.assets.firstWhere(
-              (a) => a.id == asset.assetId,
-            );
-            // 한국 주식과 부동산은 원화, 나머지는 달러
-            if (assetOption.type == 'korean_stock' ||
-                assetOption.type == 'real_estate') {
-              currentPriceCurrency = '₩';
-            }
-          } catch (e) {
-            debugPrint('Asset not found: ${asset.assetId}');
-          }
-        }
+        final currentPriceCurrency = AssetCurrency.originalCurrency(
+          asset.assetId,
+          appProvider,
+          assetType: asset.assetType,
+        );
 
         return Scaffold(
       backgroundColor: AppColors.bg,
@@ -231,23 +213,12 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                           if (asset.currentValue != null) ...[
                             FutureBuilder<double>(
                               future: () async {
-                                final originalCurrency = asset.assetId == 'cash'
-                                    ? currentCurrencySymbol
-                                    : () {
-                                        try {
-                                          final assetOption = appProvider.assets
-                                              .firstWhere(
-                                            (a) => a.id == asset.assetId,
-                                          );
-                                          if (assetOption.type ==
-                                                  'korean_stock' ||
-                                              assetOption.type ==
-                                                  'real_estate') {
-                                            return '₩';
-                                          }
-                                        } catch (_) {}
-                                        return '\$';
-                                      }();
+                                final originalCurrency =
+                                    AssetCurrency.originalCurrency(
+                                  asset.assetId,
+                                  appProvider,
+                                  assetType: asset.assetType,
+                                );
 
                                 return await CurrencyConverter.shared.convert(
                                   asset.currentValue!,
@@ -268,23 +239,12 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
                             SizedBox(height: 8),
                             FutureBuilder<double>(
                               future: () async {
-                                final originalCurrency = asset.assetId == 'cash'
-                                    ? currentCurrencySymbol
-                                    : () {
-                                        try {
-                                          final assetOption = appProvider.assets
-                                              .firstWhere(
-                                            (a) => a.id == asset.assetId,
-                                          );
-                                          if (assetOption.type ==
-                                                  'korean_stock' ||
-                                              assetOption.type ==
-                                                  'real_estate') {
-                                            return '₩';
-                                          }
-                                        } catch (_) {}
-                                        return '\$';
-                                      }();
+                                final originalCurrency =
+                                    AssetCurrency.originalCurrency(
+                                  asset.assetId,
+                                  appProvider,
+                                  assetType: asset.assetType,
+                                );
 
                                 return await CurrencyConverter.shared.convert(
                                   asset.currentValue!,

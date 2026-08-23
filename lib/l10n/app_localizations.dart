@@ -578,6 +578,42 @@ abstract class AppLocalizations {
   /// **'접기'**
   String get showLess;
 
+  /// No description provided for @enterManually.
+  ///
+  /// In ko, this message translates to:
+  /// **'직접 입력'**
+  String get enterManually;
+
+  /// No description provided for @searchAssetHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'종목명 또는 심볼 검색'**
+  String get searchAssetHint;
+
+  /// No description provided for @noSearchResults.
+  ///
+  /// In ko, this message translates to:
+  /// **'검색 결과가 없습니다'**
+  String get noSearchResults;
+
+  /// No description provided for @searchAssetTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'종목 검색'**
+  String get searchAssetTitle;
+
+  /// No description provided for @searchingAssets.
+  ///
+  /// In ko, this message translates to:
+  /// **'검색 중…'**
+  String get searchingAssets;
+
+  /// No description provided for @searchAssetFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'검색에 실패했습니다. 다시 시도해주세요.'**
+  String get searchAssetFailed;
+
   /// No description provided for @simulationResultPrefix.
   ///
   /// In ko, this message translates to:
@@ -1085,14 +1121,80 @@ abstract class AppLocalizations {
   /// No description provided for @viewMyAssetsStatus.
   ///
   /// In ko, this message translates to:
-  /// **'광고 보고 내 자산 관리'**
+  /// **'광고 보고 AI 투자 인사이트 받기'**
   String get viewMyAssetsStatus;
 
   /// No description provided for @myAssetsSubtitle.
   ///
   /// In ko, this message translates to:
-  /// **'보유 자산을 기록하고\n변동 추이를 확인하세요\n앱을 재시작 하지 않으면 광고는 한번만 봅니다.'**
+  /// **'보유 자산을 기록하고 변동 추이를 확인하세요'**
   String get myAssetsSubtitle;
+
+  /// No description provided for @aiInsightButton.
+  ///
+  /// In ko, this message translates to:
+  /// **'광고 보고 AI 투자 인사이트 받기'**
+  String get aiInsightButton;
+
+  /// No description provided for @aiInsightNeedAssets.
+  ///
+  /// In ko, this message translates to:
+  /// **'인사이트를 받으려면 자산을 먼저 등록하세요'**
+  String get aiInsightNeedAssets;
+
+  /// No description provided for @aiInsightTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI 투자 인사이트'**
+  String get aiInsightTitle;
+
+  /// No description provided for @aiInsightComingSoon.
+  ///
+  /// In ko, this message translates to:
+  /// **'곧 내 보유 자산과 현재 시황을 바탕으로 방향을 안내해 드릴 예정입니다.\n\n※ 참고용 정보이며, 투자 권유가 아닙니다.'**
+  String get aiInsightComingSoon;
+
+  /// No description provided for @aiInsightDisclaimer.
+  ///
+  /// In ko, this message translates to:
+  /// **'※ 참고용 정보이며, 투자 권유가 아닙니다.'**
+  String get aiInsightDisclaimer;
+
+  /// No description provided for @aiInsightLoading.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI가 포트폴리오와 시황을 분석 중…'**
+  String get aiInsightLoading;
+
+  /// No description provided for @aiInsightFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'인사이트를 불러오지 못했습니다. 다시 시도해주세요.'**
+  String get aiInsightFailed;
+
+  /// No description provided for @aiInsightSummary.
+  ///
+  /// In ko, this message translates to:
+  /// **'요약'**
+  String get aiInsightSummary;
+
+  /// No description provided for @aiInsightOutlook.
+  ///
+  /// In ko, this message translates to:
+  /// **'시황·전망'**
+  String get aiInsightOutlook;
+
+  /// No description provided for @aiInsightSuggestions.
+  ///
+  /// In ko, this message translates to:
+  /// **'참고 방향'**
+  String get aiInsightSuggestions;
+
+  /// No description provided for @aiInsightRisks.
+  ///
+  /// In ko, this message translates to:
+  /// **'주의할 점'**
+  String get aiInsightRisks;
 
   /// No description provided for @retirementSetupSubtitle.
   ///

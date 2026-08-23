@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/investment_config.dart';
 import '../models/calculation_result.dart';
 import '../models/asset_option.dart';
+import '../models/investment_insight.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 class ApiService {
@@ -73,16 +74,56 @@ class ApiService {
     }
   }
 
+  /// Yahoo Finance 기반 종목 검색 (카탈로그 밖 종목)
+  static Future<List<Map<String, dynamic>>> searchAssets(
+    String query, {
+    String? type,
+    String? lang,
+  }) async {
+    try {
+      final params = <String, String>{'q': query};
+      if (type != null && type.isNotEmpty) params['type'] = type;
+      if (lang != null && lang.isNotEmpty) params['lang'] = lang;
+
+      final uri = Uri.parse(
+        '$baseUrl/api/assets/search',
+      ).replace(queryParameters: params);
+
+      final response = await http.get(uri);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as List;
+        return data.map((item) => item as Map<String, dynamic>).toList();
+      } else {
+        throw Exception('Server error: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Failed to search assets: $e');
+    }
+  }
+
   // 일봉 가격 데이터 가져오기
   static Future<List<Map<String, dynamic>>> fetchDailyPrices(
     String assetId,
-    int days,
-  ) async {
+    int days, {
+    String? symbol,
+    String? type,
+  }) async {
     try {
+      final body = <String, dynamic>{
+        'assetId': assetId,
+        'days': days,
+      };
+      if (symbol != null && symbol.isNotEmpty) {
+        body['symbol'] = symbol;
+      }
+      if (type != null && type.isNotEmpty) {
+        body['type'] = type;
+      }
+
       final response = await http.post(
         Uri.parse('$baseUrl/api/prices'),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'assetId': assetId, 'days': days}),
+        body: jsonEncode(body),
       );
 
       if (response.statusCode == 200) {
@@ -93,6 +134,55 @@ class ApiService {
       }
     } catch (e) {
       throw Exception('Failed to fetch daily prices: $e');
+    }
+  }
+
+  static Future<InvestmentInsight> fetchInvestmentInsight({
+    required String locale,
+    required String displayCurrency,
+    required List<Map<String, dynamic>> assets,
+    double? totalPurchaseAmount,
+    double? totalCurrentValue,
+    double? totalReturnRatePct,
+  }) async {
+    try {
+      final body = <String, dynamic>{
+        'locale': locale,
+        'displayCurrency': displayCurrency,
+        'assets': assets,
+      };
+      if (totalPurchaseAmount != null) {
+        body['totalPurchaseAmount'] = totalPurchaseAmount;
+      }
+      if (totalCurrentValue != null) {
+        body['totalCurrentValue'] = totalCurrentValue;
+      }
+      if (totalReturnRatePct != null) {
+        body['totalReturnRatePct'] = totalReturnRatePct;
+      }
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/insights'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        return InvestmentInsight.fromJson(data);
+      }
+
+      String message = 'Server error: ${response.statusCode}';
+      try {
+        final err = jsonDecode(response.body) as Map<String, dynamic>;
+        final errorText = err['error'] as String?;
+        if (errorText != null && errorText.isNotEmpty) {
+          message = errorText;
+        }
+      } catch (_) {}
+      throw Exception(message);
+    } catch (e) {
+      throw Exception('Failed to fetch investment insight: $e');
     }
   }
 

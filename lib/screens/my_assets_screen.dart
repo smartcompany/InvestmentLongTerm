@@ -9,12 +9,16 @@ import '../providers/currency_provider.dart';
 import '../models/my_asset.dart';
 import '../utils/colors.dart';
 import '../utils/currency_converter.dart';
+import '../utils/asset_currency.dart';
 import '../utils/text_styles.dart';
 import '../widgets/liquid_glass.dart';
 import '../widgets/add_asset_dialog.dart';
 import '../widgets/app_ui.dart';
 import '../widgets/asset_icon.dart';
 import '../widgets/asset_price_chart.dart';
+import '../widgets/investment_insight_dialog.dart';
+import '../services/ad_service.dart';
+import '../services/api_service.dart';
 import 'asset_detail_screen.dart';
 import 'settings_screen.dart';
 
@@ -27,6 +31,7 @@ class MyAssetsScreen extends StatefulWidget {
 
 class _MyAssetsScreenState extends State<MyAssetsScreen> {
   int _selectedYears = 1; // 기본값: 1년
+  bool _isLoadingInsightAd = false;
 
   @override
   void initState() {
@@ -44,14 +49,22 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
           chartYears: _selectedYears,
           targetCurrency: currencySymbol,
           getAssetOriginalCurrency: (assetId) =>
-              _getAssetOriginalCurrency(assetId, appProvider),
+              _getAssetOriginalCurrency(
+                assetId,
+                appProvider,
+                assetType: _resolveAssetType(provider, assetId),
+              ),
         );
       } else {
         await provider.loadPortfolioChart(
           years: _selectedYears,
           targetCurrency: currencySymbol,
           getAssetOriginalCurrency: (assetId) =>
-              _getAssetOriginalCurrency(assetId, appProvider),
+              _getAssetOriginalCurrency(
+                assetId,
+                appProvider,
+                assetType: _resolveAssetType(provider, assetId),
+              ),
         );
       }
     });
@@ -60,24 +73,22 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
   // 자산 타입에 따른 원본 통화 결정
   String _getAssetOriginalCurrency(
     String assetId,
-    AppStateProvider appProvider,
-  ) {
-    // 현금은 입력·저장 모두 사용자 표시 통화 기준
-    if (assetId == 'cash') {
-      return CurrencyProvider.shared.getCurrencySymbol();
-    }
+    AppStateProvider appProvider, {
+    String? assetType,
+  }) {
+    return AssetCurrency.originalCurrency(
+      assetId,
+      appProvider,
+      assetType: assetType,
+    );
+  }
 
+  String _resolveAssetType(MyAssetsProvider provider, String assetId) {
     try {
-      final assetOption = appProvider.assets.firstWhere((a) => a.id == assetId);
-      // 한국 주식과 부동산은 원화, 나머지는 달러
-      if (assetOption.type == 'korean_stock' ||
-          assetOption.type == 'real_estate') {
-        return '₩';
-      } else {
-        return '\$';
-      }
-    } catch (e) {
-      return '\$'; // 기본값은 달러
+      return provider.assets.firstWhere((a) => a.assetId == assetId).assetType ??
+          '';
+    } catch (_) {
+      return '';
     }
   }
 
@@ -96,6 +107,7 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
       final originalCurrency = _getAssetOriginalCurrency(
         asset.assetId,
         appProvider,
+        assetType: asset.assetType,
       );
       final convertedValue = await CurrencyConverter.shared.convert(
         asset.currentValue!,
@@ -279,6 +291,8 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
               if (provider.assets.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 _buildAddAssetButton(context, provider, l10n),
+                const SizedBox(height: 12),
+                _buildAiInsightButton(context, provider, l10n),
               ],
               const SizedBox(height: 24),
             ],
@@ -286,6 +300,198 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
         ),
     );
       },
+    );
+  }
+
+  Future<void> _handleAiInsightTap(
+    BuildContext context,
+    MyAssetsProvider provider,
+    AppLocalizations l10n,
+  ) async {
+    if (provider.assets.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.aiInsightNeedAssets)),
+      );
+      return;
+    }
+
+    setState(() => _isLoadingInsightAd = true);
+
+    Future<void> afterAd() async {
+      if (!mounted) return;
+      await _fetchAndShowInsight(context, provider, l10n);
+    }
+
+    try {
+      await AdService.shared.showFullScreenAd(
+        onAdDismissed: () {
+          afterAd();
+        },
+        onAdFailedToShow: () {
+          afterAd();
+        },
+      );
+    } catch (_) {
+      await afterAd();
+    }
+  }
+
+  Future<void> _fetchAndShowInsight(
+    BuildContext context,
+    MyAssetsProvider provider,
+    AppLocalizations l10n,
+  ) async {
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        content: Row(
+          children: [
+            const SizedBox(
+              width: 28,
+              height: 28,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                l10n.aiInsightLoading,
+                style: const TextStyle(color: AppColors.textPrimary),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      final appProvider = context.read<AppStateProvider>();
+      final currencySymbol = CurrencyProvider.shared.getCurrencySymbol();
+      final localeCode = Localizations.localeOf(context).languageCode;
+      final locale = switch (localeCode) {
+        'ko' || 'ja' || 'zh' => localeCode,
+        _ => 'en',
+      };
+
+      final totalCurrent = await _getConvertedTotalCurrentValue(
+        provider,
+        appProvider,
+        currencySymbol,
+      );
+      final totalPurchase = provider.totalPurchaseAmount;
+      final totalReturn = totalCurrent != null && totalPurchase > 0
+          ? (totalCurrent / totalPurchase - 1) * 100
+          : null;
+
+      final holdings = <Map<String, dynamic>>[];
+      for (final asset in provider.assets) {
+        final originalCurrency = _getAssetOriginalCurrency(
+          asset.assetId,
+          appProvider,
+          assetType: asset.assetType,
+        );
+        double? currentInDisplay;
+        if (asset.currentValue != null) {
+          currentInDisplay = await CurrencyConverter.shared.convert(
+            asset.currentValue!,
+            originalCurrency,
+            currencySymbol,
+          );
+        }
+        final returnRate = currentInDisplay != null && asset.initialAmount > 0
+            ? (currentInDisplay / asset.initialAmount - 1) * 100
+            : null;
+
+        final resolvedType = asset.assetType ??
+            () {
+              try {
+                return appProvider.assets
+                    .firstWhere((a) => a.id == asset.assetId)
+                    .type;
+              } catch (_) {
+                return null;
+              }
+            }();
+
+        holdings.add({
+          'name': asset.assetName,
+          'assetId': asset.assetId,
+          if (resolvedType != null) 'type': resolvedType,
+          'quantity': asset.quantity,
+          'initialAmount': asset.initialAmount,
+          if (currentInDisplay != null) 'currentValue': currentInDisplay,
+          if (returnRate != null) 'returnRatePct': returnRate,
+        });
+      }
+
+      final insight = await ApiService.fetchInvestmentInsight(
+        locale: locale,
+        displayCurrency: currencySymbol,
+        assets: holdings,
+        totalPurchaseAmount: totalPurchase,
+        totalCurrentValue: totalCurrent,
+        totalReturnRatePct: totalReturn,
+      );
+
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop(); // loading
+      setState(() => _isLoadingInsightAd = false);
+      await showInvestmentInsightDialog(context, insight: insight);
+    } catch (e) {
+      debugPrint('AI insight failed: $e');
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop(); // loading
+      setState(() => _isLoadingInsightAd = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.aiInsightFailed)),
+      );
+    }
+  }
+
+  Widget _buildAiInsightButton(
+    BuildContext context,
+    MyAssetsProvider provider,
+    AppLocalizations l10n,
+  ) {
+    return SizedBox(
+      width: double.infinity,
+      height: 52,
+      child: ElevatedButton.icon(
+        onPressed: _isLoadingInsightAd
+            ? null
+            : () => _handleAiInsightTap(context, provider, l10n),
+        icon: _isLoadingInsightAd
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+            : const Icon(Icons.auto_awesome, size: 20),
+        label: Text(
+          l10n.aiInsightButton,
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.7),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+      ),
     );
   }
 
@@ -389,7 +595,11 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
           years: years,
           targetCurrency: currencySymbol,
           getAssetOriginalCurrency: (assetId) =>
-              _getAssetOriginalCurrency(assetId, appProvider),
+              _getAssetOriginalCurrency(
+                assetId,
+                appProvider,
+                assetType: _resolveAssetType(provider, assetId),
+              ),
         );
       },
       child: AnimatedContainer(
@@ -464,8 +674,11 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
       builder: (context, _) {
         final appProvider = context.watch<AppStateProvider>();
         final currencySymbol = CurrencyProvider.shared.getCurrencySymbol();
-        final originalCurrency =
-            _getAssetOriginalCurrency(asset.assetId, appProvider);
+        final originalCurrency = _getAssetOriginalCurrency(
+          asset.assetId,
+          appProvider,
+          assetType: asset.assetType,
+        );
 
         // 환율 변환된 현재 가치 (FutureBuilder로 처리)
         return FutureBuilder<double?>(
@@ -513,7 +726,11 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                AssetIcon(assetId: asset.assetId, size: 32),
+                                AssetIcon(
+                                  assetId: asset.assetId,
+                                  type: asset.assetType,
+                                  size: 32,
+                                ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
@@ -690,7 +907,11 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
         years: _selectedYears,
         targetCurrency: currencySymbol,
         getAssetOriginalCurrency: (assetId) =>
-            _getAssetOriginalCurrency(assetId, appProvider),
+            _getAssetOriginalCurrency(
+              assetId,
+              appProvider,
+              assetType: _resolveAssetType(provider, assetId),
+            ),
       );
     }
   }
@@ -724,7 +945,11 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
                 years: _selectedYears,
                 targetCurrency: currencySymbol,
                 getAssetOriginalCurrency: (assetId) =>
-                    _getAssetOriginalCurrency(assetId, appProvider),
+                    _getAssetOriginalCurrency(
+                      assetId,
+                      appProvider,
+                      assetType: _resolveAssetType(provider, assetId),
+                    ),
               );
             },
             child: Text(l10n.delete, style: TextStyle(color: Colors.red)),

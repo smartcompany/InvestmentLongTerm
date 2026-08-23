@@ -281,6 +281,24 @@ class AppLocalizationsZh extends AppLocalizations {
   String get showLess => '收起';
 
   @override
+  String get enterManually => '手动输入';
+
+  @override
+  String get searchAssetHint => '按名称或代码搜索';
+
+  @override
+  String get noSearchResults => '没有搜索结果';
+
+  @override
+  String get searchAssetTitle => '搜索资产';
+
+  @override
+  String get searchingAssets => '搜索中…';
+
+  @override
+  String get searchAssetFailed => '搜索失败，请重试。';
+
+  @override
   String simulationResultPrefix(
     String initialAsset,
     String portfolio,
@@ -551,10 +569,43 @@ class AppLocalizationsZh extends AppLocalizations {
   String get manageInMyAssets => '到我的资产管理';
 
   @override
-  String get viewMyAssetsStatus => '观看广告并管理我的资产';
+  String get viewMyAssetsStatus => '观看广告获取AI投资洞察';
 
   @override
-  String get myAssetsSubtitle => '记录您的资产\n并追踪其变化\n除非重启应用，否则广告只会显示一次';
+  String get myAssetsSubtitle => '记录并追踪您的资产变化';
+
+  @override
+  String get aiInsightButton => '观看广告获取AI投资洞察';
+
+  @override
+  String get aiInsightNeedAssets => '请先添加资产以获取洞察';
+
+  @override
+  String get aiInsightTitle => 'AI投资洞察';
+
+  @override
+  String get aiInsightComingSoon => '即将根据您的持仓与当前市场情况提供方向指引。\n\n※ 仅供参考，不构成投资建议。';
+
+  @override
+  String get aiInsightDisclaimer => '※ 仅供参考，不构成投资建议。';
+
+  @override
+  String get aiInsightLoading => 'AI正在分析您的投资组合与市场…';
+
+  @override
+  String get aiInsightFailed => '无法加载洞察，请重试。';
+
+  @override
+  String get aiInsightSummary => '摘要';
+
+  @override
+  String get aiInsightOutlook => '市场展望';
+
+  @override
+  String get aiInsightSuggestions => '参考方向';
+
+  @override
+  String get aiInsightRisks => '注意事项';
 
   @override
   String get retirementSetupSubtitle => '考虑退休吗？\n请输入您退休时的预期资产';

@@ -281,6 +281,24 @@ class AppLocalizationsJa extends AppLocalizations {
   String get showLess => '折りたたむ';
 
   @override
+  String get enterManually => '直接入力';
+
+  @override
+  String get searchAssetHint => '銘柄名またはシンボルで検索';
+
+  @override
+  String get noSearchResults => '検索結果がありません';
+
+  @override
+  String get searchAssetTitle => '銘柄検索';
+
+  @override
+  String get searchingAssets => '検索中…';
+
+  @override
+  String get searchAssetFailed => '検索に失敗しました。もう一度お試しください。';
+
+  @override
   String simulationResultPrefix(
     String initialAsset,
     String portfolio,
@@ -551,11 +569,44 @@ class AppLocalizationsJa extends AppLocalizations {
   String get manageInMyAssets => '資産管理へ';
 
   @override
-  String get viewMyAssetsStatus => '広告を見て資産管理';
+  String get viewMyAssetsStatus => '広告を見てAI投資インサイトを見る';
 
   @override
-  String get myAssetsSubtitle =>
-      '保有資産を記録し\n変動推移を確認してください\nアプリを再起動しない限り、広告は1回だけ表示されます';
+  String get myAssetsSubtitle => '保有資産を記録し、変動推移を確認してください';
+
+  @override
+  String get aiInsightButton => '広告を見てAI投資インサイトを見る';
+
+  @override
+  String get aiInsightNeedAssets => 'インサイトを見るには、先に資産を登録してください';
+
+  @override
+  String get aiInsightTitle => 'AI投資インサイト';
+
+  @override
+  String get aiInsightComingSoon =>
+      'まもなく保有資産と現在の市況をもとに方向性をご案内します。\n\n※ 参考情報であり、投資勧誘ではありません。';
+
+  @override
+  String get aiInsightDisclaimer => '※ 参考情報であり、投資勧誘ではありません。';
+
+  @override
+  String get aiInsightLoading => 'AIがポートフォリオと市況を分析中…';
+
+  @override
+  String get aiInsightFailed => 'インサイトを取得できませんでした。もう一度お試しください。';
+
+  @override
+  String get aiInsightSummary => '要約';
+
+  @override
+  String get aiInsightOutlook => '市況・見通し';
+
+  @override
+  String get aiInsightSuggestions => '参考の方向性';
+
+  @override
+  String get aiInsightRisks => '注意点';
 
   @override
   String get retirementSetupSubtitle => '退職を考えていますか？\n退職時の予想資産を入力してください';
