@@ -15,7 +15,7 @@ import 'growth_race_chart_screen.dart';
 class MainTabScreen extends StatefulWidget {
   final int? initialIndex;
 
-  /// true면 지금 내 자산 탭으로 바로 진입합니다. (은퇴 시뮬 import 후 등)
+  /// true면 내 자산 관리 탭으로 바로 진입합니다. (은퇴 시뮬 import 후 등)
   final bool openMyAssetsGate;
 
   /// true면 온보딩 직후 광고 없이 자산 대결 차트를 엽니다.

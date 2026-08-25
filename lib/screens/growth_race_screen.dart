@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/app_localizations.dart';
@@ -9,7 +10,8 @@ import '../utils/colors.dart';
 import '../utils/text_styles.dart';
 import '../widgets/app_ui.dart';
 import '../widgets/asset_icon.dart';
-import '../services/ad_service.dart';
+import '../widgets/asset_search_sheet.dart';
+import '../services/growth_race_ad_gate.dart';
 import 'growth_race_chart_screen.dart';
 
 class GrowthRaceScreen extends StatefulWidget {
@@ -21,8 +23,14 @@ class GrowthRaceScreen extends StatefulWidget {
 
 class _GrowthRaceScreenState extends State<GrowthRaceScreen> {
   bool _isLoadingAd = false;
-  bool _isStartingDirect = false;
   final Map<String, bool> _expandedTypes = {};
+
+  static const _searchableTypes = {
+    'crypto',
+    'stock',
+    'korean_stock',
+    'commodity',
+  };
 
   @override
   void initState() {
@@ -33,6 +41,7 @@ class _GrowthRaceScreenState extends State<GrowthRaceScreen> {
       if (appProvider.assets.isEmpty && !appProvider.isAssetsLoading) {
         appProvider.loadAssets();
       }
+      unawaited(GrowthRaceAdGate.ensureSettingsLoaded());
     });
   }
 
@@ -48,56 +57,16 @@ class _GrowthRaceScreenState extends State<GrowthRaceScreen> {
     );
   }
 
-  Future<void> _startRaceDirect() async {
-    if (_isStartingDirect || _isLoadingAd) return;
-    setState(() => _isStartingDirect = true);
+  Future<void> _startRace() async {
+    if (_isLoadingAd) return;
+
+    setState(() => _isLoadingAd = true);
     try {
+      final allowed = await GrowthRaceAdGate.confirmBeforeCompare(context);
+      if (!allowed || !mounted) return;
       await _launchRace();
     } finally {
-      if (mounted) setState(() => _isStartingDirect = false);
-    }
-  }
-
-  void _startRace() async {
-    setState(() {
-      _isLoadingAd = true;
-    });
-
-    try {
-      await AdService.shared.showFullScreenAd(
-        onAdDismissed: () async {
-          if (!mounted) return;
-          try {
-            await _launchRace();
-          } finally {
-            if (mounted) {
-              setState(() {
-                _isLoadingAd = false;
-              });
-            }
-          }
-        },
-        onAdFailedToShow: () async {
-          // 광고 실패 시에도 그냥 시작
-          if (!mounted) return;
-          try {
-            await _launchRace();
-          } finally {
-            if (mounted) {
-              setState(() {
-                _isLoadingAd = false;
-              });
-            }
-          }
-        },
-      );
-    } catch (e) {
-      // 예외 발생 시에도 상태 리셋
-      if (mounted) {
-        setState(() {
-          _isLoadingAd = false;
-        });
-      }
+      if (mounted) setState(() => _isLoadingAd = false);
     }
   }
 
@@ -214,8 +183,7 @@ class _GrowthRaceScreenState extends State<GrowthRaceScreen> {
   ) {
     final disabled = provider.selectedAssetIds.isEmpty ||
         provider.isLoading ||
-        _isLoadingAd ||
-        _isStartingDirect;
+        _isLoadingAd;
 
     return Container(
       width: double.infinity,
@@ -231,54 +199,34 @@ class _GrowthRaceScreenState extends State<GrowthRaceScreen> {
           ),
         ],
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (kDebugMode) ...[
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: OutlinedButton(
-                onPressed: disabled ? null : _startRaceDirect,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.primary,
-                  side: const BorderSide(color: AppColors.primary),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-                child: _isStartingDirect
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          color: AppColors.primary,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : const Text(
-                        '바로 시작 (Debug)',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+      child: AppPrimaryButton(
+        label: provider.selectedAssetIds.isEmpty
+            ? l10n.selectAssetsToCompareButton
+            : l10n.compareSelectedAssets(
+                provider.selectedAssetIds.length,
               ),
-            ),
-            const SizedBox(height: 10),
-          ],
-          AppPrimaryButton(
-            label: provider.selectedAssetIds.isEmpty
-                ? l10n.watchAdAndStart
-                : l10n.compareSelectedAssets(
-                    provider.selectedAssetIds.length,
-                  ),
-            loading: provider.isLoading || _isLoadingAd || _isStartingDirect,
-            onPressed: disabled ? null : _startRace,
-          ),
-        ],
+        loading: provider.isLoading || _isLoadingAd,
+        onPressed: disabled ? null : _startRace,
       ),
     );
+  }
+
+  Future<void> _openAssetSearch(String type, AppLocalizations l10n) async {
+    final result = await showAssetSearchSheet(
+      context,
+      assetType: type,
+      l10n: l10n,
+    );
+    if (result == null || !mounted) return;
+
+    final provider = context.read<GrowthRaceProvider>();
+    provider.selectCustomAsset(
+      id: result['id']!,
+      name: result['name']!,
+      symbol: result['symbol']!,
+      type: result['type'] ?? type,
+    );
+    setState(() => _expandedTypes[type] = true);
   }
 
   Widget _buildAssetSelectionList(
@@ -288,6 +236,14 @@ class _GrowthRaceScreenState extends State<GrowthRaceScreen> {
     final assetsByType = <String, List<AssetOption>>{};
     for (final asset in assets) {
       assetsByType.putIfAbsent(asset.type, () => []).add(asset);
+    }
+
+    // 직접 입력으로 추가한 종목도 해당 타입에 합치기
+    for (final custom in provider.customAssets.values) {
+      final list = assetsByType.putIfAbsent(custom.type, () => []);
+      if (!list.any((a) => a.id == custom.id)) {
+        list.add(custom);
+      }
     }
 
     final typeOrder = {
@@ -316,9 +272,12 @@ class _GrowthRaceScreenState extends State<GrowthRaceScreen> {
           children: sortedTypes.map((type) {
             final typeAssets = assetsByType[type]!;
             final isExpanded = _expandedTypes[type] ?? false;
+            final canSearch = _searchableTypes.contains(type);
             final visible = isExpanded
                 ? typeAssets
                 : typeAssets.take(collapsedCount).toList();
+            final showManualEntry =
+                canSearch && (isExpanded || typeAssets.length <= collapsedCount);
             final l10n = AppLocalizations.of(context)!;
 
             return Padding(
@@ -374,19 +333,30 @@ class _GrowthRaceScreenState extends State<GrowthRaceScreen> {
                   Wrap(
                     spacing: spacing,
                     runSpacing: spacing,
-                    children: visible.map((asset) {
-                      final isSelected =
-                          provider.selectedAssetIds.contains(asset.id);
-                      return SizedBox(
-                        width: cardWidth,
-                        height: cardHeight,
-                        child: _AssetGridCard(
-                          asset: asset,
-                          selected: isSelected,
-                          onTap: () => provider.toggleAsset(asset.id),
+                    children: [
+                      ...visible.map((asset) {
+                        final isSelected =
+                            provider.selectedAssetIds.contains(asset.id);
+                        return SizedBox(
+                          width: cardWidth,
+                          height: cardHeight,
+                          child: _AssetGridCard(
+                            asset: asset,
+                            selected: isSelected,
+                            onTap: () => provider.toggleAsset(asset.id),
+                          ),
+                        );
+                      }),
+                      if (showManualEntry)
+                        SizedBox(
+                          width: cardWidth,
+                          height: cardHeight,
+                          child: _EnterManuallyCard(
+                            onTap: () => _openAssetSearch(type, l10n),
+                            label: l10n.enterManually,
+                          ),
                         ),
-                      );
-                    }).toList(),
+                    ],
                   ),
                 ],
               ),
@@ -415,6 +385,63 @@ class _GrowthRaceScreenState extends State<GrowthRaceScreen> {
       default:
         return type;
     }
+  }
+}
+
+class _EnterManuallyCard extends StatelessWidget {
+  final VoidCallback onTap;
+  final String label;
+
+  const _EnterManuallyCard({
+    required this.onTap,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(4, 8, 4, 6),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.45),
+              width: 1.5,
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.edit_outlined,
+                color: AppColors.primary,
+                size: 22,
+              ),
+              const SizedBox(height: 4),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: AppColors.primary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    height: 1.15,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

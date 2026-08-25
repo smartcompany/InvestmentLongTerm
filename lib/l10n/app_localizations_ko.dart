@@ -9,6 +9,9 @@ class AppLocalizationsKo extends AppLocalizations {
   AppLocalizationsKo([String locale = 'ko']) : super(locale);
 
   @override
+  String get appName => 'My Assets AI';
+
+  @override
   String get selectAssetQuestion => '어떤 자산에 투자 하시겠습니까?';
 
   @override
@@ -167,7 +170,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get pastAssetSimulation => '그때 샀다면?';
 
   @override
-  String get retirementSimulation => '은퇴 가능할까?';
+  String get retirementSimulation => '은퇴 시뮬레이션';
 
   @override
   String get growthRace => '자산 대결';
@@ -248,7 +251,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get copyToClipboard => '클립보드에 결과 복사';
 
   @override
-  String get shareTextHeader => 'Time Capital 계산 결과';
+  String get shareTextHeader => 'My Assets AI 계산 결과';
 
   @override
   String get finalValue => '최종 가치';
@@ -578,7 +581,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get adWillBeShown => '결과 보기 전에 광고가 표시됩니다';
 
   @override
-  String get myAssets => '지금 내 자산';
+  String get myAssets => '내 자산 관리';
 
   @override
   String get manageInMyAssets => '내 자산으로 관리';
@@ -590,13 +593,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get myAssetsSubtitle => '보유 자산을 기록하고 변동 추이를 확인하세요';
 
   @override
-  String get aiInsightButton => '광고 보고 AI 투자 인사이트 받기';
+  String get aiInsightButton => 'AI 포트폴리오 평가';
 
   @override
   String get aiInsightNeedAssets => '인사이트를 받으려면 자산을 먼저 등록하세요';
 
   @override
-  String get aiInsightTitle => 'AI 투자 인사이트';
+  String get aiInsightTitle => 'AI 포트폴리오 평가';
 
   @override
   String get aiInsightComingSoon =>
@@ -624,10 +627,39 @@ class AppLocalizationsKo extends AppLocalizations {
   String get aiInsightRisks => '주의할 점';
 
   @override
-  String get marketBriefingButton => '광고 보고 내 자산 트렌드 보기';
+  String get marketBriefingButton => 'AI 최근 자산 트렌드 평가';
 
   @override
-  String get marketBriefingTitle => '내 자산 최근 트렌드';
+  String get marketBriefingTitle => 'AI 최근 자산 트렌드 평가';
+
+  @override
+  String get watchAdChoiceTitle => '광고를 보고 진행할까요?';
+
+  @override
+  String get watchAdChoiceMessage =>
+      '광고를 시청하면 앱 운영에 도움이 됩니다. \'광고 보고 진행\'을 선택해 주세요.';
+
+  @override
+  String get watchAdChoiceWatch => '광고 보고 진행';
+
+  @override
+  String get watchAdChoiceSkip => '광고 없이 진행';
+
+  @override
+  String get aiUserRequestLabel => '추가로 궁금한 점 (선택)';
+
+  @override
+  String get aiUserRequestHint => '예: 테슬라 비중을 유지할지, 줄여야 할지 알려주세요';
+
+  @override
+  String get aiHistoryTitle => 'AI 기록';
+
+  @override
+  String get aiHistoryEmpty =>
+      '아직 저장된 AI 결과가 없습니다.\nAI 평가를 받아보면 여기에 다시 열어볼 수 있게 저장됩니다.';
+
+  @override
+  String get aiHistoryDeleteConfirm => '이 항목을 삭제하시겠습니까?';
 
   @override
   String get marketBriefingLoading => 'AI가 내 보유 자산 트렌드를 정리 중…';
@@ -739,7 +771,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get landingGuideDesc => '간단한 사용 방법을 안내해드릴게요';
 
   @override
-  String get landingGuideSheetTitle => 'Time Capital 이용 가이드';
+  String get landingGuideSheetTitle => 'My Assets AI 이용 가이드';
 
   @override
   String get landingGuideStep1 => '관심 있는 자산을 선택하세요';
@@ -752,6 +784,9 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get selectAssetToCompare => '비교할 자산을 선택하세요';
+
+  @override
+  String get selectAssetsToCompareButton => '비교할 자산 선택';
 
   @override
   String get selectUpToAssets => '원하는 자산을 선택해 성장률을 비교해보세요';
@@ -785,5 +820,35 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String onboardingRacePeriod(int years) {
     return '최근 $years년 · 광고 없이 바로 시작';
+  }
+
+  @override
+  String get retireSimButton => '은퇴 시뮬레이션';
+
+  @override
+  String get retireSimNeedAssets => '은퇴 시뮬레이션을 위해 자산을 먼저 추가해주세요.';
+
+  @override
+  String get retireSimulationPeriodLabel => '시뮬레이션 기간';
+
+  @override
+  String get retireAppliedCagrLabel => '적용 연평균 수익률';
+
+  @override
+  String get retireAppliedCagrHint => '시나리오가 반영된 값입니다. 그래프 성장률의 기준이 됩니다.';
+
+  @override
+  String retireCagrPercent(String rate) {
+    return '연 $rate%';
+  }
+
+  @override
+  String retireAllocationPercent(String rate) {
+    return '비중 $rate%';
+  }
+
+  @override
+  String retireBaseCagrPercent(String rate) {
+    return '기준 $rate';
   }
 }

@@ -28,4 +28,12 @@ class InvestmentInsight {
       disclaimer: json['disclaimer'] as String? ?? '',
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'summary': summary,
+        'outlook': outlook,
+        'suggestions': suggestions,
+        'risks': risks,
+        'disclaimer': disclaimer,
+      };
 }

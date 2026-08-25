@@ -1,4 +1,5 @@
 {
+  "appName": "My Assets AI",
   "selectAssetQuestion": "Which asset would you like to invest in?",
   "loadingAssetData": "Loading asset data...",
   "loadAssetError": "Failed to load asset info",
@@ -45,7 +46,7 @@
   "retirementQuestionPart2": "how long can I live comfortably?",
   "retirementDescription": "Simulate how your assets change after retirement.",
   "pastAssetSimulation": "If I bought it then?",
-  "retirementSimulation": "Can I retire?",
+  "retirementSimulation": "Retirement Simulation",
   "growthRace": "Asset Showdown",
   "crypto": "Cryptocurrency",
   "stock": "US Stock",
@@ -66,7 +67,7 @@
   "basicShare": "Share",
   "basicShareDesc": "Share via messenger, email, etc.",
   "copyToClipboard": "Copy result to clipboard",
-  "shareTextHeader": "Time Capital Calculation Result",
+  "shareTextHeader": "My Assets AI Calculation Result",
   "finalValue": "Final Value",
   "yieldRateLabel": "Yield Rate",
   "gain": "Gain",
@@ -234,13 +235,13 @@
   "retireTotalNetWorth": "Total estimated value",
   "retireQtyUnit": "qty",
   "adWillBeShown": "An ad will be shown before viewing results",
-  "myAssets": "My Assets",
+  "myAssets": "Asset Management",
   "manageInMyAssets": "Manage in My Assets",
   "viewMyAssetsStatus": "Watch Ad for AI Investment Insight",
   "myAssetsSubtitle": "Track your holdings and see how they change",
-  "aiInsightButton": "Watch Ad for AI Investment Insight",
+  "aiInsightButton": "AI Portfolio Review",
   "aiInsightNeedAssets": "Add assets first to get insights",
-  "aiInsightTitle": "AI Investment Insight",
+  "aiInsightTitle": "AI Portfolio Review",
   "aiInsightComingSoon": "Soon we'll guide you based on your holdings and current markets.\n\n※ For reference only — not investment advice.",
   "aiInsightDisclaimer": "※ For reference only — not investment advice.",
   "aiInsightLoading": "AI is analyzing your portfolio and markets…",
@@ -249,8 +250,17 @@
   "aiInsightOutlook": "Market outlook",
   "aiInsightSuggestions": "Suggested direction",
   "aiInsightRisks": "Watch-outs",
-  "marketBriefingButton": "Watch Ad for My Holdings Trend",
-  "marketBriefingTitle": "My Holdings Trend",
+  "marketBriefingButton": "AI Holdings Trend Review",
+  "marketBriefingTitle": "AI Holdings Trend Review",
+  "watchAdChoiceTitle": "Watch an ad to continue?",
+  "watchAdChoiceMessage": "Watching an ad helps keep the app running. Choose 'Watch ad' to continue or cancel.",
+  "watchAdChoiceWatch": "Watch ad",
+  "watchAdChoiceSkip": "Continue without ad",
+  "aiUserRequestLabel": "Anything else to ask? (optional)",
+  "aiUserRequestHint": "e.g. Should I keep or reduce my Tesla position?",
+  "aiHistoryTitle": "AI History",
+  "aiHistoryEmpty": "No saved AI results yet.\nRun an AI review and it will be saved here for later.",
+  "aiHistoryDeleteConfirm": "Do you want to delete this item?",
   "marketBriefingLoading": "AI is summarizing trends for your holdings…",
   "marketBriefingFailed": "Couldn't load holdings trends. Please try again.",
   "marketBriefingSummary": "Recent flow of your holdings",
@@ -288,11 +298,12 @@
   "landingMoreAssetsDesc": "Choose from stocks, ETFs, commodities, and more",
   "landingGuideTitle": "New here?",
   "landingGuideDesc": "We'll walk you through how to get started",
-  "landingGuideSheetTitle": "Time Capital quick guide",
+  "landingGuideSheetTitle": "My Assets AI quick guide",
   "landingGuideStep1": "Pick an asset you're curious about",
   "landingGuideStep2": "Set your amount and time horizon",
   "landingGuideStep3": "Check the chart and return",
   "selectAssetToCompare": "Select assets to compare",
+  "selectAssetsToCompareButton": "Select assets to compare",
   "selectUpToAssets": "Pick assets and race their growth rates",
   "compareSelectedAssets": "Compare {count} assets",
   "@compareSelectedAssets": {
@@ -314,6 +325,35 @@
     "placeholders": {
       "years": {
         "type": "int"
+      }
+    }
+  },
+  "retireSimButton": "Retirement Simulation",
+  "retireSimNeedAssets": "Please add assets first to run the retirement simulation.",
+  "retireSimulationPeriodLabel": "Simulation period",
+  "retireAppliedCagrLabel": "Applied annual return",
+  "retireAppliedCagrHint": "Includes the selected scenario. This is what drives the chart growth.",
+  "retireCagrPercent": "{rate}% / yr",
+  "@retireCagrPercent": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "retireAllocationPercent": "Allocation {rate}%",
+  "@retireAllocationPercent": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "retireBaseCagrPercent": "Base {rate}",
+  "@retireBaseCagrPercent": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
       }
     }
   }

@@ -9,6 +9,9 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get appName => 'My Assets AI';
+
+  @override
   String get selectAssetQuestion => 'Which asset would you like to invest in?';
 
   @override
@@ -170,7 +173,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pastAssetSimulation => 'If I bought it then?';
 
   @override
-  String get retirementSimulation => 'Can I retire?';
+  String get retirementSimulation => 'Retirement Simulation';
 
   @override
   String get growthRace => 'Asset Showdown';
@@ -253,7 +256,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get copyToClipboard => 'Copy result to clipboard';
 
   @override
-  String get shareTextHeader => 'Time Capital Calculation Result';
+  String get shareTextHeader => 'My Assets AI Calculation Result';
 
   @override
   String get finalValue => 'Final Value';
@@ -587,7 +590,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adWillBeShown => 'An ad will be shown before viewing results';
 
   @override
-  String get myAssets => 'My Assets';
+  String get myAssets => 'Asset Management';
 
   @override
   String get manageInMyAssets => 'Manage in My Assets';
@@ -599,13 +602,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myAssetsSubtitle => 'Track your holdings and see how they change';
 
   @override
-  String get aiInsightButton => 'Watch Ad for AI Investment Insight';
+  String get aiInsightButton => 'AI Portfolio Review';
 
   @override
   String get aiInsightNeedAssets => 'Add assets first to get insights';
 
   @override
-  String get aiInsightTitle => 'AI Investment Insight';
+  String get aiInsightTitle => 'AI Portfolio Review';
 
   @override
   String get aiInsightComingSoon =>
@@ -634,10 +637,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiInsightRisks => 'Watch-outs';
 
   @override
-  String get marketBriefingButton => 'Watch Ad for My Holdings Trend';
+  String get marketBriefingButton => 'AI Holdings Trend Review';
 
   @override
-  String get marketBriefingTitle => 'My Holdings Trend';
+  String get marketBriefingTitle => 'AI Holdings Trend Review';
+
+  @override
+  String get watchAdChoiceTitle => 'Watch an ad to continue?';
+
+  @override
+  String get watchAdChoiceMessage =>
+      'Watching an ad helps keep the app running. Choose \'Watch ad\' to continue or cancel.';
+
+  @override
+  String get watchAdChoiceWatch => 'Watch ad';
+
+  @override
+  String get watchAdChoiceSkip => 'Continue without ad';
+
+  @override
+  String get aiUserRequestLabel => 'Anything else to ask? (optional)';
+
+  @override
+  String get aiUserRequestHint =>
+      'e.g. Should I keep or reduce my Tesla position?';
+
+  @override
+  String get aiHistoryTitle => 'AI History';
+
+  @override
+  String get aiHistoryEmpty =>
+      'No saved AI results yet.\nRun an AI review and it will be saved here for later.';
+
+  @override
+  String get aiHistoryDeleteConfirm => 'Do you want to delete this item?';
 
   @override
   String get marketBriefingLoading =>
@@ -755,7 +788,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get landingGuideDesc => 'We\'ll walk you through how to get started';
 
   @override
-  String get landingGuideSheetTitle => 'Time Capital quick guide';
+  String get landingGuideSheetTitle => 'My Assets AI quick guide';
 
   @override
   String get landingGuideStep1 => 'Pick an asset you\'re curious about';
@@ -768,6 +801,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectAssetToCompare => 'Select assets to compare';
+
+  @override
+  String get selectAssetsToCompareButton => 'Select assets to compare';
 
   @override
   String get selectUpToAssets => 'Pick assets and race their growth rates';
@@ -803,5 +839,37 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String onboardingRacePeriod(int years) {
     return 'Last $years years · No ads';
+  }
+
+  @override
+  String get retireSimButton => 'Retirement Simulation';
+
+  @override
+  String get retireSimNeedAssets =>
+      'Please add assets first to run the retirement simulation.';
+
+  @override
+  String get retireSimulationPeriodLabel => 'Simulation period';
+
+  @override
+  String get retireAppliedCagrLabel => 'Applied annual return';
+
+  @override
+  String get retireAppliedCagrHint =>
+      'Includes the selected scenario. This is what drives the chart growth.';
+
+  @override
+  String retireCagrPercent(String rate) {
+    return '$rate% / yr';
+  }
+
+  @override
+  String retireAllocationPercent(String rate) {
+    return 'Allocation $rate%';
+  }
+
+  @override
+  String retireBaseCagrPercent(String rate) {
+    return 'Base $rate';
   }
 }

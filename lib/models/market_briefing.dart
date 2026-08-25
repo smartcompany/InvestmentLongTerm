@@ -48,6 +48,14 @@ class HoldingCondition {
     }
     return 'watch';
   }
+
+  Map<String, dynamic> toJson() => {
+        'assetId': assetId,
+        'name': name,
+        'mood': mood,
+        'label': label,
+        'note': note,
+      };
 }
 
 class MarketBriefing {
@@ -102,4 +110,16 @@ class MarketBriefing {
       asOfDate: json['asOfDate'] as String? ?? '',
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'todayHeadline': todayHeadline,
+        'marketSummary': marketSummary,
+        'assetConditions':
+            assetConditions.map((c) => c.toJson()).toList(),
+        'holdingsFocus': holdingsFocus,
+        'nearTermOutlook': nearTermOutlook,
+        'watchPoints': watchPoints,
+        'disclaimer': disclaimer,
+        'asOfDate': asOfDate,
+      };
 }

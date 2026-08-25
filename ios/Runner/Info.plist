@@ -5,7 +5,7 @@
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>
-		<string>Time Capital</string>
+		<string>My Assets AI</string>
 		<key>CFBundleExecutable</key>
 		<string>$(EXECUTABLE_NAME)</string>
 		<key>CFBundleIdentifier</key>
@@ -13,7 +13,7 @@
 		<key>CFBundleInfoDictionaryVersion</key>
 		<string>6.0</string>
 		<key>CFBundleName</key>
-		<string>long_term_investment_sim</string>
+		<string>My Assets AI</string>
 		<key>CFBundlePackageType</key>
 		<string>APPL</string>
 		<key>CFBundleShortVersionString</key>
@@ -21,59 +21,61 @@
 		<key>CFBundleSignature</key>
 		<string>????</string>
 		<key>CFBundleVersion</key>
-		<string>46</string>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
-	<key>UIDeviceFamily</key>
-	<array>
-		<integer>1</integer>
-	</array>
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
+		<string>47</string>
+		<key>LSRequiresIPhoneOS</key>
+		<true/>
+		<key>UIDeviceFamily</key>
+		<array>
+			<integer>1</integer>
+		</array>
+		<key>UILaunchStoryboardName</key>
+		<string>LaunchScreen</string>
 		<key>UIMainStoryboardFile</key>
 		<string>Main</string>
-	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-	</array>
+		<key>UISupportedInterfaceOrientations</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+		</array>
 		<key>CADisableMinimumFrameDurationOnPhone</key>
 		<true/>
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true/>
-	<key>UIStatusBarHidden</key>
-	<false/>
-	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-3940256099942544~1458002511</string>
-	<key>KAKAO_APP_KEY</key>
-	<string>30272b5f0271c22c1747949a87f1758d</string>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
-	<key>NSUbiquitousContainers</key>
-	<dict>
-		<key>iCloud.$(CFBundleIdentifier)</key>
+		<key>UIStatusBarHidden</key>
+		<true/>
+		<key>GADApplicationIdentifier</key>
+		<string>ca-app-pub-3940256099942544~1458002511</string>
+		<key>KAKAO_APP_KEY</key>
+		<string>30272b5f0271c22c1747949a87f1758d</string>
+		<key>ITSAppUsesNonExemptEncryption</key>
+		<false/>
+		<key>NSUbiquitousContainers</key>
 		<dict>
-			<key>NSUbiquitousContainerIsDocumentScopePublic</key>
-			<true/>
-			<key>NSUbiquitousContainerSupportedFolderLevels</key>
-			<string>Any</string>
+			<key>iCloud.$(CFBundleIdentifier)</key>
+			<dict>
+				<key>NSUbiquitousContainerIsDocumentScopePublic</key>
+				<true/>
+				<key>NSUbiquitousContainerSupportedFolderLevels</key>
+				<string>Any</string>
+			</dict>
 		</dict>
-	</dict>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLName</key>
-			<string>KakaoOpen</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>kakao30272b5f0271c22c1747949a87f1758d</string>
-			</array>
-		</dict>
-	</array>
-	<key>LSApplicationQueriesSchemes</key>
-	<array>
-		<string>kakaotalk</string>
-		<string>kakaolink</string>
-		<string>kakaokompassauth</string>
-	</array>
+		<key>CFBundleURLTypes</key>
+		<array>
+			<dict>
+				<key>CFBundleURLName</key>
+				<string>KakaoOpen</string>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>kakao30272b5f0271c22c1747949a87f1758d</string>
+				</array>
+			</dict>
+		</array>
+		<key>LSApplicationQueriesSchemes</key>
+		<array>
+			<string>kakaotalk</string>
+			<string>kakaolink</string>
+			<string>kakaokompassauth</string>
+		</array>
+		<key>UIViewControllerBasedStatusBarAppearance</key>
+		<false/>
 	</dict>
 </plist>

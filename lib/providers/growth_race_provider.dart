@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import '../models/asset_option.dart';
 import '../services/api_service.dart';
 
 class GrowthRaceProvider with ChangeNotifier {
   final Set<String> _selectedAssetIds = {};
+  final Map<String, AssetOption> _customAssets = {};
   int _selectedYears = 5;
   bool _isLoading = false;
   bool _isRacing = false;
@@ -15,6 +17,7 @@ class GrowthRaceProvider with ChangeNotifier {
   DateTime? _currentDate;
 
   Set<String> get selectedAssetIds => Set.unmodifiable(_selectedAssetIds);
+  Map<String, AssetOption> get customAssets => Map.unmodifiable(_customAssets);
   int get selectedYears => _selectedYears;
   bool get isLoading => _isLoading;
   bool get isRacing => _isRacing;
@@ -26,12 +29,48 @@ class GrowthRaceProvider with ChangeNotifier {
   DateTime? get raceStartDate => _raceStartDate;
   DateTime? get currentDate => _currentDate;
 
+  /// 카탈로그 + 직접 입력 자산에서 id로 조회
+  AssetOption? resolveAsset(String assetId, List<AssetOption> catalog) {
+    for (final asset in catalog) {
+      if (asset.id == assetId) return asset;
+    }
+    return _customAssets[assetId];
+  }
+
+  List<AssetOption> customAssetsOfType(String type) {
+    return _customAssets.values.where((a) => a.type == type).toList();
+  }
+
   void toggleAsset(String assetId) {
     if (_selectedAssetIds.contains(assetId)) {
       _selectedAssetIds.remove(assetId);
     } else {
       _selectedAssetIds.add(assetId);
     }
+    notifyListeners();
+  }
+
+  /// 검색으로 고른 종목을 비교 목록에 넣고 선택합니다.
+  void selectCustomAsset({
+    required String id,
+    required String name,
+    required String symbol,
+    required String type,
+  }) {
+    final option = AssetOption(
+      id: id,
+      type: type,
+      symbol: symbol.isNotEmpty ? symbol : id,
+      icon: '📈',
+      names: {
+        'en': name,
+        'ko': name,
+        'ja': name,
+        'zh': name,
+      },
+    );
+    _customAssets[id] = option;
+    _selectedAssetIds.add(id);
     notifyListeners();
   }
 
@@ -70,7 +109,13 @@ class GrowthRaceProvider with ChangeNotifier {
       final days = _selectedYears * 365;
       final futures = _selectedAssetIds.map((assetId) async {
         try {
-          final data = await ApiService.fetchDailyPrices(assetId, days);
+          final custom = _customAssets[assetId];
+          final data = await ApiService.fetchDailyPrices(
+            assetId,
+            days,
+            symbol: custom?.symbol,
+            type: custom?.type,
+          );
           // 날짜 기준으로 정렬 (오래된 것부터)
           final sortedData = List<Map<String, dynamic>>.from(data)
             ..sort((a, b) {
@@ -189,6 +234,7 @@ class GrowthRaceProvider with ChangeNotifier {
 
   void reset() {
     _selectedAssetIds.clear();
+    _customAssets.clear();
     _selectedYears = 5;
     _isLoading = false;
     _isRacing = false;

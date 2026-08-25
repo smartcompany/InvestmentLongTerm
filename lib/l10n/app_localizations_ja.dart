@@ -9,6 +9,9 @@ class AppLocalizationsJa extends AppLocalizations {
   AppLocalizationsJa([String locale = 'ja']) : super(locale);
 
   @override
+  String get appName => 'My Assets AI';
+
+  @override
   String get selectAssetQuestion => 'どの資産に投資しますか？';
 
   @override
@@ -167,7 +170,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get pastAssetSimulation => 'あの時買っていたら？';
 
   @override
-  String get retirementSimulation => '退職できる？';
+  String get retirementSimulation => '退職シミュレーション';
 
   @override
   String get growthRace => '資産対決';
@@ -248,7 +251,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get copyToClipboard => '結果をクリップボードにコピー';
 
   @override
-  String get shareTextHeader => 'Time Capital 計算結果';
+  String get shareTextHeader => 'My Assets AI 計算結果';
 
   @override
   String get finalValue => '最終価値';
@@ -578,7 +581,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get adWillBeShown => '結果を見る前に広告が表示されます';
 
   @override
-  String get myAssets => '現在の資産';
+  String get myAssets => '資産管理';
 
   @override
   String get manageInMyAssets => '資産管理へ';
@@ -590,13 +593,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get myAssetsSubtitle => '保有資産を記録し、変動推移を確認してください';
 
   @override
-  String get aiInsightButton => '広告を見てAI投資インサイトを見る';
+  String get aiInsightButton => 'AIポートフォリオ評価';
 
   @override
   String get aiInsightNeedAssets => 'インサイトを見るには、先に資産を登録してください';
 
   @override
-  String get aiInsightTitle => 'AI投資インサイト';
+  String get aiInsightTitle => 'AIポートフォリオ評価';
 
   @override
   String get aiInsightComingSoon =>
@@ -624,10 +627,38 @@ class AppLocalizationsJa extends AppLocalizations {
   String get aiInsightRisks => '注意点';
 
   @override
-  String get marketBriefingButton => '広告を見て保有資産トレンドを見る';
+  String get marketBriefingButton => 'AI最近の資産トレンド評価';
 
   @override
-  String get marketBriefingTitle => '保有資産の最近トレンド';
+  String get marketBriefingTitle => 'AI最近の資産トレンド評価';
+
+  @override
+  String get watchAdChoiceTitle => '広告を見て進めますか？';
+
+  @override
+  String get watchAdChoiceMessage =>
+      '広告を見るとアプリの運営に役立ちます。『広告を見て進む』か『キャンセル』を選べます。';
+
+  @override
+  String get watchAdChoiceWatch => '広告を見て進む';
+
+  @override
+  String get watchAdChoiceSkip => '広告なしで進む';
+
+  @override
+  String get aiUserRequestLabel => '追加で聞きたいこと（任意）';
+
+  @override
+  String get aiUserRequestHint => '例: テスラの比重は維持すべき？減らすべき？';
+
+  @override
+  String get aiHistoryTitle => 'AI履歴';
+
+  @override
+  String get aiHistoryEmpty => 'まだ保存されたAI結果がありません。\nAI評価を実行すると、後でここから再度開けます。';
+
+  @override
+  String get aiHistoryDeleteConfirm => 'この項目を削除しますか？';
 
   @override
   String get marketBriefingLoading => 'AIが保有資産のトレンドを整理中…';
@@ -739,7 +770,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get landingGuideDesc => '使い方をかんたんに案内します';
 
   @override
-  String get landingGuideSheetTitle => 'Time Capital ガイド';
+  String get landingGuideSheetTitle => 'My Assets AI ガイド';
 
   @override
   String get landingGuideStep1 => '気になる資産を選ぶ';
@@ -752,6 +783,9 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get selectAssetToCompare => '比較する資産を選んでください';
+
+  @override
+  String get selectAssetsToCompareButton => '比較する資産を選択';
 
   @override
   String get selectUpToAssets => '資産を選んで成長率を比較しましょう';
@@ -785,5 +819,35 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String onboardingRacePeriod(int years) {
     return '直近$years年 · 広告なしですぐ開始';
+  }
+
+  @override
+  String get retireSimButton => '退職シミュレーション';
+
+  @override
+  String get retireSimNeedAssets => '退職シミュレーションを実行するには、まず資産を追加してください。';
+
+  @override
+  String get retireSimulationPeriodLabel => 'シミュレーション期間';
+
+  @override
+  String get retireAppliedCagrLabel => '適用した年平均収益率';
+
+  @override
+  String get retireAppliedCagrHint => 'シナリオ反映後の値です。グラフ成長の基準になります。';
+
+  @override
+  String retireCagrPercent(String rate) {
+    return '年 $rate%';
+  }
+
+  @override
+  String retireAllocationPercent(String rate) {
+    return '比重 $rate%';
+  }
+
+  @override
+  String retireBaseCagrPercent(String rate) {
+    return '基準 $rate';
   }
 }

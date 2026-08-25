@@ -104,7 +104,10 @@ class _RetireChartRevealScreenState extends State<RetireChartRevealScreen> {
         _RetireRaceSeries(
           assetId: assetId,
           name: name,
-          color: RetireChartStyle.assetAt(colorIndex),
+          color: RetireChartStyle.colorForAssetId(
+            assetId,
+            paletteIndex: colorIndex,
+          ),
           spots: [
             for (var i = 0; i < path.length; i++)
               RacePoint(i.toDouble(), path[i]),
@@ -112,7 +115,7 @@ class _RetireChartRevealScreenState extends State<RetireChartRevealScreen> {
           initialValue: path.first,
         ),
       );
-      colorIndex++;
+      if (assetId != 'cash') colorIndex++;
     }
 
     // 자산이 하나도 없으면 전체 자산 라인으로 대체

@@ -1,6 +1,6 @@
 {
-  "ko": "• 타임 캐피탈 업데이트\n• 은퇴 시뮬레이션 → 내 자산으로 이관\n• 성장률 경주·자산 아이콘 UI 개선\n• 다국어 지원 (한/영/일/중)",
-  "en-US": "• Time Capital update\n• Import retirement sim holdings into My Assets\n• Growth race and asset icon UI improvements\n• Korean, English, Japanese, Chinese",
-  "ja": "• Time Capital アップデート\n• 退職シミュレーションからマイ資産へ取り込み\n• 成長率レース・資産アイコンUI改善\n• 韓国語・英語・日本語・中国語対応",
-  "zh-Hans": "• Time Capital 更新\n• 退休模拟结果可导入「我的资产」\n• 增长率竞赛与资产图标 UI 改进\n• 支持韩语、英语、日语、中文"
+  "ko": "• 앱명 My Assets AI로 변경\n• AI 포트폴리오·자산 트렌드 평가 개선\n• 요청 입력란, 가독성(볼드·이모지) 강화\n• 내 자산·은퇴 시뮬레이션 UX 개선",
+  "en-US": "• Renamed to My Assets AI\n• Improved AI portfolio and holdings-trend insights\n• Optional user request field and clearer AI formatting\n• My Assets and retirement simulation UX updates",
+  "ja": "• アプリ名を My Assets AI に変更\n• AIポートフォリオ／保有資産トレンド評価を改善\n• 追加質問入力と読みやすさ向上\n• マイ資産・退職シミュレーションUX改善",
+  "zh-Hans": "• 应用更名为 My Assets AI\n• 改进 AI 组合与持仓趋势分析\n• 可选补充提问与更清晰的展示\n• 我的资产与退休模拟体验优化"
 }

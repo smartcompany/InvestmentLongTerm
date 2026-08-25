@@ -1,4 +1,5 @@
 {
+  "appName": "My Assets AI",
   "selectAssetQuestion": "어떤 자산에 투자 하시겠습니까?",
   "loadingAssetData": "자산 데이터 불러오는 중...",
   "loadAssetError": "자산 정보 로드 실패",
@@ -45,7 +46,7 @@
   "retirementQuestionPart2": "얼마나 놀고 먹을 수 있을까?",
   "retirementDescription": "은퇴 후 자산 변화를 시뮬레이션해보세요.",
   "pastAssetSimulation": "그때 샀다면?",
-  "retirementSimulation": "은퇴 가능할까?",
+  "retirementSimulation": "은퇴 시뮬레이션",
   "growthRace": "자산 대결",
   "crypto": "암호화폐",
   "stock": "미국 주식",
@@ -66,7 +67,7 @@
   "basicShare": "기본 공유",
   "basicShareDesc": "메신저, 메일 등으로 공유",
   "copyToClipboard": "클립보드에 결과 복사",
-  "shareTextHeader": "Time Capital 계산 결과",
+  "shareTextHeader": "My Assets AI 계산 결과",
   "finalValue": "최종 가치",
   "yieldRateLabel": "수익률",
   "gain": "수익",
@@ -234,13 +235,13 @@
   "retireTotalNetWorth": "총 자산 평가액",
   "retireQtyUnit": "개",
   "adWillBeShown": "결과 보기 전에 광고가 표시됩니다",
-  "myAssets": "지금 내 자산",
+  "myAssets": "내 자산 관리",
   "manageInMyAssets": "내 자산으로 관리",
   "viewMyAssetsStatus": "광고 보고 AI 투자 인사이트 받기",
   "myAssetsSubtitle": "보유 자산을 기록하고 변동 추이를 확인하세요",
-  "aiInsightButton": "광고 보고 AI 투자 인사이트 받기",
+  "aiInsightButton": "AI 포트폴리오 평가",
   "aiInsightNeedAssets": "인사이트를 받으려면 자산을 먼저 등록하세요",
-  "aiInsightTitle": "AI 투자 인사이트",
+  "aiInsightTitle": "AI 포트폴리오 평가",
   "aiInsightComingSoon": "곧 내 보유 자산과 현재 시황을 바탕으로 방향을 안내해 드릴 예정입니다.\n\n※ 참고용 정보이며, 투자 권유가 아닙니다.",
   "aiInsightDisclaimer": "※ 참고용 정보이며, 투자 권유가 아닙니다.",
   "aiInsightLoading": "AI가 포트폴리오와 시황을 분석 중…",
@@ -249,8 +250,17 @@
   "aiInsightOutlook": "시황·전망",
   "aiInsightSuggestions": "참고 방향",
   "aiInsightRisks": "주의할 점",
-  "marketBriefingButton": "광고 보고 내 자산 트렌드 보기",
-  "marketBriefingTitle": "내 자산 최근 트렌드",
+  "marketBriefingButton": "AI 최근 자산 트렌드 평가",
+  "marketBriefingTitle": "AI 최근 자산 트렌드 평가",
+  "watchAdChoiceTitle": "광고를 보고 진행할까요?",
+  "watchAdChoiceMessage": "광고를 시청하면 앱 운영에 도움이 됩니다. '광고 보고 진행'을 선택해 주세요.",
+  "watchAdChoiceWatch": "광고 보고 진행",
+  "watchAdChoiceSkip": "광고 없이 진행",
+  "aiUserRequestLabel": "추가로 궁금한 점 (선택)",
+  "aiUserRequestHint": "예: 테슬라 비중을 유지할지, 줄여야 할지 알려주세요",
+  "aiHistoryTitle": "AI 기록",
+  "aiHistoryEmpty": "아직 저장된 AI 결과가 없습니다.\nAI 평가를 받아보면 여기에 다시 열어볼 수 있게 저장됩니다.",
+  "aiHistoryDeleteConfirm": "이 항목을 삭제하시겠습니까?",
   "marketBriefingLoading": "AI가 내 보유 자산 트렌드를 정리 중…",
   "marketBriefingFailed": "내 자산 트렌드를 불러오지 못했습니다. 다시 시도해주세요.",
   "marketBriefingSummary": "내 자산 최근 흐름",
@@ -288,11 +298,12 @@
   "landingMoreAssetsDesc": "주식, ETF, 원자재 등 다양한 자산을 선택하세요",
   "landingGuideTitle": "처음 오셨나요?",
   "landingGuideDesc": "간단한 사용 방법을 안내해드릴게요",
-  "landingGuideSheetTitle": "Time Capital 이용 가이드",
+  "landingGuideSheetTitle": "My Assets AI 이용 가이드",
   "landingGuideStep1": "관심 있는 자산을 선택하세요",
   "landingGuideStep2": "투자 금액과 기간을 설정하세요",
   "landingGuideStep3": "결과 차트와 수익률을 확인하세요",
   "selectAssetToCompare": "비교할 자산을 선택하세요",
+  "selectAssetsToCompareButton": "비교할 자산 선택",
   "selectUpToAssets": "원하는 자산을 선택해 성장률을 비교해보세요",
   "compareSelectedAssets": "{count}개 자산 비교하기",
   "@compareSelectedAssets": {
@@ -314,6 +325,35 @@
     "placeholders": {
       "years": {
         "type": "int"
+      }
+    }
+  },
+  "retireSimButton": "은퇴 시뮬레이션",
+  "retireSimNeedAssets": "은퇴 시뮬레이션을 위해 자산을 먼저 추가해주세요.",
+  "retireSimulationPeriodLabel": "시뮬레이션 기간",
+  "retireAppliedCagrLabel": "적용 연평균 수익률",
+  "retireAppliedCagrHint": "시나리오가 반영된 값입니다. 그래프 성장률의 기준이 됩니다.",
+  "retireCagrPercent": "연 {rate}%",
+  "@retireCagrPercent": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "retireAllocationPercent": "비중 {rate}%",
+  "@retireAllocationPercent": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
+      }
+    }
+  },
+  "retireBaseCagrPercent": "기준 {rate}",
+  "@retireBaseCagrPercent": {
+    "placeholders": {
+      "rate": {
+        "type": "String"
       }
     }
   }

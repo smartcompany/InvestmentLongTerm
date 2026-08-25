@@ -139,6 +139,27 @@ class ApiService {
     }
   }
 
+  /// 최근 1일 조회는 Yahoo에서 빈 응답이 나는 경우가 있어,
+  /// 기간 데이터(기본 1년)의 마지막 종가를 현재가로 사용합니다.
+  static Future<double?> fetchLatestPrice(
+    String assetId, {
+    int days = 365,
+    String? symbol,
+    String? type,
+  }) async {
+    final safeDays = days < 5 ? 365 : days;
+    final priceData = await fetchDailyPrices(
+      assetId,
+      safeDays,
+      symbol: symbol,
+      type: type,
+    );
+    if (priceData.isEmpty) return null;
+    final latest = (priceData.last['price'] as num?)?.toDouble();
+    if (latest == null || !latest.isFinite || latest <= 0) return null;
+    return latest;
+  }
+
   static Future<InvestmentInsight> fetchInvestmentInsight({
     required String locale,
     required String displayCurrency,
@@ -146,6 +167,7 @@ class ApiService {
     double? totalPurchaseAmount,
     double? totalCurrentValue,
     double? totalReturnRatePct,
+    String? userRequest,
   }) async {
     final uri = Uri.parse('$baseUrl/api/insights');
     final body = <String, dynamic>{
@@ -161,6 +183,10 @@ class ApiService {
     }
     if (totalReturnRatePct != null) {
       body['totalReturnRatePct'] = totalReturnRatePct;
+    }
+    final trimmedRequest = userRequest?.trim();
+    if (trimmedRequest != null && trimmedRequest.isNotEmpty) {
+      body['userRequest'] = trimmedRequest;
     }
 
     debugPrint('[ApiService] POST $uri');
@@ -211,6 +237,7 @@ class ApiService {
     required String displayCurrency,
     required List<Map<String, dynamic>> assets,
     String? asOfDate,
+    String? userRequest,
   }) async {
     final uri = Uri.parse('$baseUrl/api/market-briefing');
     final body = <String, dynamic>{
@@ -220,6 +247,10 @@ class ApiService {
     };
     if (asOfDate != null && asOfDate.isNotEmpty) {
       body['asOfDate'] = asOfDate;
+    }
+    final trimmedRequest = userRequest?.trim();
+    if (trimmedRequest != null && trimmedRequest.isNotEmpty) {
+      body['userRequest'] = trimmedRequest;
     }
 
     debugPrint('[ApiService] POST $uri');

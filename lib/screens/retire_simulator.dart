@@ -17,8 +17,14 @@ import 'retire_chart_reveal_screen.dart';
 
 class RetireSimulatorScreen extends StatefulWidget {
   final bool isVisible;
+  /// true이면 내 자산 화면에서 자산을 가져온 모드 — 현금/보유자산 입력 섹션을 숨김
+  final bool fromMyAssets;
 
-  const RetireSimulatorScreen({super.key, this.isVisible = false});
+  const RetireSimulatorScreen({
+    super.key,
+    this.isVisible = false,
+    this.fromMyAssets = false,
+  });
 
   @override
   State<RetireSimulatorScreen> createState() => _RetireSimulatorScreenState();
@@ -35,7 +41,8 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final provider = context.read<RetireSimulatorProvider>();
-      await provider.loadSettings();
+      // 내 자산에서 온 경우 prefs에 저장된 은퇴 탭 현금을 덮어쓰지 않음
+      await provider.loadSettings(restorePortfolio: !widget.fromMyAssets);
       if (!mounted) return;
       _syncControllers(provider);
     });
@@ -131,6 +138,20 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
 
         return Scaffold(
           backgroundColor: AppColors.bg,
+          appBar: widget.fromMyAssets
+              ? AppBar(
+                  backgroundColor: AppColors.bg,
+                  elevation: 0,
+                  scrolledUnderElevation: 0,
+                  leading: IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new,
+                      color: AppColors.textPrimary,
+                    ),
+                    onPressed: () => Navigator.of(context).maybePop(),
+                  ),
+                )
+              : null,
           body: GestureDetector(
             onTap: () => FocusScope.of(context).unfocus(),
             behavior: HitTestBehavior.opaque,
@@ -149,7 +170,9 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      l10n.retireFormSubtitle,
+                      widget.fromMyAssets
+                          ? '내 자산을 기준으로 은퇴 가능성을 시뮬레이션해보세요'
+                          : l10n.retireFormSubtitle,
                       style: AppTextStyles.homeSubDescription.copyWith(
                         color: AppColors.textPrimary.withValues(alpha: 0.75),
                         fontWeight: FontWeight.w600,
@@ -157,6 +180,10 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
                     ),
                     const SizedBox(height: 24),
 
+                    if (widget.fromMyAssets) ...[
+                      _buildMyAssetsReadOnlySummary(provider, currencyFormat, l10n),
+                      const SizedBox(height: 24),
+                    ] else ...[
                     _sectionLabel(l10n.retireCashLabel),
                     const SizedBox(height: 8),
                     AppCard(
@@ -240,7 +267,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
                               children: [
                                 AssetIcon(
                                   assetId: h.assetId,
-                                  type: option?.type,
+                                  type: option?.type ?? h.assetType,
                                   size: 22,
                                 ),
                                 const SizedBox(width: 10),
@@ -250,7 +277,9 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        option?.displayName() ?? h.assetId,
+                                        option?.displayName() ??
+                                            h.assetName ??
+                                            h.assetId,
                                         style: const TextStyle(
                                           fontWeight: FontWeight.w700,
                                           fontSize: 15,
@@ -373,6 +402,8 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
                       ),
                     ),
 
+                    ], // end of !fromMyAssets cash/holdings block
+
                     const SizedBox(height: 24),
                     _sectionLabel(l10n.retireMonthlySpendLabel),
                     const SizedBox(height: 8),
@@ -386,18 +417,65 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
                     ),
 
                     const SizedBox(height: 24),
-                    _sectionLabel(l10n.duration),
+                    Row(
+                      children: [
+                        Text(
+                          l10n.retireSimulationPeriodLabel,
+                          style: AppTextStyles.chartSectionTitle.copyWith(
+                            fontSize: 16,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${provider.simulationYears}${l10n.year}',
+                          style: AppTextStyles.chartSectionTitle.copyWith(
+                            fontSize: 16,
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [1, 3, 5, 7, 10, 15, 20, 30].map((y) {
-                        return AppChip(
-                          label: '$y${l10n.year}',
-                          selected: provider.simulationYears == y,
-                          onTap: () => provider.setSimulationYears(y),
-                        );
-                      }).toList(),
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(14, 16, 14, 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.border),
+                      ),
+                      child: SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          activeTrackColor: AppColors.primary,
+                          inactiveTrackColor: AppColors.border,
+                          thumbColor: AppColors.primary,
+                          overlayColor:
+                              AppColors.primary.withValues(alpha: 0.15),
+                          trackHeight: 5,
+                          thumbShape: const RoundSliderThumbShape(
+                            enabledThumbRadius: 10,
+                          ),
+                          overlayShape: const RoundSliderOverlayShape(
+                            overlayRadius: 18,
+                          ),
+                          tickMarkShape: const RoundSliderTickMarkShape(
+                            tickMarkRadius: 3,
+                          ),
+                          activeTickMarkColor: AppColors.primary,
+                          inactiveTickMarkColor: AppColors.border,
+                        ),
+                        child: Slider(
+                          value: provider.simulationYears
+                              .clamp(1, 30)
+                              .toDouble(),
+                          min: 1,
+                          max: 30,
+                          divisions: 29,
+                          onChanged: (value) {
+                            provider.setSimulationYears(value.round());
+                          },
+                        ),
+                      ),
                     ),
 
                     const SizedBox(height: 24),
@@ -606,6 +684,151 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildMyAssetsReadOnlySummary(
+    RetireSimulatorProvider provider,
+    NumberFormat currencyFormat,
+    AppLocalizations l10n,
+  ) {
+    return AppCard(
+      color: AppColors.primarySoft,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.beach_access_outlined,
+                  size: 18, color: AppColors.primary),
+              const SizedBox(width: 6),
+              Text(
+                l10n.retirementSimulation,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (provider.cash > 0) ...[
+            _readOnlyRow(l10n.retireCashLabel,
+                currencyFormat.format(provider.cash)),
+            const SizedBox(height: 4),
+          ],
+          _readOnlyRow(l10n.retireHoldingsLabel,
+              currencyFormat.format(provider.holdingsValue)),
+          if (provider.holdings.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            ...provider.holdings.map((h) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  children: [
+                    AssetIcon(
+                      assetId: h.assetId,
+                      type: h.assetType,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            h.assetName ?? h.assetId,
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '수량 ${_formatQty(h.quantity)}${l10n.retireQtyUnit}',
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Text(
+                      h.isLoadingPrice
+                          ? l10n.loadingPrice
+                          : currencyFormat.format(h.valuation),
+                      style: TextStyle(
+                        color: h.isLoadingPrice
+                            ? AppColors.textSecondary
+                            : AppColors.textPrimary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ],
+          const Divider(height: 16),
+          _readOnlyRow(
+            l10n.retireTotalNetWorth,
+            currencyFormat.format(provider.totalNetWorth),
+            bold: true,
+          ),
+          if (provider.isLoadingAnyPrice) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.primary,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  l10n.loadingPrice,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _readOnlyRow(String label, String value, {bool bold = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: AppColors.textSecondary,
+            fontSize: bold ? 14 : 13,
+            fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            color: bold ? AppColors.primary : AppColors.textPrimary,
+            fontSize: bold ? 16 : 13,
+            fontWeight: bold ? FontWeight.w800 : FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 

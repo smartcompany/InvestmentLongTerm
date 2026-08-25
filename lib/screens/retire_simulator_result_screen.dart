@@ -115,15 +115,15 @@ class _RetireSimulatorResultScreenState
             .map((e) => FlSpot(e.key / 12.0, e.value))
             .toList();
 
-        // 애니메이션과 동일한 자산 색상 매핑
-        final orderedIds = provider.assets.map((a) => a.assetId).toList();
-        final nonCashIds =
-            orderedIds.where((id) => id != 'cash').toList();
-        final colorOrder =
-            nonCashIds.isNotEmpty ? nonCashIds : orderedIds;
+        // 애니메이션과 동일한 자산 색상 매핑 (현금은 고정, 나머지 팔레트)
+        final nonCashIds = provider.assets
+            .map((a) => a.assetId)
+            .where((id) => id != 'cash')
+            .toList();
         final assetColorById = <String, Color>{
-          for (var i = 0; i < colorOrder.length; i++)
-            colorOrder[i]: RetireChartStyle.assetAt(i),
+          'cash': RetireChartStyle.cash,
+          for (var i = 0; i < nonCashIds.length; i++)
+            nonCashIds[i]: RetireChartStyle.assetAt(i),
         };
 
         final assetSpotsList = provider.assets.map((asset) {
@@ -149,7 +149,14 @@ class _RetireSimulatorResultScreenState
             'name': assetName,
             'spots': spots,
             'color': assetColorById[asset.assetId] ??
-                RetireChartStyle.assetAt(0),
+                RetireChartStyle.colorForAssetId(
+                  asset.assetId,
+                  paletteIndex: 0,
+                ),
+            'annualReturn': asset.annualReturn,
+            'appliedAnnualReturn':
+                asset.annualReturnForScenario(provider.selectedScenario),
+            'allocation': asset.allocation,
           };
         }).toList();
 
@@ -736,7 +743,116 @@ class _RetireSimulatorResultScreenState
         const SizedBox(height: 20),
         // 범례
         _buildLegend(totalSpots, assetSpotsList, l10n),
+        const SizedBox(height: 16),
+        _buildAppliedCagrCard(assetSpotsList, l10n),
       ],
+    );
+  }
+
+  Widget _buildAppliedCagrCard(
+    List<Map<String, dynamic>> assetSpotsList,
+    AppLocalizations l10n,
+  ) {
+    return LiquidGlass(
+      blur: 10,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border, width: 1.5),
+      ),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.retireAppliedCagrLabel,
+            style: const TextStyle(
+              color: AppColors.textPrimary,
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            l10n.retireAppliedCagrHint,
+            style: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...assetSpotsList.map((assetData) {
+            final id = assetData['id'] as String? ?? '';
+            final type = assetData['type'] as String?;
+            final name = assetData['name'] as String;
+            final color = assetData['color'] as Color;
+            final applied = assetData['appliedAnnualReturn'] as double?;
+            final base = assetData['annualReturn'] as double?;
+            final appliedText = applied == null
+                ? '-'
+                : l10n.retireCagrPercent(
+                    (applied * 100).toStringAsFixed(1),
+                  );
+            final baseText = base == null
+                ? null
+                : l10n.retireCagrPercent((base * 100).toStringAsFixed(1));
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                children: [
+                  Container(
+                    width: 4,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  AssetIcon(assetId: id, type: type, size: 18, color: color),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      name,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        appliedText,
+                        style: TextStyle(
+                          color: color,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      if (baseText != null &&
+                          base != null &&
+                          applied != null &&
+                          (base - applied).abs() > 0.0001)
+                        Text(
+                          l10n.retireBaseCagrPercent(baseText),
+                          style: const TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 11,
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
     );
   }
 
@@ -761,8 +877,12 @@ class _RetireSimulatorResultScreenState
           final type = assetData['type'] as String?;
           final name = assetData['name'] as String;
           final color = assetData['color'] as Color;
+          final applied = assetData['appliedAnnualReturn'] as double?;
+          final label = applied == null
+              ? name
+              : '$name · ${l10n.retireCagrPercent((applied * 100).toStringAsFixed(1))}';
           return _buildLegendItem(
-            name,
+            label,
             color,
             false,
             assetId: id,
@@ -829,7 +949,8 @@ class _RetireSimulatorResultScreenState
       } catch (e) {
         assetOption = null;
       }
-      final assetName = assetOption?.displayName() ?? asset.assetId;
+      final assetName = assetOption?.displayName() ??
+          (asset.assetId == 'cash' ? l10n.cash : asset.assetId);
       final allocationPercent = (asset.allocation * 100).toStringAsFixed(0);
       assetDescriptions.add('$assetName ($allocationPercent%)');
     }

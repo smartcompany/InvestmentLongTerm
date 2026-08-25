@@ -1,13 +1,17 @@
 class RetireHolding {
   final String assetId;
+  final String? assetName;
   final String? assetType;
+  final String? symbol;
   double quantity;
   double? currentPrice;
   bool isLoadingPrice;
 
   RetireHolding({
     required this.assetId,
+    this.assetName,
     this.assetType,
+    this.symbol,
     this.quantity = 1,
     this.currentPrice,
     this.isLoadingPrice = false,
@@ -24,12 +28,22 @@ class RetireHolding {
     if (assetType == 'korean_stock' || assetType == 'real_estate') {
       return '₩';
     }
+    final lowerId = assetId.toLowerCase();
+    final lowerSymbol = (symbol ?? '').toLowerCase();
+    if (lowerSymbol.endsWith('.ks') ||
+        lowerSymbol.endsWith('.kq') ||
+        lowerId.contains('.ks') ||
+        lowerId.contains('.kq')) {
+      return '₩';
+    }
     return '\$';
   }
 
   RetireHolding copyWith({
     String? assetId,
+    String? assetName,
     String? assetType,
+    String? symbol,
     double? quantity,
     double? currentPrice,
     bool? isLoadingPrice,
@@ -37,7 +51,9 @@ class RetireHolding {
   }) {
     return RetireHolding(
       assetId: assetId ?? this.assetId,
+      assetName: assetName ?? this.assetName,
       assetType: assetType ?? this.assetType,
+      symbol: symbol ?? this.symbol,
       quantity: quantity ?? this.quantity,
       currentPrice: clearPrice ? null : (currentPrice ?? this.currentPrice),
       isLoadingPrice: isLoadingPrice ?? this.isLoadingPrice,

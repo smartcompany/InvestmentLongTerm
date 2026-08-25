@@ -178,27 +178,19 @@ class MyAssetsProvider with ChangeNotifier {
     }
   }
 
-  // 현재 가격 가져오기
+  // 현재 가격: 선택된 투자 기간 시계열의 마지막 종가
   Future<double?> _getCurrentPrice(
     String assetId, {
     String? symbol,
     String? type,
   }) async {
     try {
-      // 최근 1일 데이터를 가져와서 최신 가격 추출
-      final priceData = await ApiService.fetchDailyPrices(
+      return await ApiService.fetchLatestPrice(
         assetId,
-        1,
+        days: _selectedChartYears * 365,
         symbol: symbol,
         type: type,
       );
-      if (priceData.isNotEmpty) {
-        final latestPrice = (priceData.last['price'] as num?)?.toDouble();
-        if (latestPrice != null && latestPrice.isFinite) {
-          return latestPrice;
-        }
-      }
-      return null;
     } catch (e) {
       debugPrint('Failed to get current price for $assetId: $e');
       return null;
@@ -334,6 +326,19 @@ class MyAssetsProvider with ChangeNotifier {
           }
 
           assetPricesByDate[asset.id] = assetPrices;
+
+          if (priceData.isNotEmpty) {
+            final lastPrice = (priceData.last['price'] as num?)?.toDouble();
+            if (lastPrice != null && lastPrice.isFinite && lastPrice > 0) {
+              final idx = _assets.indexWhere((a) => a.id == asset.id);
+              if (idx >= 0) {
+                final current = _assets[idx];
+                _assets[idx] = current.copyWith(
+                  currentValue: current.quantity * lastPrice,
+                );
+              }
+            }
+          }
         } catch (e) {
           debugPrint('Failed to load price data for ${asset.id}: $e');
           // 실패한 자산은 현재 가격을 가져와서 사용
@@ -516,7 +521,8 @@ class MyAssetsProvider with ChangeNotifier {
   }
 
   /// 은퇴 시뮬 보유 자산을 내 자산으로 가져옵니다.
-  /// 동일 assetId가 있으면 수량·평가액을 갱신합니다.
+  /// 동일 assetId가 있으면 수량만 동기화하고, 투자 원금(평균 매수가)은 보존합니다.
+  /// (평가액으로 원금을 덮어쓰면 수익률이 0% 근처로 깨집니다.)
   Future<void> importRetireHoldings(
     List<
       ({String assetId, String assetName, double quantity, double valuation})
@@ -532,15 +538,28 @@ class MyAssetsProvider with ChangeNotifier {
 
       if (existingIndex >= 0) {
         final existing = _assets[existingIndex];
+        // 기존 자산: 원금 보존. 수량만 바뀌면 평균 매수가가 유지되도록 원금을 비례 조정.
+        // 현금은 원금 = 잔액이므로 평가액으로 갱신.
+        double nextInitial = existing.initialAmount;
+        if (h.assetId == 'cash') {
+          nextInitial = amount > 0 ? amount : existing.initialAmount;
+        } else if (existing.quantity > 0 &&
+            h.quantity > 0 &&
+            h.quantity != existing.quantity) {
+          nextInitial =
+              existing.initialAmount * (h.quantity / existing.quantity);
+        }
+
         final updated = existing.copyWith(
           assetName: h.assetName,
           quantity: h.quantity,
-          initialAmount: amount > 0 ? amount : existing.initialAmount,
+          initialAmount: nextInitial,
           registeredDate: existing.registeredDate,
         );
         _assets[existingIndex] = updated;
         await _updateCurrentValue(updated);
       } else {
+        // 신규만: 원금 정보가 없어 평가액을 임시 원금으로 사용
         final newAsset = MyAsset(
           id: '${DateTime.now().millisecondsSinceEpoch}_${h.assetId}',
           assetId: h.assetId,

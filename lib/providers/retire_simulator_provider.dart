@@ -2,10 +2,13 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/asset.dart';
+import '../models/my_asset.dart';
 import '../models/retire_holding.dart';
 import '../models/investment_config.dart';
 import '../services/api_service.dart';
+import '../utils/asset_currency.dart';
 import '../utils/currency_converter.dart';
+import 'app_state_provider.dart';
 import 'currency_provider.dart';
 
 class RetireSimulatorProvider with ChangeNotifier {
@@ -22,6 +25,8 @@ class RetireSimulatorProvider with ChangeNotifier {
   final Map<String, double> _cagrCache = {}; // assetId -> CAGR 캐시
   final Map<String, bool> _loadingCagr = {}; // assetId -> 로딩 상태
   final Map<String, int> _cagrRetryCount = {}; // assetId -> 재시도 횟수
+  /// 내 자산에서 가져온 포트폴리오면 prefs 현금/보유를 덮어쓰지 않음
+  bool _portfolioFromMyAssets = false;
 
   RetireSimulatorProvider() {
     _rebuildSimulationAssets();
@@ -66,15 +71,21 @@ class RetireSimulatorProvider with ChangeNotifier {
   // 설정 저장
   Future<void> saveSettings() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setDouble(_keyCash, _cash);
-    await prefs.setDouble(_keyInitialAsset, _initialAsset);
+    // 내 자산 기반 세션에서는 은퇴 탭용 현금 저장값을 건드리지 않음
+    if (!_portfolioFromMyAssets) {
+      await prefs.setDouble(_keyCash, _cash);
+      await prefs.setDouble(_keyInitialAsset, _initialAsset);
+    }
     await prefs.setDouble(_keyMonthlyWithdrawal, _monthlyWithdrawal);
     await prefs.setInt(_keySimulationYears, _simulationYears);
     await prefs.setBool(_keyHasSetup, true);
   }
 
   // 설정 로드
-  Future<void> loadSettings() async {
+  Future<void> loadSettings({bool restorePortfolio = true}) async {
+    if (restorePortfolio) {
+      _portfolioFromMyAssets = false;
+    }
     final prefs = await SharedPreferences.getInstance();
     final hasSetup = prefs.getBool(_keyHasSetup) ?? false;
 
@@ -84,11 +95,13 @@ class RetireSimulatorProvider with ChangeNotifier {
       final savedMonthlyWithdrawal = prefs.getDouble(_keyMonthlyWithdrawal);
       final savedSimulationYears = prefs.getInt(_keySimulationYears);
 
-      if (savedCash != null) {
-        _cash = savedCash;
-      } else if (savedInitialAsset != null) {
-        // 구버전: initialAsset만 있던 경우 현금으로 이전
-        _cash = savedInitialAsset;
+      if (restorePortfolio && !_portfolioFromMyAssets) {
+        if (savedCash != null) {
+          _cash = savedCash;
+        } else if (savedInitialAsset != null) {
+          // 구버전: initialAsset만 있던 경우 현금으로 이전
+          _cash = savedInitialAsset;
+        }
       }
       if (savedMonthlyWithdrawal != null) {
         _monthlyWithdrawal = savedMonthlyWithdrawal;
@@ -115,6 +128,96 @@ class RetireSimulatorProvider with ChangeNotifier {
 
   void setMonthlyWithdrawal(double value) {
     _monthlyWithdrawal = value.clamp(0, double.infinity);
+    notifyListeners();
+  }
+
+  /// 내 자산 화면의 평가액을 그대로 가져와 은퇴 시뮬에 반영합니다.
+  /// 가격을 다시 조회하지 않고, 내 자산과 동일한 통화 변환을 사용합니다.
+  Future<void> importFromMyAssets(
+    List<MyAsset> myAssets, {
+    required AppStateProvider appProvider,
+  }) async {
+    _holdings.clear();
+    _assets.clear();
+    _cash = 0;
+    _portfolioFromMyAssets = true;
+
+    final targetCurrency = CurrencyProvider.shared.getCurrencySymbol();
+    await CurrencyConverter.shared.waitUntilReady();
+
+    final mergedHoldings = <String, RetireHolding>{};
+    final mergedValuations = <String, double>{};
+
+    for (final asset in myAssets) {
+      final assetId = asset.assetId;
+      final quantity = asset.quantity;
+      final symbol = asset.symbol;
+      final assetName = asset.assetName;
+
+      // 카탈로그 타입으로 보완 (samsung 등 assetType이 비어 있는 경우)
+      String? assetType = asset.assetType;
+      if (assetType == null || assetType.isEmpty) {
+        try {
+          assetType = appProvider.assets.firstWhere((a) => a.id == assetId).type;
+        } catch (_) {}
+      }
+
+      final rawValue = asset.currentValue ?? asset.initialAmount;
+      final fromCurrency = AssetCurrency.originalCurrency(
+        assetId,
+        appProvider,
+        assetType: assetType,
+      );
+      final displayValue = fromCurrency == targetCurrency
+          ? rawValue
+          : await CurrencyConverter.shared.convert(
+              rawValue,
+              fromCurrency,
+              targetCurrency,
+            );
+
+      if (assetId == 'cash') {
+        _cash += displayValue;
+        continue;
+      }
+
+      final mergeKey = '${assetId}::${symbol ?? ''}::${assetType ?? ''}';
+      mergedValuations[mergeKey] =
+          (mergedValuations[mergeKey] ?? 0) + displayValue;
+
+      final existing = mergedHoldings[mergeKey];
+      if (existing != null) {
+        mergedHoldings[mergeKey] = existing.copyWith(
+          quantity: existing.quantity + quantity,
+        );
+      } else {
+        mergedHoldings[mergeKey] = RetireHolding(
+          assetId: assetId,
+          assetName: assetName,
+          assetType: assetType,
+          symbol: symbol,
+          quantity: quantity,
+          isLoadingPrice: false,
+        );
+      }
+    }
+
+    for (final entry in mergedHoldings.entries) {
+      final holding = entry.value;
+      final totalValue = mergedValuations[entry.key] ?? 0;
+      final unitPrice =
+          holding.quantity > 0 && totalValue > 0
+              ? totalValue / holding.quantity
+              : null;
+      _holdings.add(
+        holding.copyWith(
+          currentPrice: unitPrice,
+          isLoadingPrice: false,
+        ),
+      );
+    }
+
+    _rebuildSimulationAssets();
     notifyListeners();
   }
 
@@ -155,22 +258,31 @@ class RetireSimulatorProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _loadPriceForHolding(String assetId) async {
-    final index = _holdings.indexWhere((h) => h.assetId == assetId);
+  Future<void> _loadPriceForHolding(
+    String assetId, {
+    String? symbol,
+    String? type,
+  }) async {
+    final index = _holdings.indexWhere(
+      (h) => h.assetId == assetId && h.symbol == symbol && h.assetType == type,
+    );
     if (index < 0) return;
 
     _holdings[index] = _holdings[index].copyWith(isLoadingPrice: true);
     notifyListeners();
 
     try {
-      final priceData = await ApiService.fetchDailyPrices(assetId, 1);
-      double? price;
-      if (priceData.isNotEmpty) {
-        price = (priceData.last['price'] as num?)?.toDouble();
-      }
+      double? price = await ApiService.fetchLatestPrice(
+        assetId,
+        days: _simulationYears * 365,
+        symbol: symbol,
+        type: type,
+      );
 
       if (price != null && price.isFinite && price > 0) {
-        final idxForFx = _holdings.indexWhere((h) => h.assetId == assetId);
+        final idxForFx = _holdings.indexWhere(
+          (h) => h.assetId == assetId && h.symbol == symbol && h.assetType == type,
+        );
         if (idxForFx < 0) return;
         final holding = _holdings[idxForFx];
         final targetCurrency = CurrencyProvider.shared.getCurrencySymbol();
@@ -182,22 +294,22 @@ class RetireSimulatorProvider with ChangeNotifier {
         );
       }
 
-      final idx = _holdings.indexWhere((h) => h.assetId == assetId);
+      final idx = _holdings.indexWhere(
+        (h) => h.assetId == assetId && h.symbol == symbol && h.assetType == type,
+      );
       if (idx < 0) return;
       _holdings[idx] = _holdings[idx].copyWith(
-        currentPrice: (price != null && price.isFinite && price > 0)
-            ? price
-            : null,
+        currentPrice: (price != null && price.isFinite && price > 0) ? price : null,
         isLoadingPrice: false,
-        clearPrice: price == null || !price.isFinite || price <= 0,
       );
     } catch (e) {
       debugPrint('Failed to load holding price for $assetId: $e');
-      final idx = _holdings.indexWhere((h) => h.assetId == assetId);
+      final idx = _holdings.indexWhere(
+        (h) => h.assetId == assetId && h.symbol == symbol && h.assetType == type,
+      );
       if (idx >= 0) {
         _holdings[idx] = _holdings[idx].copyWith(
           isLoadingPrice: false,
-          clearPrice: true,
         );
       }
     }

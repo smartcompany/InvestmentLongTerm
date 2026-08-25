@@ -98,20 +98,18 @@ class _AssetDetailScreenState extends State<AssetDetailScreen> {
 
   Future<void> _loadCurrentPrice() async {
     try {
-      final priceData = await ApiService.fetchDailyPrices(
+      final years = context.read<MyAssetsProvider>().selectedChartYears;
+      final latestPrice = await ApiService.fetchLatestPrice(
         widget.asset.assetId,
-        1,
+        days: years * 365,
         symbol: widget.asset.symbol,
         type: widget.asset.assetType,
       );
-      if (priceData.isNotEmpty) {
-        final latestPrice = (priceData.last['price'] as num?)?.toDouble();
-        if (latestPrice != null && latestPrice.isFinite) {
-          setState(() {
-            _currentPrice = latestPrice;
-          });
-          return;
-        }
+      if (latestPrice != null) {
+        setState(() {
+          _currentPrice = latestPrice;
+        });
+        return;
       }
     } catch (e) {
       debugPrint('Failed to load current price: $e');

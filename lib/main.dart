@@ -94,7 +94,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: NotificationNavigation.navigatorKey,
-      title: 'Time Capital',
+      title: 'My Assets AI',
+      onGenerateTitle: (context) {
+        return AppLocalizations.of(context)?.appName ?? 'My Assets AI';
+      },
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,

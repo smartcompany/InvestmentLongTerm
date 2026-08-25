@@ -21,21 +21,23 @@ class Asset {
     return math.pow(1 + safeReturn, 1 / 12).toDouble() - 1;
   }
 
-  // 시나리오별 수익률 조정
-  double getMonthlyReturnForScenario(String scenario) {
-    if (annualReturn == null) return 0.0;
-    double adjustedReturn = annualReturn!;
+  /// 시나리오가 반영된 연평균 수익률 (차트에 실제로 적용된 값)
+  double? annualReturnForScenario(String scenario) {
+    if (annualReturn == null) return null;
     switch (scenario) {
       case 'positive':
-        adjustedReturn = annualReturn! * 1.2; // +20%
-        break;
-      case 'neutral':
-        adjustedReturn = annualReturn!; // 그대로
-        break;
+        return annualReturn! * 1.2;
       case 'negative':
-        adjustedReturn = annualReturn! * 0.8; // -20%
-        break;
+        return annualReturn! * 0.8;
+      default:
+        return annualReturn;
     }
+  }
+
+  // 시나리오별 월 복리 수익률
+  double getMonthlyReturnForScenario(String scenario) {
+    final adjustedReturn = annualReturnForScenario(scenario);
+    if (adjustedReturn == null) return 0.0;
     // -1보다 작으면 pow 계산 에러 방지를 위해 -0.99로 제한
     final safeReturn = adjustedReturn.clamp(-0.99, double.infinity);
     // 월 복리 수익률: (1 + r)^(1/12) - 1

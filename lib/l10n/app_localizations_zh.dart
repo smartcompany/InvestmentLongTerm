@@ -9,6 +9,9 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
+  String get appName => 'My Assets AI';
+
+  @override
   String get selectAssetQuestion => '您想投资哪种资产？';
 
   @override
@@ -167,7 +170,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pastAssetSimulation => '如果那时买了？';
 
   @override
-  String get retirementSimulation => '能退休吗？';
+  String get retirementSimulation => '退休模拟';
 
   @override
   String get growthRace => '资产对决';
@@ -248,7 +251,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get copyToClipboard => '复制结果到剪贴板';
 
   @override
-  String get shareTextHeader => 'Time Capital 计算结果';
+  String get shareTextHeader => 'My Assets AI 计算结果';
 
   @override
   String get finalValue => '最终价值';
@@ -578,7 +581,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get adWillBeShown => '查看结果前将显示广告';
 
   @override
-  String get myAssets => '我的资产';
+  String get myAssets => '资产管理';
 
   @override
   String get manageInMyAssets => '到我的资产管理';
@@ -590,13 +593,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get myAssetsSubtitle => '记录并追踪您的资产变化';
 
   @override
-  String get aiInsightButton => '观看广告获取AI投资洞察';
+  String get aiInsightButton => 'AI投资组合评估';
 
   @override
   String get aiInsightNeedAssets => '请先添加资产以获取洞察';
 
   @override
-  String get aiInsightTitle => 'AI投资洞察';
+  String get aiInsightTitle => 'AI投资组合评估';
 
   @override
   String get aiInsightComingSoon => '即将根据您的持仓与当前市场情况提供方向指引。\n\n※ 仅供参考，不构成投资建议。';
@@ -623,10 +626,37 @@ class AppLocalizationsZh extends AppLocalizations {
   String get aiInsightRisks => '注意事项';
 
   @override
-  String get marketBriefingButton => '观看广告查看我的持仓趋势';
+  String get marketBriefingButton => 'AI近期持仓趋势评估';
 
   @override
-  String get marketBriefingTitle => '我的持仓近期趋势';
+  String get marketBriefingTitle => 'AI近期持仓趋势评估';
+
+  @override
+  String get watchAdChoiceTitle => '要观看广告后继续吗？';
+
+  @override
+  String get watchAdChoiceMessage => '观看广告有助于维持应用运营。选择“观看广告后继续”或取消。';
+
+  @override
+  String get watchAdChoiceWatch => '观看广告后继续';
+
+  @override
+  String get watchAdChoiceSkip => '不看广告继续';
+
+  @override
+  String get aiUserRequestLabel => '还想问的内容（可选）';
+
+  @override
+  String get aiUserRequestHint => '例如：特斯拉仓位是保持还是减仓更好？';
+
+  @override
+  String get aiHistoryTitle => 'AI记录';
+
+  @override
+  String get aiHistoryEmpty => '还没有已保存的AI结果。\n执行一次AI评估后，结果会保存在这里，方便下次再次查看。';
+
+  @override
+  String get aiHistoryDeleteConfirm => '要删除此项吗？';
 
   @override
   String get marketBriefingLoading => 'AI正在整理持仓趋势…';
@@ -738,7 +768,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get landingGuideDesc => '我们会简单说明使用方法';
 
   @override
-  String get landingGuideSheetTitle => 'Time Capital 使用指南';
+  String get landingGuideSheetTitle => 'My Assets AI 使用指南';
 
   @override
   String get landingGuideStep1 => '选择你感兴趣的资产';
@@ -751,6 +781,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get selectAssetToCompare => '请选择要比较的资产';
+
+  @override
+  String get selectAssetsToCompareButton => '选择要比较的资产';
 
   @override
   String get selectUpToAssets => '选择资产并比较增长率';
@@ -784,5 +817,35 @@ class AppLocalizationsZh extends AppLocalizations {
   @override
   String onboardingRacePeriod(int years) {
     return '最近$years年 · 无广告立即开始';
+  }
+
+  @override
+  String get retireSimButton => '退休模拟';
+
+  @override
+  String get retireSimNeedAssets => '请先添加资产以运行退休模拟。';
+
+  @override
+  String get retireSimulationPeriodLabel => '模拟期间';
+
+  @override
+  String get retireAppliedCagrLabel => '已应用的年均收益率';
+
+  @override
+  String get retireAppliedCagrHint => '已反映所选情景，是图表增长的依据。';
+
+  @override
+  String retireCagrPercent(String rate) {
+    return '年 $rate%';
+  }
+
+  @override
+  String retireAllocationPercent(String rate) {
+    return '占比 $rate%';
+  }
+
+  @override
+  String retireBaseCagrPercent(String rate) {
+    return '基准 $rate';
   }
 }

@@ -102,6 +102,12 @@ abstract class AppLocalizations {
     Locale('zh'),
   ];
 
+  /// No description provided for @appName.
+  ///
+  /// In ko, this message translates to:
+  /// **'My Assets AI'**
+  String get appName;
+
   /// No description provided for @selectAssetQuestion.
   ///
   /// In ko, this message translates to:
@@ -381,7 +387,7 @@ abstract class AppLocalizations {
   /// No description provided for @retirementSimulation.
   ///
   /// In ko, this message translates to:
-  /// **'은퇴 가능할까?'**
+  /// **'은퇴 시뮬레이션'**
   String get retirementSimulation;
 
   /// No description provided for @growthRace.
@@ -515,7 +521,7 @@ abstract class AppLocalizations {
   /// No description provided for @shareTextHeader.
   ///
   /// In ko, this message translates to:
-  /// **'Time Capital 계산 결과'**
+  /// **'My Assets AI 계산 결과'**
   String get shareTextHeader;
 
   /// No description provided for @finalValue.
@@ -1139,7 +1145,7 @@ abstract class AppLocalizations {
   /// No description provided for @myAssets.
   ///
   /// In ko, this message translates to:
-  /// **'지금 내 자산'**
+  /// **'내 자산 관리'**
   String get myAssets;
 
   /// No description provided for @manageInMyAssets.
@@ -1163,7 +1169,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiInsightButton.
   ///
   /// In ko, this message translates to:
-  /// **'광고 보고 AI 투자 인사이트 받기'**
+  /// **'AI 포트폴리오 평가'**
   String get aiInsightButton;
 
   /// No description provided for @aiInsightNeedAssets.
@@ -1175,7 +1181,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiInsightTitle.
   ///
   /// In ko, this message translates to:
-  /// **'AI 투자 인사이트'**
+  /// **'AI 포트폴리오 평가'**
   String get aiInsightTitle;
 
   /// No description provided for @aiInsightComingSoon.
@@ -1229,14 +1235,68 @@ abstract class AppLocalizations {
   /// No description provided for @marketBriefingButton.
   ///
   /// In ko, this message translates to:
-  /// **'광고 보고 내 자산 트렌드 보기'**
+  /// **'AI 최근 자산 트렌드 평가'**
   String get marketBriefingButton;
 
   /// No description provided for @marketBriefingTitle.
   ///
   /// In ko, this message translates to:
-  /// **'내 자산 최근 트렌드'**
+  /// **'AI 최근 자산 트렌드 평가'**
   String get marketBriefingTitle;
+
+  /// No description provided for @watchAdChoiceTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'광고를 보고 진행할까요?'**
+  String get watchAdChoiceTitle;
+
+  /// No description provided for @watchAdChoiceMessage.
+  ///
+  /// In ko, this message translates to:
+  /// **'광고를 시청하면 앱 운영에 도움이 됩니다. \'광고 보고 진행\'을 선택해 주세요.'**
+  String get watchAdChoiceMessage;
+
+  /// No description provided for @watchAdChoiceWatch.
+  ///
+  /// In ko, this message translates to:
+  /// **'광고 보고 진행'**
+  String get watchAdChoiceWatch;
+
+  /// No description provided for @watchAdChoiceSkip.
+  ///
+  /// In ko, this message translates to:
+  /// **'광고 없이 진행'**
+  String get watchAdChoiceSkip;
+
+  /// No description provided for @aiUserRequestLabel.
+  ///
+  /// In ko, this message translates to:
+  /// **'추가로 궁금한 점 (선택)'**
+  String get aiUserRequestLabel;
+
+  /// No description provided for @aiUserRequestHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'예: 테슬라 비중을 유지할지, 줄여야 할지 알려주세요'**
+  String get aiUserRequestHint;
+
+  /// No description provided for @aiHistoryTitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI 기록'**
+  String get aiHistoryTitle;
+
+  /// No description provided for @aiHistoryEmpty.
+  ///
+  /// In ko, this message translates to:
+  /// **'아직 저장된 AI 결과가 없습니다.\nAI 평가를 받아보면 여기에 다시 열어볼 수 있게 저장됩니다.'**
+  String get aiHistoryEmpty;
+
+  /// No description provided for @aiHistoryDeleteConfirm.
+  ///
+  /// In ko, this message translates to:
+  /// **'이 항목을 삭제하시겠습니까?'**
+  String get aiHistoryDeleteConfirm;
 
   /// No description provided for @marketBriefingLoading.
   ///
@@ -1457,7 +1517,7 @@ abstract class AppLocalizations {
   /// No description provided for @landingGuideSheetTitle.
   ///
   /// In ko, this message translates to:
-  /// **'Time Capital 이용 가이드'**
+  /// **'My Assets AI 이용 가이드'**
   String get landingGuideSheetTitle;
 
   /// No description provided for @landingGuideStep1.
@@ -1483,6 +1543,12 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'비교할 자산을 선택하세요'**
   String get selectAssetToCompare;
+
+  /// No description provided for @selectAssetsToCompareButton.
+  ///
+  /// In ko, this message translates to:
+  /// **'비교할 자산 선택'**
+  String get selectAssetsToCompareButton;
 
   /// No description provided for @selectUpToAssets.
   ///
@@ -1543,6 +1609,54 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'최근 {years}년 · 광고 없이 바로 시작'**
   String onboardingRacePeriod(int years);
+
+  /// No description provided for @retireSimButton.
+  ///
+  /// In ko, this message translates to:
+  /// **'은퇴 시뮬레이션'**
+  String get retireSimButton;
+
+  /// No description provided for @retireSimNeedAssets.
+  ///
+  /// In ko, this message translates to:
+  /// **'은퇴 시뮬레이션을 위해 자산을 먼저 추가해주세요.'**
+  String get retireSimNeedAssets;
+
+  /// No description provided for @retireSimulationPeriodLabel.
+  ///
+  /// In ko, this message translates to:
+  /// **'시뮬레이션 기간'**
+  String get retireSimulationPeriodLabel;
+
+  /// No description provided for @retireAppliedCagrLabel.
+  ///
+  /// In ko, this message translates to:
+  /// **'적용 연평균 수익률'**
+  String get retireAppliedCagrLabel;
+
+  /// No description provided for @retireAppliedCagrHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'시나리오가 반영된 값입니다. 그래프 성장률의 기준이 됩니다.'**
+  String get retireAppliedCagrHint;
+
+  /// No description provided for @retireCagrPercent.
+  ///
+  /// In ko, this message translates to:
+  /// **'연 {rate}%'**
+  String retireCagrPercent(String rate);
+
+  /// No description provided for @retireAllocationPercent.
+  ///
+  /// In ko, this message translates to:
+  /// **'비중 {rate}%'**
+  String retireAllocationPercent(String rate);
+
+  /// No description provided for @retireBaseCagrPercent.
+  ///
+  /// In ko, this message translates to:
+  /// **'기준 {rate}'**
+  String retireBaseCagrPercent(String rate);
 }
 
 class _AppLocalizationsDelegate

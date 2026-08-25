@@ -248,7 +248,8 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
 
     for (int i = 0; i < rankedAssetIds.length; i++) {
       final assetId = rankedAssetIds[i];
-      final asset = appProvider.assets.firstWhere((a) => a.id == assetId);
+      final asset = provider.resolveAsset(assetId, appProvider.assets);
+      if (asset == null) continue;
       final data = priceData[assetId];
 
       if (data != null && data.isNotEmpty) {
@@ -536,7 +537,8 @@ class _GrowthRaceChartScreenState extends State<GrowthRaceChartScreen>
 
     for (int i = 0; i < rankedAssetIds.length; i++) {
       final assetId = rankedAssetIds[i];
-      final asset = appProvider.assets.firstWhere((a) => a.id == assetId);
+      final asset = provider.resolveAsset(assetId, appProvider.assets);
+      if (asset == null) continue;
       final data = priceData[assetId];
 
       if (data != null && data.isNotEmpty) {

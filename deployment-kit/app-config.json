@@ -1,5 +1,5 @@
 {
-  "appName": "Time Capital",
+  "appName": "My Assets AI",
   "bundleId": "com.smartcompany.longterminvestment",
   "sku": "com.smartcompany.longterminvestment",
   "packageName": "com.smartcompany.longterminvestment",
@@ -21,7 +21,7 @@
   "androidKeystorePath": "/Users/smart/Projects/auth/androidKey/my-release-key.jks",
   "androidKeyAlias": "my-key-alias",
   "notes": [
-    "Time Capital (장기 투자 시뮬레이터) deployment kit.",
+    "My Assets AI — asset management, long-term investing, AI analysis.",
     "Metadata: ./deployment-kit/scripts/upload_ios_metadata.sh",
     "Play metadata: ./deployment-kit/scripts/upload_android_metadata.sh"
   ]

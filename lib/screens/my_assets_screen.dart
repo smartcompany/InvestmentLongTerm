@@ -20,9 +20,13 @@ import '../widgets/asset_price_chart.dart';
 import '../widgets/investment_insight_dialog.dart';
 import '../widgets/market_briefing_dialog.dart';
 import '../services/ad_service.dart';
+import '../services/ai_history_service.dart';
 import '../services/api_service.dart';
+import '../providers/retire_simulator_provider.dart';
+import 'ai_history_screen.dart';
 import 'asset_detail_screen.dart';
 import 'settings_screen.dart';
+import 'retire_simulator.dart';
 
 class MyAssetsScreen extends StatefulWidget {
   const MyAssetsScreen({super.key});
@@ -34,6 +38,7 @@ class MyAssetsScreen extends StatefulWidget {
 class _MyAssetsScreenState extends State<MyAssetsScreen> {
   int _selectedYears = 1; // 기본값: 1년
   bool _isLoadingAi = false;
+  String? _aiLoadingMessage;
 
   @override
   void initState() {
@@ -151,14 +156,16 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.bg,
-      body: SingleChildScrollView(
+      body: Stack(
+        children: [
+          SingleChildScrollView(
           padding: EdgeInsets.only(
-            top: MediaQuery.of(context).padding.top + 24,
+            top: MediaQuery.of(context).padding.top + 16,
             bottom:
                     MediaQuery.of(context).padding.bottom +
                     80, // 탭바 높이 + SafeArea
-            left: 24,
-            right: 24,
+            left: 14,
+            right: 14,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -166,28 +173,7 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
               _buildHeader(context, l10n, provider.assets.isEmpty),
               if (provider.assets.isNotEmpty) ...[
                 const SizedBox(height: 20),
-                _buildPeriodSelector(provider),
-                const SizedBox(height: 16),
-                Container(
-                  height: 200,
-                  margin: const EdgeInsets.only(bottom: 24),
-                  child: provider.isLoadingPortfolio
-                      ? Center(
-                          child: CircularProgressIndicator(
-                            color: AppColors.primary,
-                          ),
-                        )
-                      : provider.portfolioSpots != null &&
-                            provider.portfolioSpots!.isNotEmpty
-                      ? AssetPriceChart(
-                          spots: provider.portfolioSpots!,
-                          startDate: provider.portfolioStartDate,
-                          endDate: provider.portfolioEndDate,
-                          currencySymbol: currencySymbol,
-                          height: 200,
-                        )
-                      : const SizedBox.shrink(),
-                ),
+                _buildPortfolioChartSection(provider, currencySymbol),
               ],
               // 통계 카드 (자산이 있을 때만 표시)
               if (provider.assets.isNotEmpty)
@@ -297,20 +283,94 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
                 _buildMarketBriefingButton(context, provider, l10n),
                 const SizedBox(height: 10),
                 _buildAiInsightButton(context, provider, l10n),
-                if (kDebugMode) ...[
-                  const SizedBox(height: 10),
-                  _buildMarketBriefingDebugButton(context, provider, l10n),
-                  const SizedBox(height: 8),
-                  _buildAiInsightDebugButton(context, provider, l10n),
-                ],
+                const SizedBox(height: 10),
+                _buildRetireSimButton(context, provider, l10n),
               ],
               const SizedBox(height: 24),
             ],
           ),
         ),
+          if (_isLoadingAi)
+            Positioned.fill(
+              child: ColoredBox(
+                color: Colors.black.withValues(alpha: 0.35),
+                child: Center(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 32),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 18,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(
+                          width: 28,
+                          height: 28,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Flexible(
+                          child: Text(
+                            _aiLoadingMessage ?? l10n.aiInsightLoading,
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
       },
     );
+  }
+
+  /// null: 취소, non-null: 진행 (요청 문자열, 빈 문자열 허용)
+  Future<String?> _askWatchAdWithRequest(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
+    return showDialog<String>(
+      context: context,
+      builder: (context) => _WatchAdWithRequestDialog(l10n: l10n),
+    );
+  }
+
+  Future<void> _runAfterOptionalAd({
+    required bool watchAd,
+    required Future<void> Function() proceed,
+  }) async {
+    if (!watchAd) {
+      await proceed();
+      return;
+    }
+
+    try {
+      await AdService.shared.showFullScreenAd(
+        onAdDismissed: () {
+          proceed();
+        },
+        onAdFailedToShow: () {
+          proceed();
+        },
+      );
+    } catch (_) {
+      await proceed();
+    }
   }
 
   Future<void> _handleAiInsightTap(
@@ -325,77 +385,34 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
       return;
     }
 
-    setState(() => _isLoadingAi = true);
+    final userRequest = await _askWatchAdWithRequest(context, l10n);
+    if (userRequest == null || !mounted) return;
 
-    Future<void> afterAd() async {
-      if (!mounted) return;
-      await _fetchAndShowInsight(context, provider, l10n);
-    }
-
-    try {
-      await AdService.shared.showFullScreenAd(
-        onAdDismissed: () {
-          afterAd();
-        },
-        onAdFailedToShow: () {
-          afterAd();
-        },
-      );
-    } catch (_) {
-      await afterAd();
-    }
-  }
-
-  Future<void> _handleAiInsightDebugTap(
-    BuildContext context,
-    MyAssetsProvider provider,
-    AppLocalizations l10n,
-  ) async {
-    if (provider.assets.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.aiInsightNeedAssets)),
-      );
-      return;
-    }
-
-    setState(() => _isLoadingAi = true);
-    debugPrint('[AI Insight][Debug] skip ad → fetch insight');
-    await _fetchAndShowInsight(context, provider, l10n);
+    setState(() {
+      _isLoadingAi = true;
+      _aiLoadingMessage = l10n.aiInsightLoading;
+    });
+    await _runAfterOptionalAd(
+      watchAd: true,
+      proceed: () async {
+        if (!mounted) return;
+        await _fetchAndShowInsight(
+          context,
+          provider,
+          l10n,
+          userRequest: userRequest,
+        );
+      },
+    );
   }
 
   Future<void> _fetchAndShowInsight(
     BuildContext context,
     MyAssetsProvider provider,
-    AppLocalizations l10n,
-  ) async {
+    AppLocalizations l10n, {
+    String? userRequest,
+  }) async {
     if (!mounted) return;
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        content: Row(
-          children: [
-            const SizedBox(
-              width: 28,
-              height: 28,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.5,
-                color: AppColors.primary,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                l10n.aiInsightLoading,
-                style: const TextStyle(color: AppColors.textPrimary),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
 
     try {
       final appProvider = context.read<AppStateProvider>();
@@ -471,6 +488,7 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
         totalPurchaseAmount: totalPurchase,
         totalCurrentValue: totalCurrent,
         totalReturnRatePct: totalReturn,
+        userRequest: userRequest,
       );
 
       debugPrint(
@@ -483,15 +501,20 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
       debugPrint('[AI Insight] outlook: ${insight.outlook}');
 
       if (!mounted) return;
-      Navigator.of(context, rootNavigator: true).pop(); // loading
-      setState(() => _isLoadingAi = false);
+      await AiHistoryService.shared.saveInsight(insight);
+      setState(() {
+        _isLoadingAi = false;
+        _aiLoadingMessage = null;
+      });
       await showInvestmentInsightDialog(context, insight: insight);
     } catch (e, st) {
       debugPrint('[AI Insight] failed: $e');
       debugPrint('[AI Insight] stack: $st');
       if (!mounted) return;
-      Navigator.of(context, rootNavigator: true).pop(); // loading
-      setState(() => _isLoadingAi = false);
+      setState(() {
+        _isLoadingAi = false;
+        _aiLoadingMessage = null;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -510,25 +533,16 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
   ) {
     return SizedBox(
       width: double.infinity,
-      height: 52,
+      height: 54,
       child: ElevatedButton.icon(
         onPressed: _isLoadingAi
             ? null
             : () => _handleAiInsightTap(context, provider, l10n),
-        icon: _isLoadingAi
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              )
-            : const Icon(Icons.auto_awesome, size: 20),
+        icon: const Icon(Icons.auto_awesome, size: 20),
         label: Text(
           l10n.aiInsightButton,
           style: const TextStyle(
-            fontSize: 15,
+            fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -536,34 +550,6 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
           disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.7),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAiInsightDebugButton(
-    BuildContext context,
-    MyAssetsProvider provider,
-    AppLocalizations l10n,
-  ) {
-    return SizedBox(
-      width: double.infinity,
-      height: 48,
-      child: OutlinedButton.icon(
-        onPressed: _isLoadingAi
-            ? null
-            : () => _handleAiInsightDebugTap(context, provider, l10n),
-        icon: const Icon(Icons.bug_report_outlined, size: 18),
-        label: const Text(
-          '광고 없이 AI 인사이트 (Debug)',
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-        ),
-        style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primary,
-          side: const BorderSide(color: AppColors.primary),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
@@ -584,42 +570,25 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
       return;
     }
 
-    setState(() => _isLoadingAi = true);
+    final userRequest = await _askWatchAdWithRequest(context, l10n);
+    if (userRequest == null || !mounted) return;
 
-    Future<void> afterAd() async {
-      if (!mounted) return;
-      await _fetchAndShowMarketBriefing(context, provider, l10n);
-    }
-
-    try {
-      await AdService.shared.showFullScreenAd(
-        onAdDismissed: () {
-          afterAd();
-        },
-        onAdFailedToShow: () {
-          afterAd();
-        },
-      );
-    } catch (_) {
-      await afterAd();
-    }
-  }
-
-  Future<void> _handleMarketBriefingDebugTap(
-    BuildContext context,
-    MyAssetsProvider provider,
-    AppLocalizations l10n,
-  ) async {
-    if (provider.assets.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.aiInsightNeedAssets)),
-      );
-      return;
-    }
-
-    setState(() => _isLoadingAi = true);
-    debugPrint('[Market Briefing][Debug] skip ad → fetch briefing');
-    await _fetchAndShowMarketBriefing(context, provider, l10n);
+    setState(() {
+      _isLoadingAi = true;
+      _aiLoadingMessage = l10n.marketBriefingLoading;
+    });
+    await _runAfterOptionalAd(
+      watchAd: true,
+      proceed: () async {
+        if (!mounted) return;
+        await _fetchAndShowMarketBriefing(
+          context,
+          provider,
+          l10n,
+          userRequest: userRequest,
+        );
+      },
+    );
   }
 
   Future<List<Map<String, dynamic>>> _buildHoldingsPayload(
@@ -673,36 +642,10 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
   Future<void> _fetchAndShowMarketBriefing(
     BuildContext context,
     MyAssetsProvider provider,
-    AppLocalizations l10n,
-  ) async {
+    AppLocalizations l10n, {
+    String? userRequest,
+  }) async {
     if (!mounted) return;
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        content: Row(
-          children: [
-            const SizedBox(
-              width: 28,
-              height: 28,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.5,
-                color: AppColors.primary,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                l10n.marketBriefingLoading,
-                style: const TextStyle(color: AppColors.textPrimary),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
 
     try {
       final appProvider = context.read<AppStateProvider>();
@@ -732,6 +675,7 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
         displayCurrency: currencySymbol,
         assets: holdings,
         asOfDate: asOfDate,
+        userRequest: userRequest,
       );
 
       debugPrint(
@@ -740,15 +684,20 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
       );
 
       if (!mounted) return;
-      Navigator.of(context, rootNavigator: true).pop();
-      setState(() => _isLoadingAi = false);
+      await AiHistoryService.shared.saveBriefing(briefing);
+      setState(() {
+        _isLoadingAi = false;
+        _aiLoadingMessage = null;
+      });
       await showMarketBriefingDialog(context, briefing: briefing);
     } catch (e, st) {
       debugPrint('[Market Briefing] failed: $e');
       debugPrint('[Market Briefing] stack: $st');
       if (!mounted) return;
-      Navigator.of(context, rootNavigator: true).pop();
-      setState(() => _isLoadingAi = false);
+      setState(() {
+        _isLoadingAi = false;
+        _aiLoadingMessage = null;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -770,25 +719,16 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
   ) {
     return SizedBox(
       width: double.infinity,
-      height: 52,
+      height: 54,
       child: ElevatedButton.icon(
         onPressed: _isLoadingAi
             ? null
             : () => _handleMarketBriefingTap(context, provider, l10n),
-        icon: _isLoadingAi
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
-                ),
-              )
-            : const Icon(Icons.newspaper_outlined, size: 20),
+        icon: const Icon(Icons.newspaper_outlined, size: 20),
         label: Text(
           l10n.marketBriefingButton,
           style: const TextStyle(
-            fontSize: 15,
+            fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -804,30 +744,60 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
     );
   }
 
-  Widget _buildMarketBriefingDebugButton(
+  // ─── 은퇴 시뮬레이션 ───────────────────────────────────────────
+
+  Widget _buildRetireSimButton(
     BuildContext context,
     MyAssetsProvider provider,
     AppLocalizations l10n,
   ) {
     return SizedBox(
       width: double.infinity,
-      height: 48,
+      height: 54,
       child: OutlinedButton.icon(
-        onPressed: _isLoadingAi
-            ? null
-            : () => _handleMarketBriefingDebugTap(context, provider, l10n),
-        icon: const Icon(Icons.bug_report_outlined, size: 18),
-        label: const Text(
-          '광고 없이 내 자산 트렌드 (Debug)',
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        onPressed: () => _handleRetireSimTap(context, provider, l10n),
+        icon: const Icon(Icons.beach_access_outlined, size: 20),
+        label: Text(
+          l10n.retireSimButton,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
-          side: const BorderSide(color: AppColors.primary),
+          side: const BorderSide(color: AppColors.primary, width: 1.5),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
         ),
+      ),
+    );
+  }
+
+  Future<void> _handleRetireSimTap(
+    BuildContext context,
+    MyAssetsProvider provider,
+    AppLocalizations l10n,
+  ) async {
+    if (provider.assets.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.retireSimNeedAssets)),
+      );
+      return;
+    }
+
+    final retireProvider = context.read<RetireSimulatorProvider>();
+    final appProvider = context.read<AppStateProvider>();
+    await retireProvider.importFromMyAssets(
+      provider.assets,
+      appProvider: appProvider,
+    );
+
+    if (!mounted) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const RetireSimulatorScreen(fromMyAssets: true),
       ),
     );
   }
@@ -860,6 +830,15 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
         ),
         IconButton(
           visualDensity: VisualDensity.compact,
+          icon: const Icon(Icons.history_outlined, color: AppColors.textSecondary),
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const AiHistoryScreen()),
+            );
+          },
+        ),
+        IconButton(
+          visualDensity: VisualDensity.compact,
           icon: const Icon(Icons.settings_outlined, color: AppColors.textSecondary),
           onPressed: () {
             Navigator.of(context).push(
@@ -871,24 +850,100 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
     );
   }
 
-  Widget _buildPeriodSelector(MyAssetsProvider provider) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
-          Expanded(child: _buildPeriodButton('1Y', 1, provider)),
-          const SizedBox(width: 4),
-          Expanded(child: _buildPeriodButton('3Y', 3, provider)),
-          const SizedBox(width: 4),
-          Expanded(child: _buildPeriodButton('5Y', 5, provider)),
-          const SizedBox(width: 4),
-          Expanded(child: _buildPeriodButton('10Y', 10, provider)),
-        ],
+  Widget _buildPortfolioChartSection(
+    MyAssetsProvider provider,
+    String currencySymbol,
+  ) {
+    const yearOptions = [1, 3, 5, 10];
+    final selectedYears = yearOptions.contains(_selectedYears)
+        ? _selectedYears
+        : 1;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: yearOptions.map((years) {
+            final selected = years == selectedYears;
+            return Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  right: years == yearOptions.last ? 0 : 6,
+                ),
+                child: Material(
+                  color: selected ? AppColors.primary : AppColors.surface,
+                  borderRadius: BorderRadius.circular(10),
+                  child: InkWell(
+                    onTap: () => _onChartPeriodSelected(provider, years),
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      height: 34,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color:
+                              selected ? AppColors.primary : AppColors.border,
+                        ),
+                      ),
+                      child: Text(
+                        '${years}Y',
+                        style: TextStyle(
+                          color: selected
+                              ? Colors.white
+                              : AppColors.textSecondary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 200,
+          child: provider.isLoadingPortfolio
+              ? const Center(
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                )
+              : provider.portfolioSpots != null &&
+                      provider.portfolioSpots!.isNotEmpty
+                  ? AssetPriceChart(
+                      spots: provider.portfolioSpots!,
+                      startDate: provider.portfolioStartDate,
+                      endDate: provider.portfolioEndDate,
+                      currencySymbol: currencySymbol,
+                      height: 200,
+                    )
+                  : const SizedBox.shrink(),
+        ),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  Future<void> _onChartPeriodSelected(
+    MyAssetsProvider provider,
+    int years,
+  ) async {
+    if (years == _selectedYears) return;
+    setState(() => _selectedYears = years);
+    provider.setSelectedChartYears(years);
+
+    final appProvider = context.read<AppStateProvider>();
+    final currencySymbol = CurrencyProvider.shared.getCurrencySymbol();
+
+    await provider.loadPortfolioChart(
+      years: years,
+      targetCurrency: currencySymbol,
+      getAssetOriginalCurrency: (assetId) => _getAssetOriginalCurrency(
+        assetId,
+        appProvider,
+        assetType: _resolveAssetType(provider, assetId),
       ),
     );
   }
@@ -908,53 +963,6 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
         padding: const EdgeInsets.symmetric(vertical: 14),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-      ),
-    );
-  }
-
-  Widget _buildPeriodButton(
-    String label,
-    int years,
-    MyAssetsProvider provider,
-  ) {
-    final isSelected = _selectedYears == years;
-    return GestureDetector(
-      onTap: () async {
-        setState(() {
-          _selectedYears = years;
-        });
-        provider.setSelectedChartYears(years);
-
-        final appProvider = context.read<AppStateProvider>();
-        final currencySymbol = CurrencyProvider.shared.getCurrencySymbol();
-
-        await provider.loadPortfolioChart(
-          years: years,
-          targetCurrency: currencySymbol,
-          getAssetOriginalCurrency: (assetId) =>
-              _getAssetOriginalCurrency(
-                assetId,
-                appProvider,
-                assetType: _resolveAssetType(provider, assetId),
-              ),
-        );
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          label,
-          style: TextStyle(
-            color: isSelected ? Colors.white : AppColors.textSecondary,
-            fontSize: 14,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-          ),
-        ),
       ),
     );
   }
@@ -1274,6 +1282,120 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _WatchAdWithRequestDialog extends StatefulWidget {
+  const _WatchAdWithRequestDialog({required this.l10n});
+
+  final AppLocalizations l10n;
+
+  @override
+  State<_WatchAdWithRequestDialog> createState() =>
+      _WatchAdWithRequestDialogState();
+}
+
+class _WatchAdWithRequestDialogState extends State<_WatchAdWithRequestDialog> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = widget.l10n;
+    return AlertDialog(
+      backgroundColor: AppColors.surface,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      title: Text(
+        l10n.watchAdChoiceTitle,
+        style: const TextStyle(
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.bold,
+          fontSize: 18,
+        ),
+      ),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              l10n.watchAdChoiceMessage,
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 15,
+                height: 1.45,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              l10n.aiUserRequestLabel,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _controller,
+              maxLines: 3,
+              maxLength: 300,
+              style: const TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 14,
+              ),
+              decoration: InputDecoration(
+                hintText: l10n.aiUserRequestHint,
+                hintStyle: const TextStyle(
+                  color: AppColors.textSecondary,
+                  fontSize: 13,
+                ),
+                filled: true,
+                fillColor: AppColors.bg,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            l10n.cancel,
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, _controller.text.trim()),
+          child: Text(
+            l10n.watchAdChoiceWatch,
+            style: const TextStyle(
+              color: AppColors.primary,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

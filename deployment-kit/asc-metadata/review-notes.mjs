@@ -1,30 +1,31 @@
 import storeUrls from './store-urls.mjs';
 
-export default `App Review Notes - Time Capital (타임 캐피탈)
+export default `App Review Notes - My Assets AI
 Bundle ID: com.smartcompany.longterminvestment
 
 1) CORE FLOW
-- Launch app → bottom tabs: Past simulation / Retirement / Growth race / My assets
-- Tab 1 "그때 샀다면?": pick asset, amount, years ago → watch ad (if shown) → see investment result chart
-- Tab 2 "은퇴 가능할까?": set cash, holdings, withdrawal, inflation → run simulation → result + chart
-- Tab 3 "성장률 경주": pick assets and period → animated growth comparison
-- Tab 4 "지금 내 자산": preview imported assets → watch ad → manage holdings (add/delete)
+- Launch app → bottom tabs include growth race / what-if / my assets / retirement simulation
+- "내 자산 관리" (My Assets): add holdings, view chart/returns, optional AI portfolio review and AI trend briefing (ad may show first)
+- "그때 샀다면?": pick asset, amount, years ago → optional ad → result chart
+- Retirement simulation: cash + holdings → run → result chart
+- Growth race: pick assets and period → animated comparison
 
 2) ACCESS / SETUP
 - No login or account required
 - No payment, subscription, or in-app purchase required
-- Reviewer can fully test all simulation tabs without an account
+- Reviewer can test core flows without an account
 
 3) PERMISSIONS
-- Notifications: not required for core flow
-- Network: fetches asset price data from our API for simulations
+- Notifications: optional (local reminders); not required for core flow
+- Network: fetches asset prices and AI analysis from our API
 
-4) SERVER USAGE
-- Asset price / calculation requests go to https://investment-long-term-server.vercel.app
-- No user-uploaded photos or personal content sent to the server
+4) SERVER / AI
+- Price and calculation: https://investment-long-term-server.vercel.app
+- AI portfolio / trend endpoints send portfolio snapshot text (not photos) for analysis
+- AI output is informational only — not investment advice
 
 5) ADS
-- Interstitial ads may appear before some result screens (simulation results, my assets unlock)
+- Interstitial ads may appear before some result or AI evaluation screens
 
 Privacy Policy: ${storeUrls.privacyUrl}
 Support: ${storeUrls.supportUrl}
