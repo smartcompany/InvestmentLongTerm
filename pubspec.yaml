@@ -51,8 +51,8 @@ dependencies:
       ref: main
   google_mobile_ads: ^5.1.0
   firebase_core: ^4.3.0
-  firebase_crashlytics: ^5.0.0
-  firebase_analytics: ^12.0.0
+  firebase_crashlytics: ^5.3.0
+  firebase_analytics: ^12.5.0
   shared_preferences: ^2.2.2
   device_info_plus: ^10.1.0
   in_app_review: ^2.0.9
@@ -60,6 +60,12 @@ dependencies:
   timezone: ^0.11.1
   flutter_timezone: ^5.1.0
   flutter_twemoji: ^1.1.0
+  flutter_secure_storage: ^10.3.1
+  firebase_messaging: ^16.6.0
+
+dependency_overrides:
+  # share_lib pulls firebase_auth; 6.6.0+ matches firebase_core 4.14 Swift plugin
+  firebase_auth: ^6.6.0
 
 dev_dependencies:
   flutter_test:

@@ -10,12 +10,16 @@ class AiRichText extends StatelessWidget {
   final String text;
   final TextStyle? style;
   final TextStyle? boldStyle;
+  final int? maxLines;
+  final TextOverflow? overflow;
 
   const AiRichText(
     this.text, {
     super.key,
     this.style,
     this.boldStyle,
+    this.maxLines,
+    this.overflow,
   });
 
   static List<InlineSpan> parseSpans(
@@ -78,6 +82,8 @@ class AiRichText extends StatelessWidget {
 
     return Text.rich(
       TextSpan(children: parseSpans(text, base: base, bold: bold)),
+      maxLines: maxLines,
+      overflow: overflow ?? TextOverflow.clip,
     );
   }
 }

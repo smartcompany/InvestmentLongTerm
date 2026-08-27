@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/currency_provider.dart';
 import '../providers/my_assets_provider.dart';
+import '../services/fcm_push_service.dart';
 import '../services/push_notification_service.dart';
+import '../services/push_preferences.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
 import '../widgets/liquid_glass.dart';
@@ -16,20 +18,68 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool? _pushEnabled;
+  bool? _masterEnabled;
+  bool _portfolioChangeEnabled = true;
+  bool _aiInsightsEnabled = true;
+  bool _loading = true;
 
   @override
   void initState() {
     super.initState();
-    PushNotificationService.shared.isEnabled().then((enabled) {
-      if (mounted) setState(() => _pushEnabled = enabled);
+    _loadPrefs();
+  }
+
+  Future<void> _loadPrefs() async {
+    final prefs = PushPreferences.shared;
+    final master = await prefs.isMasterEnabled();
+    final portfolio = await prefs.isPortfolioChangeEnabled();
+    final insights = await prefs.isAiInsightsEnabled();
+    if (!mounted) return;
+    setState(() {
+      _masterEnabled = master;
+      _portfolioChangeEnabled = portfolio;
+      _aiInsightsEnabled = insights;
+      _loading = false;
     });
+  }
+
+  Future<void> _syncRemote() async {
+    final localeCode = Localizations.localeOf(context).languageCode;
+    await FcmPushService.shared.syncPreferences(locale: localeCode);
+  }
+
+  Future<void> _onMasterChanged(bool value, AppLocalizations l10n) async {
+    await PushNotificationService.shared.setEnabled(value);
+    await PushNotificationService.shared.syncDailySchedule(
+      title: l10n.pushDailyTitle,
+      body: l10n.pushDailyBody,
+    );
+    await _syncRemote();
+    if (mounted) setState(() => _masterEnabled = value);
+  }
+
+  Future<void> _onPortfolioChangeChanged(bool value) async {
+    await PushPreferences.shared.setPortfolioChangeEnabled(value);
+    await _syncRemote();
+    if (mounted) setState(() => _portfolioChangeEnabled = value);
+  }
+
+  Future<void> _onAiInsightsChanged(bool value, AppLocalizations l10n) async {
+    await PushPreferences.shared.setAiInsightsEnabled(value);
+    await PushNotificationService.shared.syncDailySchedule(
+      title: l10n.pushDailyTitle,
+      body: l10n.pushDailyBody,
+    );
+    await _syncRemote();
+    if (mounted) setState(() => _aiInsightsEnabled = value);
   }
 
   @override
   Widget build(BuildContext context) {
     final localeCode = Localizations.localeOf(context).languageCode;
     final l10n = AppLocalizations.of(context)!;
+    final masterOn = _masterEnabled ?? true;
+    final categoryEnabled = !_loading && masterOn;
 
     return ListenableBuilder(
       listenable: CurrencyProvider.shared,
@@ -64,37 +114,86 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     border: Border.all(color: AppColors.border, width: 1.5),
                   ),
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  child: SwitchListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-                    title: Text(
-                      l10n.pushNotifications,
-                      style: const TextStyle(
-                        color: AppColors.textPrimary,
-                        fontWeight: FontWeight.w700,
-                      ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: Column(
+                      children: [
+                        SwitchListTile(
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 8),
+                          title: Text(
+                            l10n.pushNotifications,
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          subtitle: Text(
+                            l10n.pushNotificationsDesc,
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 13,
+                            ),
+                          ),
+                          value: masterOn,
+                          activeThumbColor: AppColors.primary,
+                          onChanged: _loading
+                              ? null
+                              : (value) => _onMasterChanged(value, l10n),
+                        ),
+                        const Divider(height: 1),
+                        SwitchListTile(
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 8),
+                          title: Text(
+                            l10n.pushCategoryPortfolioChange,
+                            style: TextStyle(
+                              color: categoryEnabled
+                                  ? AppColors.textPrimary
+                                  : AppColors.textSecondary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          subtitle: Text(
+                            l10n.pushCategoryPortfolioChangeDesc,
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 13,
+                            ),
+                          ),
+                          value: categoryEnabled && _portfolioChangeEnabled,
+                          activeThumbColor: AppColors.primary,
+                          onChanged: categoryEnabled
+                              ? _onPortfolioChangeChanged
+                              : null,
+                        ),
+                        SwitchListTile(
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 8),
+                          title: Text(
+                            l10n.pushCategoryAiInsights,
+                            style: TextStyle(
+                              color: categoryEnabled
+                                  ? AppColors.textPrimary
+                                  : AppColors.textSecondary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          subtitle: Text(
+                            l10n.pushCategoryAiInsightsDesc,
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 13,
+                            ),
+                          ),
+                          value: categoryEnabled && _aiInsightsEnabled,
+                          activeThumbColor: AppColors.primary,
+                          onChanged: categoryEnabled
+                              ? (value) => _onAiInsightsChanged(value, l10n)
+                              : null,
+                        ),
+                      ],
                     ),
-                    subtitle: Text(
-                      l10n.pushNotificationsDesc,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 13,
-                      ),
-                    ),
-                    value: _pushEnabled ?? true,
-                    activeThumbColor: AppColors.primary,
-                    onChanged: _pushEnabled == null
-                        ? null
-                        : (value) async {
-                            await PushNotificationService.shared.setEnabled(value);
-                            if (value) {
-                              await PushNotificationService.shared
-                                  .scheduleDailyReminder(
-                                title: l10n.pushDailyTitle,
-                                body: l10n.pushDailyBody,
-                              );
-                            }
-                            if (mounted) setState(() => _pushEnabled = value);
-                          },
                   ),
                 ),
                 const SizedBox(height: 28),

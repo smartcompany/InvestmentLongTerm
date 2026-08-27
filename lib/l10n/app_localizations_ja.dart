@@ -486,7 +486,19 @@ class AppLocalizationsJa extends AppLocalizations {
   String get pushNotifications => 'プッシュ通知';
 
   @override
-  String get pushNotificationsDesc => '1日1回のリマインダーと、資産価値の変動通知を受け取ります';
+  String get pushNotificationsDesc => '通知を許可すると、受け取りたい種類を選べます';
+
+  @override
+  String get pushCategoryPortfolioChange => '資産価値の変動';
+
+  @override
+  String get pushCategoryPortfolioChangeDesc => '総評価額が大きく動いたときに知らせます';
+
+  @override
+  String get pushCategoryAiInsights => 'AI資産インサイト';
+
+  @override
+  String get pushCategoryAiInsightsDesc => '保有資産のトレンドやポートフォリオ分析のご案内';
 
   @override
   String get pushDailyTitle => '保有資産トレンド';

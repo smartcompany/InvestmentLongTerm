@@ -492,7 +492,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pushNotificationsDesc =>
-      'Get a once-a-day reminder and alerts when holdings move';
+      'Allow notifications, then choose what you want to receive';
+
+  @override
+  String get pushCategoryPortfolioChange => 'Portfolio value changes';
+
+  @override
+  String get pushCategoryPortfolioChangeDesc =>
+      'Get notified when your total value moves meaningfully';
+
+  @override
+  String get pushCategoryAiInsights => 'AI asset insights';
+
+  @override
+  String get pushCategoryAiInsightsDesc =>
+      'Tips and reviews about your holdings trends and portfolio';
 
   @override
   String get pushDailyTitle => 'My holdings trend';
@@ -593,7 +607,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myAssets => 'Asset Management';
 
   @override
-  String get manageInMyAssets => 'Manage in My Assets';
+  String get manageInMyAssets => 'My Assets';
 
   @override
   String get viewMyAssetsStatus => 'Watch Ad for AI Investment Insight';
@@ -602,13 +616,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myAssetsSubtitle => 'Track your holdings and see how they change';
 
   @override
-  String get aiInsightButton => 'AI Portfolio Review';
+  String get aiInsightButton => 'AI My Assets Portfolio Review';
 
   @override
   String get aiInsightNeedAssets => 'Add assets first to get insights';
 
   @override
-  String get aiInsightTitle => 'AI Portfolio Review';
+  String get aiInsightTitle => 'AI My Assets Portfolio Review';
 
   @override
   String get aiInsightComingSoon =>
@@ -637,10 +651,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aiInsightRisks => 'Watch-outs';
 
   @override
-  String get marketBriefingButton => 'AI Holdings Trend Review';
+  String get marketBriefingButton => 'AI My Assets Trend Review';
 
   @override
-  String get marketBriefingTitle => 'AI Holdings Trend Review';
+  String get marketBriefingTitle => 'AI My Assets Trend Review';
 
   @override
   String get watchAdChoiceTitle => 'Watch an ad to continue?';

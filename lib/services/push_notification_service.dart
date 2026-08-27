@@ -6,18 +6,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
-/// 로컬 알림: 하루 1회 리마인더 + 자산 가치 변동 알림.
-/// 탭 시 payload `my_assets`로 내 자산 탭 진입.
+import 'push_preferences.dart';
+
+/// 로컬 알림: 하루 1회 리마인더.
+/// 자산 변동·AI 컨텐츠 푸시는 GitHub Actions → 서버 cron API + FCM (`FcmPushService`)이 담당.
+/// 탭 시 payload로 내 자산 / AI 화면 진입.
 class PushNotificationService {
   PushNotificationService._();
   static final PushNotificationService shared = PushNotificationService._();
 
-  static const _prefsEnabledKey = 'push_notifications_enabled_v1';
   static const _prefsLastTotalKey = 'push_last_portfolio_total_v1';
   static const _prefsLastChangeNotifyDayKey = 'push_last_change_notify_day_v1';
   static const _dailyNotificationId = 1001;
   static const _changeNotificationId = 1002;
   static const payloadMyAssets = 'my_assets';
+  static const payloadAiMarketBriefing = 'ai_market_briefing';
+  static const payloadAiPortfolioInsight = 'ai_portfolio_insight';
 
   /// 일일 리마인더 시각 (로컬)
   static const dailyHour = 9;
@@ -73,28 +77,36 @@ class PushNotificationService {
     _initialized = true;
     debugPrint('[Push] initialized launchPayload=$launchPayload');
 
-    final enabled = await isEnabled();
-    if (enabled) {
+    final prefs = PushPreferences.shared;
+    if (await prefs.isMasterEnabled() && await prefs.isAiInsightsEnabled()) {
       await scheduleDailyReminder();
     }
   }
 
-  Future<bool> isEnabled() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_prefsEnabledKey) ?? true;
-  }
+  Future<bool> isEnabled() => PushPreferences.shared.isMasterEnabled();
 
   Future<void> setEnabled(bool enabled) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_prefsEnabledKey, enabled);
+    await PushPreferences.shared.setMasterEnabled(enabled);
     if (enabled) {
       final granted = await requestPermission();
-      if (granted) {
+      if (granted && await PushPreferences.shared.isAiInsightsEnabled()) {
         await scheduleDailyReminder();
       }
     } else {
       await _plugin.cancel(id: _dailyNotificationId);
       await _plugin.cancel(id: _changeNotificationId);
+    }
+  }
+
+  Future<void> syncDailySchedule({
+    String title = '내 자산 트렌드',
+    String body = '오늘 내 보유 자산 흐름을 확인해 보세요',
+  }) async {
+    final prefs = PushPreferences.shared;
+    if (await prefs.isMasterEnabled() && await prefs.isAiInsightsEnabled()) {
+      await scheduleDailyReminder(title: title, body: body);
+    } else {
+      await _plugin.cancel(id: _dailyNotificationId);
     }
   }
 
@@ -127,6 +139,7 @@ class PushNotificationService {
     String body = '오늘 내 보유 자산 흐름을 확인해 보세요',
   }) async {
     if (!await isEnabled()) return;
+    if (!await PushPreferences.shared.isAiInsightsEnabled()) return;
 
     final granted = await requestPermission();
     if (!granted) {

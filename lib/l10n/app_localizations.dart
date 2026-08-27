@@ -959,8 +959,32 @@ abstract class AppLocalizations {
   /// No description provided for @pushNotificationsDesc.
   ///
   /// In ko, this message translates to:
-  /// **'하루 한 번 리마인더와 자산 가치 변동 알림을 받습니다'**
+  /// **'알림을 허용하면 아래에서 받고 싶은 종류를 선택할 수 있습니다'**
   String get pushNotificationsDesc;
+
+  /// No description provided for @pushCategoryPortfolioChange.
+  ///
+  /// In ko, this message translates to:
+  /// **'자산 가치 변동'**
+  String get pushCategoryPortfolioChange;
+
+  /// No description provided for @pushCategoryPortfolioChangeDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'총 평가액이 크게 변했을 때 알려드려요'**
+  String get pushCategoryPortfolioChangeDesc;
+
+  /// No description provided for @pushCategoryAiInsights.
+  ///
+  /// In ko, this message translates to:
+  /// **'AI 자산 인사이트'**
+  String get pushCategoryAiInsights;
+
+  /// No description provided for @pushCategoryAiInsightsDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'내 자산 트렌드·포트폴리오 분석 안내를 받아보세요'**
+  String get pushCategoryAiInsightsDesc;
 
   /// No description provided for @pushDailyTitle.
   ///
@@ -1151,7 +1175,7 @@ abstract class AppLocalizations {
   /// No description provided for @manageInMyAssets.
   ///
   /// In ko, this message translates to:
-  /// **'내 자산으로 관리'**
+  /// **'내 자산 관리'**
   String get manageInMyAssets;
 
   /// No description provided for @viewMyAssetsStatus.
@@ -1169,7 +1193,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiInsightButton.
   ///
   /// In ko, this message translates to:
-  /// **'AI 포트폴리오 평가'**
+  /// **'AI 내 자산 포트폴리오 평가'**
   String get aiInsightButton;
 
   /// No description provided for @aiInsightNeedAssets.
@@ -1181,7 +1205,7 @@ abstract class AppLocalizations {
   /// No description provided for @aiInsightTitle.
   ///
   /// In ko, this message translates to:
-  /// **'AI 포트폴리오 평가'**
+  /// **'AI 내 자산 포트폴리오 평가'**
   String get aiInsightTitle;
 
   /// No description provided for @aiInsightComingSoon.
@@ -1235,13 +1259,13 @@ abstract class AppLocalizations {
   /// No description provided for @marketBriefingButton.
   ///
   /// In ko, this message translates to:
-  /// **'AI 최근 자산 트렌드 평가'**
+  /// **'AI 내 자산 트렌드 평가'**
   String get marketBriefingButton;
 
   /// No description provided for @marketBriefingTitle.
   ///
   /// In ko, this message translates to:
-  /// **'AI 최근 자산 트렌드 평가'**
+  /// **'AI 내 자산 트렌드 평가'**
   String get marketBriefingTitle;
 
   /// No description provided for @watchAdChoiceTitle.

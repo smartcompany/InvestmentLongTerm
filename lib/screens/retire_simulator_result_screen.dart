@@ -7,7 +7,6 @@ import 'dart:ui';
 import '../providers/retire_simulator_provider.dart';
 import '../providers/app_state_provider.dart';
 import '../providers/currency_provider.dart';
-import '../providers/my_assets_provider.dart';
 import '../models/asset_option.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
@@ -32,7 +31,6 @@ class _RetireSimulatorResultScreenState
     extends State<RetireSimulatorResultScreen> {
   bool _isMonthlyDetailsExpanded = false; // 월별 상세 내역 펼침 상태
   bool _hasRequestedReview = false;
-  bool _isImportingToMyAssets = false;
 
   @override
   void initState() {
@@ -417,12 +415,7 @@ class _RetireSimulatorResultScreenState
                           child: BackdropFilter(
                             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                             child: GestureDetector(
-                              onTap: _isImportingToMyAssets
-                                  ? null
-                                  : () => _goToMyAssets(
-                                        provider,
-                                        appProvider,
-                                      ),
+                              onTap: _goToMyAssets,
                               child: Container(
                                 padding: const EdgeInsets.symmetric(vertical: 14),
                                 decoration:
@@ -432,20 +425,10 @@ class _RetireSimulatorResultScreenState
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    if (_isImportingToMyAssets)
-                                      const SizedBox(
-                                        width: 18,
-                                        height: 18,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    else
-                                      const Icon(
-                                        Icons.account_balance_wallet_outlined,
-                                        color: Colors.white,
-                                      ),
+                                    const Icon(
+                                      Icons.account_balance_wallet_outlined,
+                                      color: Colors.white,
+                                    ),
                                     const SizedBox(width: 8),
                                     Flexible(
                                       child: Text(
@@ -479,66 +462,16 @@ class _RetireSimulatorResultScreenState
     );
   }
 
-  Future<void> _goToMyAssets(
-    RetireSimulatorProvider provider,
-    AppStateProvider appProvider,
-  ) async {
-    if (_isImportingToMyAssets) return;
-    setState(() => _isImportingToMyAssets = true);
-
-    try {
-      final myAssets = context.read<MyAssetsProvider>();
-      final l10n = AppLocalizations.of(context)!;
-      final payload = <({
-        String assetId,
-        String assetName,
-        double quantity,
-        double valuation,
-      })>[];
-
-      // 보유 현금
-      if (provider.cash > 0) {
-        payload.add((
-          assetId: 'cash',
-          assetName: l10n.cash,
-          quantity: 1,
-          valuation: provider.cash,
-        ));
-      }
-
-      // 은퇴 시뮬에서 추가한 보유 자산
-      for (final h in provider.holdings) {
-        if (h.quantity <= 0) continue;
-        String name = h.assetId;
-        try {
-          name = appProvider.assets
-              .firstWhere((a) => a.id == h.assetId)
-              .displayName();
-        } catch (_) {}
-        payload.add((
-          assetId: h.assetId,
-          assetName: name,
-          quantity: h.quantity,
-          valuation: h.valuation > 0 ? h.valuation : 0,
-        ));
-      }
-
-      await myAssets.importRetireHoldings(payload);
-      if (!mounted) return;
-
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-          builder: (_) => const MainTabScreen(
-            initialIndex: 1,
-            openMyAssetsGate: true,
-          ),
+  void _goToMyAssets() {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) => const MainTabScreen(
+          initialIndex: 1,
+          openMyAssetsGate: true,
         ),
-        (route) => route.isFirst,
-      );
-    } catch (e) {
-      debugPrint('Failed to import holdings to my assets: $e');
-      if (mounted) setState(() => _isImportingToMyAssets = false);
-    }
+      ),
+      (route) => route.isFirst,
+    );
   }
 
   Widget _buildCombinedChart(

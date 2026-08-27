@@ -4,6 +4,7 @@ import '../l10n/app_localizations.dart';
 import '../services/ai_history_service.dart';
 import '../utils/colors.dart';
 import '../utils/text_styles.dart';
+import '../widgets/ai_rich_text.dart';
 import '../widgets/investment_insight_dialog.dart';
 import '../widgets/market_briefing_dialog.dart';
 
@@ -92,9 +93,9 @@ class _AiHistoryScreenState extends State<AiHistoryScreen> {
                     }
                   },
                   child: Padding(
-                    padding: const EdgeInsets.all(14),
+                    padding: const EdgeInsets.fromLTRB(14, 14, 8, 14),
                     child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
                           width: 40,
@@ -127,7 +128,8 @@ class _AiHistoryScreenState extends State<AiHistoryScreen> {
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              Text(
+                              // iOS 시뮬레이터에서 시스템 이모지가 □ 로 깨지므로 Twemoji 사용
+                              AiRichText(
                                 item.preview.isNotEmpty
                                     ? item.preview
                                     : item.title,
@@ -137,6 +139,12 @@ class _AiHistoryScreenState extends State<AiHistoryScreen> {
                                   color: AppColors.textPrimary,
                                   fontSize: 15,
                                   fontWeight: FontWeight.w600,
+                                  height: 1.35,
+                                ),
+                                boldStyle: const TextStyle(
+                                  color: AppColors.textPrimary,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w800,
                                   height: 1.35,
                                 ),
                               ),
@@ -151,26 +159,43 @@ class _AiHistoryScreenState extends State<AiHistoryScreen> {
                             ],
                           ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.delete_outline, size: 20),
-                          color: AppColors.textSecondary,
-                          onPressed: () async {
-                            final shouldDelete = await _confirmDelete(
-                              context,
-                              l10n,
-                            );
-                            if (shouldDelete != true) return;
+                        const SizedBox(width: 4),
+                        SizedBox(
+                          width: 36,
+                          height: 36,
+                          child: IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                              minWidth: 36,
+                              minHeight: 36,
+                            ),
+                            icon: const Icon(Icons.delete_outline, size: 20),
+                            color: AppColors.textSecondary,
+                            onPressed: () async {
+                              final shouldDelete = await _confirmDelete(
+                                context,
+                                l10n,
+                              );
+                              if (shouldDelete != true) return;
 
-                            await AiHistoryService.shared.deleteItem(item.id);
-                            if (!mounted) return;
-                            setState(() {
-                              _future = AiHistoryService.shared.load();
-                            });
-                          },
+                              await AiHistoryService.shared.deleteItem(item.id);
+                              if (!mounted) return;
+                              setState(() {
+                                _future = AiHistoryService.shared.load();
+                              });
+                            },
+                          ),
                         ),
-                        const Icon(
-                          Icons.chevron_right,
-                          color: AppColors.textSecondary,
+                        const SizedBox(
+                          width: 28,
+                          height: 36,
+                          child: Center(
+                            child: Icon(
+                              Icons.chevron_right,
+                              size: 22,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
                         ),
                       ],
                     ),

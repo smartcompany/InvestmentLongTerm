@@ -336,57 +336,74 @@ class ApiService {
     }
   }
 
-  // 내 자산 관련 API
-  static Future<List<Map<String, dynamic>>> getMyAssets(
-    String anonymousId,
-  ) async {
-    try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/api/my-assets?anonymousId=$anonymousId'),
-      );
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as List;
-        return data.map((item) => item as Map<String, dynamic>).toList();
-      } else {
-        throw Exception('Failed to load assets: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Failed to load assets: $e');
+  /// 서버 holdings 스냅샷 동기화 (전체 교체)
+  static Future<void> syncMyAssets({
+    required String anonymousId,
+    required String deviceId,
+    required List<Map<String, dynamic>> assets,
+  }) async {
+    final response = await http.put(
+      Uri.parse('$baseUrl/api/my-assets'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'anonymousId': anonymousId,
+        'deviceId': deviceId,
+        'assets': assets,
+      }),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Failed to sync assets: ${response.statusCode}');
     }
   }
 
-  static Future<Map<String, dynamic>> addMyAsset(
-    String anonymousId,
-    Map<String, dynamic> asset,
-  ) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/api/my-assets'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'anonymousId': anonymousId, 'asset': asset}),
-      );
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return jsonDecode(response.body) as Map<String, dynamic>;
-      } else {
-        throw Exception('Failed to add asset: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Failed to add asset: $e');
+  /// 서버에서 holdings 복구
+  static Future<List<Map<String, dynamic>>> getMyAssets({
+    required String anonymousId,
+    required String deviceId,
+  }) async {
+    final uri = Uri.parse('$baseUrl/api/my-assets').replace(
+      queryParameters: {
+        'anonymousId': anonymousId,
+        'deviceId': deviceId,
+      },
+    );
+    final response = await http.get(uri);
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body) as List;
+      return data.map((item) => item as Map<String, dynamic>).toList();
     }
+    throw Exception('Failed to load assets: ${response.statusCode}');
   }
 
-  static Future<void> deleteMyAsset(String anonymousId, String assetId) async {
-    try {
-      final response = await http.delete(
-        Uri.parse(
-          '$baseUrl/api/my-assets?anonymousId=$anonymousId&id=$assetId',
-        ),
-      );
-      if (response.statusCode != 200 && response.statusCode != 204) {
-        throw Exception('Failed to delete asset: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('Failed to delete asset: $e');
+  static Future<void> registerPushToken({
+    required String anonymousId,
+    required String deviceId,
+    String? token,
+    String? platform,
+    String? locale,
+    bool pushEnabled = true,
+    bool? pushPortfolioChange,
+    bool? pushAiTrend,
+    bool? pushAiPortfolio,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/api/push-token'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'anonymousId': anonymousId,
+        'deviceId': deviceId,
+        if (token != null) 'token': token,
+        if (platform != null) 'platform': platform,
+        if (locale != null) 'locale': locale,
+        'pushEnabled': pushEnabled,
+        if (pushPortfolioChange != null)
+          'pushPortfolioChange': pushPortfolioChange,
+        if (pushAiTrend != null) 'pushAiTrend': pushAiTrend,
+        if (pushAiPortfolio != null) 'pushAiPortfolio': pushAiPortfolio,
+      }),
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Failed to register push token: ${response.statusCode}');
     }
   }
 }

@@ -22,6 +22,7 @@ import '../widgets/market_briefing_dialog.dart';
 import '../services/ad_service.dart';
 import '../services/ai_history_service.dart';
 import '../services/api_service.dart';
+import '../services/notification_navigation.dart';
 import '../providers/retire_simulator_provider.dart';
 import 'ai_history_screen.dart';
 import 'asset_detail_screen.dart';
@@ -43,6 +44,7 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
   @override
   void initState() {
     super.initState();
+    NotificationNavigation.pendingAiAction.addListener(_onPendingAiAction);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final provider = context.read<MyAssetsProvider>();
       final appProvider = context.read<AppStateProvider>();
@@ -73,6 +75,40 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
                 assetType: _resolveAssetType(provider, assetId),
               ),
         );
+      }
+
+      if (mounted) {
+        _consumePendingAiAction();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    NotificationNavigation.pendingAiAction.removeListener(_onPendingAiAction);
+    super.dispose();
+  }
+
+  void _onPendingAiAction() {
+    if (!mounted) return;
+    _consumePendingAiAction();
+  }
+
+  void _consumePendingAiAction() {
+    final action = NotificationNavigation.pendingAiAction.value;
+    if (action == null) return;
+    NotificationNavigation.pendingAiAction.value = null;
+
+    final provider = context.read<MyAssetsProvider>();
+    final l10n = AppLocalizations.of(context);
+    if (l10n == null) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (action == NotificationNavigation.aiActionMarketBriefing) {
+        _handleMarketBriefingTap(context, provider, l10n);
+      } else if (action == NotificationNavigation.aiActionPortfolioInsight) {
+        _handleAiInsightTap(context, provider, l10n);
       }
     });
   }
@@ -278,12 +314,13 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
                 ),
               if (provider.assets.isNotEmpty) ...[
                 const SizedBox(height: 8),
+                // 자산 관리
                 _buildAddAssetButton(context, provider, l10n),
-                const SizedBox(height: 12),
-                _buildMarketBriefingButton(context, provider, l10n),
-                const SizedBox(height: 10),
-                _buildAiInsightButton(context, provider, l10n),
-                const SizedBox(height: 10),
+                const SizedBox(height: 14),
+                // AI 분석 (같은 그룹·톤)
+                _buildAiActionsGroup(context, provider, l10n),
+                const SizedBox(height: 14),
+                // 장기 계획
                 _buildRetireSimButton(context, provider, l10n),
               ],
               const SizedBox(height: 24),
@@ -526,6 +563,31 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
     }
   }
 
+  Widget _buildAiActionsGroup(
+    BuildContext context,
+    MyAssetsProvider provider,
+    AppLocalizations l10n,
+  ) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: AppColors.primarySoft,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.18),
+        ),
+      ),
+      child: Column(
+        children: [
+          _buildMarketBriefingButton(context, provider, l10n),
+          const SizedBox(height: 8),
+          _buildAiInsightButton(context, provider, l10n),
+        ],
+      ),
+    );
+  }
+
   Widget _buildAiInsightButton(
     BuildContext context,
     MyAssetsProvider provider,
@@ -533,7 +595,7 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
   ) {
     return SizedBox(
       width: double.infinity,
-      height: 54,
+      height: 50,
       child: ElevatedButton.icon(
         onPressed: _isLoadingAi
             ? null
@@ -542,16 +604,17 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
         label: Text(
           l10n.aiInsightButton,
           style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
           ),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
+          elevation: 0,
           disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.7),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
       ),
@@ -719,7 +782,7 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
   ) {
     return SizedBox(
       width: double.infinity,
-      height: 54,
+      height: 50,
       child: ElevatedButton.icon(
         onPressed: _isLoadingAi
             ? null
@@ -728,16 +791,17 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
         label: Text(
           l10n.marketBriefingButton,
           style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
           ),
         ),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
+          elevation: 0,
           disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.7),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
       ),
@@ -761,11 +825,12 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
           l10n.retireSimButton,
           style: const TextStyle(
             fontSize: 16,
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
           ),
         ),
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
+          backgroundColor: AppColors.surface,
           side: const BorderSide(color: AppColors.primary, width: 1.5),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
@@ -953,16 +1018,22 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
     MyAssetsProvider provider,
     AppLocalizations l10n,
   ) {
-    return OutlinedButton.icon(
-      onPressed: () => _showAddAssetDialog(context, provider, l10n),
-      icon: const Icon(Icons.add, size: 20),
-      label: Text(l10n.addAsset),
-      style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.primary,
-        side: const BorderSide(color: AppColors.primary),
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+    return SizedBox(
+      width: double.infinity,
+      height: 54,
+      child: OutlinedButton.icon(
+        onPressed: () => _showAddAssetDialog(context, provider, l10n),
+        icon: const Icon(Icons.add, size: 20),
+        label: Text(l10n.addAsset),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.primary,
+          backgroundColor: AppColors.surface,
+          side: const BorderSide(color: AppColors.primary, width: 1.5),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+        ),
       ),
     );
   }

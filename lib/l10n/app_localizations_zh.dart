@@ -486,7 +486,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get pushNotifications => '推送通知';
 
   @override
-  String get pushNotificationsDesc => '每天一次提醒，以及持仓价值变动通知';
+  String get pushNotificationsDesc => '允许通知后，可选择想接收的类型';
+
+  @override
+  String get pushCategoryPortfolioChange => '资产价值变动';
+
+  @override
+  String get pushCategoryPortfolioChangeDesc => '总估值明显变化时提醒您';
+
+  @override
+  String get pushCategoryAiInsights => 'AI 资产洞察';
+
+  @override
+  String get pushCategoryAiInsightsDesc => '关于持仓趋势与组合分析的贴心提醒';
 
   @override
   String get pushDailyTitle => '我的持仓趋势';

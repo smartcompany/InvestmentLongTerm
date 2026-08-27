@@ -1,78 +1,68 @@
-import 'package:device_info_plus/device_info_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter/foundation.dart';
-import 'dart:io';
+import 'dart:math';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+/// 기기 고유 ID — Keychain / Keystore에 보관 (앱 삭제 후에도 유지, 공장 초기화 시 리셋).
 class DeviceId {
   static const String _keyDeviceId = 'device_id';
   static String? _cachedDeviceId;
 
-  // iOS: iCloud Key-Value Storage 사용
-  // Android: SharedPreferences 사용 (Auto Backup 활성화됨)
+  static const FlutterSecureStorage _secure = FlutterSecureStorage(
+    aOptions: AndroidOptions(),
+    iOptions: IOSOptions(
+      accessibility: KeychainAccessibility.first_unlock,
+      synchronizable: false,
+    ),
+  );
 
-  /// 기기 고유 ID를 가져옵니다.
-  /// iOS: iCloud Key-Value Storage에 저장
-  /// Android: SharedPreferences에 저장 (Auto Backup으로 자동 백업)
   static Future<String> getId() async {
-    if (_cachedDeviceId != null) {
-      return _cachedDeviceId!;
-    }
+    if (_cachedDeviceId != null) return _cachedDeviceId!;
 
     try {
-      String? savedDeviceId;
+      final fromSecure = await _secure.read(key: _keyDeviceId);
+      if (fromSecure != null && fromSecure.isNotEmpty) {
+        _cachedDeviceId = fromSecure;
+        debugPrint('📱 [DeviceId] Keychain/Keystore ID: $fromSecure');
+        return fromSecure;
+      }
 
-      // iOS와 Android 모두 SharedPreferences 사용
-      // iOS: UserDefaults (iCloud 백업 포함 가능)
-      // Android: SharedPreferences (Auto Backup으로 자동 백업됨)
+      // SharedPreferences → secure 마이그레이션
       final prefs = await SharedPreferences.getInstance();
-      savedDeviceId = prefs.getString(_keyDeviceId);
-      if (savedDeviceId != null && savedDeviceId.isNotEmpty) {
-        _cachedDeviceId = savedDeviceId;
-        debugPrint('📱 [DeviceId] 저장된 기기 ID 사용: $savedDeviceId');
-        return savedDeviceId;
+      final legacy = prefs.getString(_keyDeviceId);
+      if (legacy != null && legacy.isNotEmpty) {
+        await _secure.write(key: _keyDeviceId, value: legacy);
+        await prefs.remove(_keyDeviceId);
+        _cachedDeviceId = legacy;
+        debugPrint('📱 [DeviceId] migrated prefs → secure: $legacy');
+        return legacy;
       }
 
-      // 새로운 기기 ID 생성
-      final deviceInfo = DeviceInfoPlugin();
-      String deviceId;
-
-      if (Platform.isAndroid) {
-        final androidInfo = await deviceInfo.androidInfo;
-        // Android ID 사용 (앱 삭제 후에도 동일, 공장 초기화 시에만 변경)
-        deviceId = androidInfo.id;
-        debugPrint('📱 [DeviceId] Android ID 사용: $deviceId');
-        debugPrint('   - 앱 삭제 후에도 동일한 ID 유지됨 ✅');
-      } else if (Platform.isIOS) {
-        final iosInfo = await deviceInfo.iosInfo;
-        // identifierForVendor 사용
-        deviceId =
-            iosInfo.identifierForVendor ??
-            'ios_${DateTime.now().millisecondsSinceEpoch}';
-        debugPrint('📱 [DeviceId] iOS identifierForVendor 생성: $deviceId');
-      } else {
-        // 기타 플랫폼
-        deviceId = 'device_${DateTime.now().millisecondsSinceEpoch}';
-        debugPrint('📱 [DeviceId] 임시 기기 ID 생성: $deviceId');
-      }
-
-      // iOS와 Android 모두 SharedPreferences에 저장
-      // iOS: UserDefaults (iCloud 백업 포함 가능)
-      // Android: SharedPreferences (Auto Backup으로 자동 백업됨)
-      await prefs.setString(_keyDeviceId, deviceId);
-      debugPrint('✅ [DeviceId] 기기 ID 저장 완료: $deviceId');
-
+      final deviceId = _generateUuidV4();
+      await _secure.write(key: _keyDeviceId, value: deviceId);
       _cachedDeviceId = deviceId;
+      debugPrint('✅ [DeviceId] created: $deviceId');
       return deviceId;
     } catch (e) {
-      debugPrint('❌ [DeviceId] 기기 ID 가져오기 실패: $e');
-      // 실패 시 임시 ID 생성
-      final fallbackId = 'fallback_${DateTime.now().millisecondsSinceEpoch}';
-      _cachedDeviceId = fallbackId;
-      return fallbackId;
+      debugPrint('❌ [DeviceId] failed: $e');
+      final fallback = 'fallback_${DateTime.now().millisecondsSinceEpoch}';
+      _cachedDeviceId = fallback;
+      return fallback;
     }
   }
 
-  /// 기기 ID 캐시 초기화 (테스트용)
+  static String _generateUuidV4() {
+    final r = Random.secure();
+    final bytes = List<int>.generate(16, (_) => r.nextInt(256));
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    String hex(int b) => b.toRadixString(16).padLeft(2, '0');
+    final h = bytes.map(hex).join();
+    return '${h.substring(0, 8)}-${h.substring(8, 12)}-'
+        '${h.substring(12, 16)}-${h.substring(16, 20)}-${h.substring(20)}';
+  }
+
   static void clearCache() {
     _cachedDeviceId = null;
   }

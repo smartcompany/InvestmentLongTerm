@@ -42,6 +42,8 @@ import UIKit
     }
     
     GeneratedPluginRegistrant.register(with: self)
+    // APNs registration for FCM
+    application.registerForRemoteNotifications()
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }

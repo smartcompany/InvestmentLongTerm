@@ -17,6 +17,7 @@ import 'providers/my_assets_provider.dart';
 import 'providers/growth_race_provider.dart';
 import 'utils/colors.dart';
 import 'services/ad_service.dart';
+import 'services/fcm_push_service.dart';
 import 'services/notification_navigation.dart';
 import 'services/push_notification_service.dart';
 
@@ -66,14 +67,13 @@ void main() async {
   // CurrencyProvider 초기화 (싱글톤)
   CurrencyProvider.shared;
 
-  // 로컬 푸시 (일일 리마인더 + 자산 변동)
+  // 로컬 푸시 (일일 리마인더)
   await PushNotificationService.shared.initialize(
-    onTap: (payload) {
-      if (payload == PushNotificationService.payloadMyAssets) {
-        NotificationNavigation.openMyAssets();
-      }
-    },
+    onTap: (payload) => NotificationNavigation.handlePayload(payload),
   );
+
+  // FCM (서버 변동·AI 컨텐츠 푸시)
+  await FcmPushService.shared.initialize();
 
   runApp(
     MultiProvider(

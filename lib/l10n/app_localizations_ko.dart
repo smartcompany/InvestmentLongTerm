@@ -486,7 +486,19 @@ class AppLocalizationsKo extends AppLocalizations {
   String get pushNotifications => '푸시 알림';
 
   @override
-  String get pushNotificationsDesc => '하루 한 번 리마인더와 자산 가치 변동 알림을 받습니다';
+  String get pushNotificationsDesc => '알림을 허용하면 아래에서 받고 싶은 종류를 선택할 수 있습니다';
+
+  @override
+  String get pushCategoryPortfolioChange => '자산 가치 변동';
+
+  @override
+  String get pushCategoryPortfolioChangeDesc => '총 평가액이 크게 변했을 때 알려드려요';
+
+  @override
+  String get pushCategoryAiInsights => 'AI 자산 인사이트';
+
+  @override
+  String get pushCategoryAiInsightsDesc => '내 자산 트렌드·포트폴리오 분석 안내를 받아보세요';
 
   @override
   String get pushDailyTitle => '내 자산 트렌드';
@@ -584,7 +596,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get myAssets => '내 자산 관리';
 
   @override
-  String get manageInMyAssets => '내 자산으로 관리';
+  String get manageInMyAssets => '내 자산 관리';
 
   @override
   String get viewMyAssetsStatus => '광고 보고 AI 투자 인사이트 받기';
@@ -593,13 +605,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get myAssetsSubtitle => '보유 자산을 기록하고 변동 추이를 확인하세요';
 
   @override
-  String get aiInsightButton => 'AI 포트폴리오 평가';
+  String get aiInsightButton => 'AI 내 자산 포트폴리오 평가';
 
   @override
   String get aiInsightNeedAssets => '인사이트를 받으려면 자산을 먼저 등록하세요';
 
   @override
-  String get aiInsightTitle => 'AI 포트폴리오 평가';
+  String get aiInsightTitle => 'AI 내 자산 포트폴리오 평가';
 
   @override
   String get aiInsightComingSoon =>
@@ -627,10 +639,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get aiInsightRisks => '주의할 점';
 
   @override
-  String get marketBriefingButton => 'AI 최근 자산 트렌드 평가';
+  String get marketBriefingButton => 'AI 내 자산 트렌드 평가';
 
   @override
-  String get marketBriefingTitle => 'AI 최근 자산 트렌드 평가';
+  String get marketBriefingTitle => 'AI 내 자산 트렌드 평가';
 
   @override
   String get watchAdChoiceTitle => '광고를 보고 진행할까요?';

@@ -5,8 +5,8 @@ import 'dart:convert';
 import 'dart:io';
 import '../models/my_asset.dart';
 import '../services/api_service.dart';
+import '../services/anonymous_identity_service.dart';
 import '../services/icloud_service.dart';
-import '../services/push_notification_service.dart';
 import '../utils/currency_converter.dart';
 
 class MyAssetsProvider with ChangeNotifier {
@@ -52,7 +52,7 @@ class MyAssetsProvider with ChangeNotifier {
 
   static const String _keyAssets = 'my_assets_list';
 
-  // 자산 데이터 저장 (로컬)
+  // 자산 데이터 저장 (로컬 + 서버 동기화)
   Future<void> _saveAssets() async {
     try {
       final assetsJson = jsonEncode(
@@ -79,8 +79,65 @@ class MyAssetsProvider with ChangeNotifier {
           '✅ [LocalStorage] Android에 자산 저장 완료: ${_assets.length}개 (Auto Backup)',
         );
       }
+
+      // 서버 동기화 (푸시용) — 실패해도 로컬 UX는 유지
+      // ignore: unawaited_futures
+      _syncAssetsToServer();
     } catch (e) {
       debugPrint('❌ [LocalStorage] 자산 저장 실패: $e');
+    }
+  }
+
+  Future<void> _syncAssetsToServer() async {
+    try {
+      final identity = await AnonymousIdentityService.shared.ensureIdentity();
+      await ApiService.syncMyAssets(
+        anonymousId: identity.anonymousId,
+        deviceId: identity.deviceId,
+        assets: _assets.map((a) => a.toJson()).toList(),
+      );
+      debugPrint(
+        '✅ [ServerSync] holdings synced: ${_assets.length} → ${identity.anonymousId}',
+      );
+    } catch (e) {
+      debugPrint('⚠️ [ServerSync] sync failed: $e');
+    }
+  }
+
+  Future<bool> _restoreAssetsFromServer() async {
+    try {
+      final identity = await AnonymousIdentityService.shared.ensureIdentity();
+      final remote = await ApiService.getMyAssets(
+        anonymousId: identity.anonymousId,
+        deviceId: identity.deviceId,
+      );
+      if (remote.isEmpty) return false;
+
+      _assets.clear();
+      _assets.addAll(remote.map(MyAsset.fromJson));
+      await _saveAssetsLocalOnly();
+      debugPrint(
+        '✅ [ServerSync] restored ${_assets.length} assets from server',
+      );
+      return true;
+    } catch (e) {
+      debugPrint('⚠️ [ServerSync] restore failed: $e');
+      return false;
+    }
+  }
+
+  Future<void> _saveAssetsLocalOnly() async {
+    try {
+      final assetsJson = jsonEncode(
+        _assets.map((asset) => asset.toJson()).toList(),
+      );
+      if (Platform.isIOS) {
+        await ICloudService.setValue(_keyAssets, assetsJson);
+      }
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_keyAssets, assetsJson);
+    } catch (e) {
+      debugPrint('❌ [LocalStorage] local-only save failed: $e');
     }
   }
 
@@ -147,7 +204,8 @@ class MyAssetsProvider with ChangeNotifier {
           debugPrint('❌ [LocalStorage] JSON 파싱 실패: $e');
         }
       } else {
-        debugPrint('ℹ️ [LocalStorage] 저장된 자산 없음');
+        debugPrint('ℹ️ [LocalStorage] 저장된 자산 없음 — 서버 복구 시도');
+        await _restoreAssetsFromServer();
       }
 
       // 각 자산의 현재 가치 업데이트
@@ -166,10 +224,12 @@ class MyAssetsProvider with ChangeNotifier {
         );
       }
 
-      // 총 평가액이 의미 있게 변했으면 하루 1회 푸시
-      await PushNotificationService.shared.maybeNotifyPortfolioChange(
-        currentTotal: totalCurrentValue,
-      );
+      // 변동 푸시는 GitHub Actions → 서버 cron API + FCM 담당 (로컬 중복 제거)
+      // 자산이 있으면 서버 스냅샷도 맞춰 둠
+      if (_assets.isNotEmpty) {
+        // ignore: unawaited_futures
+        _syncAssetsToServer();
+      }
     } catch (e) {
       debugPrint('Failed to load assets: $e');
     } finally {
