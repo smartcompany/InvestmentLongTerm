@@ -18,6 +18,9 @@ class AppColors {
   static const gold = Color(0xFFFBBF24);
   static const goldLight = Color(0xFFFDE047);
 
+  // Chart touch tooltip (light bg for readable contrast)
+  static const chartTooltipBg = surface;
+
   // Dark canvas (race chart inset)
   static const navyDark = Color(0xFF0F172A);
   static const navyMedium = Color(0xFF1E293B);

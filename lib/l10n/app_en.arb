@@ -232,6 +232,23 @@
   },
   "retireInlineEditHint": "Tap the blue boxes to edit amounts",
   "retireFormSubtitle": "Enter your cash and holdings, then set monthly spending",
+  "retireFromMyAssetsSubtitle": "Simulate retirement feasibility based on your assets",
+  "retireHoldingQuantity": "Qty {qty}",
+  "@retireHoldingQuantity": {
+    "placeholders": {
+      "qty": {
+        "type": "String"
+      }
+    }
+  },
+  "simulationYearsValue": "{years} years",
+  "@simulationYearsValue": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  },
   "retireCashLabel": "Cash on hand",
   "retireHoldingsLabel": "Holdings",
   "retireHoldingsEmpty": "No holdings yet. Add stocks, crypto, and more",
@@ -288,6 +305,13 @@
   "deleteAsset": "Delete Asset",
   "deleteAssetConfirm": "Are you sure you want to delete this asset?",
   "cancel": "Cancel",
+  "addAssetStepEnterInfo": "Enter details",
+  "previous": "Previous",
+  "next": "Next",
+  "done": "Done",
+  "priceFetchFailed": "Could not fetch the current price. Please try again.",
+  "invalidCurrentPrice": "Could not fetch a valid current price.",
+  "addAssetSubmitFailed": "Something went wrong while adding the asset. Please try again.",
   "noPriceData": "No price data available",
   "quantity": "Quantity",
   "annualInterestRate": "Annual interest rate",

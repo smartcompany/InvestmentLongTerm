@@ -144,7 +144,9 @@ class AssetPriceChart extends StatelessWidget {
         ],
         lineTouchData: LineTouchData(
           touchTooltipData: LineTouchTooltipData(
-            getTooltipColor: (touchedSpot) => AppColors.navyDark,
+            getTooltipColor: (touchedSpot) => AppColors.chartTooltipBg,
+            tooltipBorderRadius: BorderRadius.circular(8),
+            tooltipBorder: BorderSide(color: AppColors.border, width: 1),
             tooltipPadding: EdgeInsets.all(12),
             tooltipMargin: 16,
             getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
@@ -174,7 +176,10 @@ class AssetPriceChart extends StatelessWidget {
               return touchedBarSpots.map((barSpot) {
                 return LineTooltipItem(
                   tooltipText,
-                  TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+                  TextStyle(
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.bold,
+                  ),
                 );
               }).toList();
             },

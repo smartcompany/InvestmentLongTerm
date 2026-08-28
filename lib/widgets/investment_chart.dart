@@ -44,7 +44,9 @@ class InvestmentChart extends StatelessWidget {
         ],
         lineTouchData: LineTouchData(
           touchTooltipData: LineTouchTooltipData(
-            getTooltipColor: (touchedSpot) => AppColors.navyDark,
+            getTooltipColor: (touchedSpot) => AppColors.chartTooltipBg,
+            tooltipBorderRadius: BorderRadius.circular(8),
+            tooltipBorder: BorderSide(color: AppColors.border, width: 1),
             tooltipPadding: EdgeInsets.all(12),
             tooltipMargin: 16,
             getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
@@ -54,7 +56,7 @@ class InvestmentChart extends StatelessWidget {
                   '\$${flSpot.y.toStringAsFixed(0)}',
                   TextStyle(
                     color: barSpot.barIndex == 1
-                        ? AppColors.primary
+                        ? AppColors.textPrimary
                         : AppColors.textSecondary,
                     fontWeight: FontWeight.bold,
                   ),

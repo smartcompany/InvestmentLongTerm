@@ -572,6 +572,19 @@ class AppLocalizationsKo extends AppLocalizations {
   String get retireFormSubtitle => '보유 현금·자산을 입력하고 매월 지출을 설정해보세요';
 
   @override
+  String get retireFromMyAssetsSubtitle => '내 자산을 기준으로 은퇴 가능성을 시뮬레이션해보세요';
+
+  @override
+  String retireHoldingQuantity(String qty) {
+    return '수량 $qty';
+  }
+
+  @override
+  String simulationYearsValue(int years) {
+    return '$years년';
+  }
+
+  @override
   String get retireCashLabel => '보유 현금';
 
   @override
@@ -738,6 +751,27 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get cancel => '취소';
+
+  @override
+  String get addAssetStepEnterInfo => '정보 입력';
+
+  @override
+  String get previous => '이전';
+
+  @override
+  String get next => '다음';
+
+  @override
+  String get done => '완료';
+
+  @override
+  String get priceFetchFailed => '현재 가격을 가져올 수 없습니다. 다시 시도해주세요.';
+
+  @override
+  String get invalidCurrentPrice => '유효한 현재 가격을 가져올 수 없습니다.';
+
+  @override
+  String get addAssetSubmitFailed => '자산 추가 중 오류가 발생했습니다. 다시 시도해주세요.';
 
   @override
   String get noPriceData => '가격 데이터가 없습니다';

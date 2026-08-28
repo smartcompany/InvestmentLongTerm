@@ -572,6 +572,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get retireFormSubtitle => '填写现金与持仓，并设置每月支出';
 
   @override
+  String get retireFromMyAssetsSubtitle => '根据您的资产模拟退休可行性';
+
+  @override
+  String retireHoldingQuantity(String qty) {
+    return '数量 $qty';
+  }
+
+  @override
+  String simulationYearsValue(int years) {
+    return '$years年';
+  }
+
+  @override
   String get retireCashLabel => '持有现金';
 
   @override
@@ -735,6 +748,27 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get cancel => '取消';
+
+  @override
+  String get addAssetStepEnterInfo => '填写信息';
+
+  @override
+  String get previous => '上一步';
+
+  @override
+  String get next => '下一步';
+
+  @override
+  String get done => '完成';
+
+  @override
+  String get priceFetchFailed => '无法获取当前价格，请重试。';
+
+  @override
+  String get invalidCurrentPrice => '无法获取有效的当前价格。';
+
+  @override
+  String get addAssetSubmitFailed => '添加资产时出错，请重试。';
 
   @override
   String get noPriceData => '无价格数据';

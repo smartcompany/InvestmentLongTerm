@@ -40,12 +40,30 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final provider = context.read<RetireSimulatorProvider>();
-      // 내 자산에서 온 경우 prefs에 저장된 은퇴 탭 현금을 덮어쓰지 않음
-      await provider.loadSettings(restorePortfolio: !widget.fromMyAssets);
-      if (!mounted) return;
-      _syncControllers(provider);
+      if (widget.fromMyAssets) return;
+      if (widget.isVisible) {
+        await _prepareSession();
+      }
     });
+  }
+
+  @override
+  void didUpdateWidget(RetireSimulatorScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!widget.fromMyAssets &&
+        widget.isVisible &&
+        !oldWidget.isVisible) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _prepareSession());
+    }
+  }
+
+  Future<void> _prepareSession() async {
+    final provider = context.read<RetireSimulatorProvider>();
+    await provider.prepareSession(
+      CurrencyProvider.shared.getCurrencySymbol(),
+    );
+    if (!mounted) return;
+    _syncControllers(provider);
   }
 
   @override
@@ -122,10 +140,11 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
         );
 
         if (_lastCurrencySymbol != currencySymbol) {
-          _lastCurrencySymbol = currencySymbol;
-          WidgetsBinding.instance.addPostFrameCallback((_) {
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
             if (!mounted) return;
-            provider.updateCurrencyDefaults(currencySymbol);
+            await provider.applyCurrencyChange(currencySymbol);
+            if (!mounted) return;
+            setState(() => _lastCurrencySymbol = currencySymbol);
             _syncControllers(provider);
           });
         }
@@ -171,7 +190,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
                     const SizedBox(height: 8),
                     Text(
                       widget.fromMyAssets
-                          ? '내 자산을 기준으로 은퇴 가능성을 시뮬레이션해보세요'
+                          ? l10n.retireFromMyAssetsSubtitle
                           : l10n.retireFormSubtitle,
                       style: AppTextStyles.homeSubDescription.copyWith(
                         color: AppColors.textPrimary.withValues(alpha: 0.75),
@@ -427,7 +446,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          '${provider.simulationYears}${l10n.year}',
+                          l10n.simulationYearsValue(provider.simulationYears),
                           style: AppTextStyles.chartSectionTitle.copyWith(
                             fontSize: 16,
                             color: AppColors.primary,
@@ -583,7 +602,7 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
                       label: provider.canRunSimulation
                           ? l10n.runSimulation
                           : (provider.isLoadingAnyPrice ||
-                                  !provider.allCagrLoaded
+                                  provider.isLoadingAnyCagr
                               ? l10n.loadingAnnualReturn
                               : l10n.runSimulation),
                       loading: false,
@@ -747,7 +766,9 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            '수량 ${_formatQty(h.quantity)}${l10n.retireQtyUnit}',
+                            l10n.retireHoldingQuantity(
+                              '${_formatQty(h.quantity)}${l10n.retireQtyUnit}',
+                            ),
                             style: const TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 12,
@@ -979,7 +1000,6 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
   }
 
   Future<void> _runSimulationDirect(RetireSimulatorProvider provider) async {
-    await provider.saveSettings();
     if (!mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -989,7 +1009,6 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
   }
 
   Future<void> _runSimulation(RetireSimulatorProvider provider) async {
-    await provider.saveSettings();
     if (!mounted) return;
 
     showDialog(

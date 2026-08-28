@@ -572,6 +572,19 @@ class AppLocalizationsJa extends AppLocalizations {
   String get retireFormSubtitle => '現金と保有資産を入力し、毎月の支出を設定しましょう';
 
   @override
+  String get retireFromMyAssetsSubtitle => '保有資産をもとに退職の可能性をシミュレーションしましょう';
+
+  @override
+  String retireHoldingQuantity(String qty) {
+    return '数量 $qty';
+  }
+
+  @override
+  String simulationYearsValue(int years) {
+    return '$years年';
+  }
+
+  @override
   String get retireCashLabel => '保有現金';
 
   @override
@@ -737,6 +750,27 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get cancel => 'キャンセル';
+
+  @override
+  String get addAssetStepEnterInfo => '情報入力';
+
+  @override
+  String get previous => '戻る';
+
+  @override
+  String get next => '次へ';
+
+  @override
+  String get done => '完了';
+
+  @override
+  String get priceFetchFailed => '現在価格を取得できませんでした。もう一度お試しください。';
+
+  @override
+  String get invalidCurrentPrice => '有効な現在価格を取得できませんでした。';
+
+  @override
+  String get addAssetSubmitFailed => '資産の追加中にエラーが発生しました。もう一度お試しください。';
 
   @override
   String get noPriceData => '価格データがありません';

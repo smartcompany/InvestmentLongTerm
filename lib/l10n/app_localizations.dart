@@ -1124,6 +1124,24 @@ abstract class AppLocalizations {
   /// **'보유 현금·자산을 입력하고 매월 지출을 설정해보세요'**
   String get retireFormSubtitle;
 
+  /// No description provided for @retireFromMyAssetsSubtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'내 자산을 기준으로 은퇴 가능성을 시뮬레이션해보세요'**
+  String get retireFromMyAssetsSubtitle;
+
+  /// No description provided for @retireHoldingQuantity.
+  ///
+  /// In ko, this message translates to:
+  /// **'수량 {qty}'**
+  String retireHoldingQuantity(String qty);
+
+  /// No description provided for @simulationYearsValue.
+  ///
+  /// In ko, this message translates to:
+  /// **'{years}년'**
+  String simulationYearsValue(int years);
+
   /// No description provided for @retireCashLabel.
   ///
   /// In ko, this message translates to:
@@ -1453,6 +1471,48 @@ abstract class AppLocalizations {
   /// In ko, this message translates to:
   /// **'취소'**
   String get cancel;
+
+  /// No description provided for @addAssetStepEnterInfo.
+  ///
+  /// In ko, this message translates to:
+  /// **'정보 입력'**
+  String get addAssetStepEnterInfo;
+
+  /// No description provided for @previous.
+  ///
+  /// In ko, this message translates to:
+  /// **'이전'**
+  String get previous;
+
+  /// No description provided for @next.
+  ///
+  /// In ko, this message translates to:
+  /// **'다음'**
+  String get next;
+
+  /// No description provided for @done.
+  ///
+  /// In ko, this message translates to:
+  /// **'완료'**
+  String get done;
+
+  /// No description provided for @priceFetchFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'현재 가격을 가져올 수 없습니다. 다시 시도해주세요.'**
+  String get priceFetchFailed;
+
+  /// No description provided for @invalidCurrentPrice.
+  ///
+  /// In ko, this message translates to:
+  /// **'유효한 현재 가격을 가져올 수 없습니다.'**
+  String get invalidCurrentPrice;
+
+  /// No description provided for @addAssetSubmitFailed.
+  ///
+  /// In ko, this message translates to:
+  /// **'자산 추가 중 오류가 발생했습니다. 다시 시도해주세요.'**
+  String get addAssetSubmitFailed;
 
   /// No description provided for @noPriceData.
   ///

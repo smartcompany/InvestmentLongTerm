@@ -11,6 +11,7 @@ import 'package:fl_chart/fl_chart.dart';
 class ApiService {
   static const String baseUrl =
       'https://investment-long-term-server.vercel.app';
+  static const Duration _requestTimeout = Duration(seconds: 30);
 
   static Future<List<AssetOption>> fetchAssets() async {
     try {
@@ -30,19 +31,21 @@ class ApiService {
 
   static Future<CalculationResult> calculate(InvestmentConfig config) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/api/calculate'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'asset': config.asset,
-          'yearsAgo': config.yearsAgo,
-          'amount': config.amount,
-          'type': config.type == InvestmentType.single ? 'single' : 'recurring',
-          'frequency': config.frequency == Frequency.monthly
-              ? 'monthly'
-              : 'weekly',
-        }),
-      );
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/api/calculate'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({
+              'asset': config.asset,
+              'yearsAgo': config.yearsAgo,
+              'amount': config.amount,
+              'type': config.type == InvestmentType.single ? 'single' : 'recurring',
+              'frequency': config.frequency == Frequency.monthly
+                  ? 'monthly'
+                  : 'weekly',
+            }),
+          )
+          .timeout(_requestTimeout);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -122,11 +125,13 @@ class ApiService {
         body['type'] = type;
       }
 
-      final response = await http.post(
-        Uri.parse('$baseUrl/api/prices'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(body),
-      );
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/api/prices'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(body),
+          )
+          .timeout(_requestTimeout);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as List;

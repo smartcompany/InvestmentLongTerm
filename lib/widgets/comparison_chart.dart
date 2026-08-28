@@ -46,7 +46,9 @@ class ComparisonChart extends StatelessWidget {
         lineBarsData: [for (final entry in sortedSeries) _buildLine(entry)],
         lineTouchData: LineTouchData(
           touchTooltipData: LineTouchTooltipData(
-            getTooltipColor: (touchedSpot) => AppColors.navyDark,
+            getTooltipColor: (touchedSpot) => AppColors.chartTooltipBg,
+            tooltipBorderRadius: BorderRadius.circular(8),
+            tooltipBorder: BorderSide(color: AppColors.border, width: 1),
             tooltipPadding: EdgeInsets.all(12),
             tooltipMargin: 16,
             getTooltipItems: (List<LineBarSpot> touchedBarSpots) {

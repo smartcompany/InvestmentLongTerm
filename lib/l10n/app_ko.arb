@@ -232,6 +232,23 @@
   },
   "retireInlineEditHint": "파란 칸을 탭하면 금액을 바꿀 수 있어요",
   "retireFormSubtitle": "보유 현금·자산을 입력하고 매월 지출을 설정해보세요",
+  "retireFromMyAssetsSubtitle": "내 자산을 기준으로 은퇴 가능성을 시뮬레이션해보세요",
+  "retireHoldingQuantity": "수량 {qty}",
+  "@retireHoldingQuantity": {
+    "placeholders": {
+      "qty": {
+        "type": "String"
+      }
+    }
+  },
+  "simulationYearsValue": "{years}년",
+  "@simulationYearsValue": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  },
   "retireCashLabel": "보유 현금",
   "retireHoldingsLabel": "보유 자산",
   "retireHoldingsEmpty": "아직 추가한 자산이 없어요. 주식·코인 등을 추가해보세요",
@@ -288,6 +305,13 @@
   "deleteAsset": "자산 삭제",
   "deleteAssetConfirm": "이 자산을 삭제하시겠습니까?",
   "cancel": "취소",
+  "addAssetStepEnterInfo": "정보 입력",
+  "previous": "이전",
+  "next": "다음",
+  "done": "완료",
+  "priceFetchFailed": "현재 가격을 가져올 수 없습니다. 다시 시도해주세요.",
+  "invalidCurrentPrice": "유효한 현재 가격을 가져올 수 없습니다.",
+  "addAssetSubmitFailed": "자산 추가 중 오류가 발생했습니다. 다시 시도해주세요.",
   "noPriceData": "가격 데이터가 없습니다",
   "quantity": "수량",
   "annualInterestRate": "연 금리",

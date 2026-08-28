@@ -1,6 +1,5 @@
 import 'dart:math';
 import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../models/asset.dart';
 import '../models/my_asset.dart';
 import '../models/retire_holding.dart';
@@ -12,20 +11,24 @@ import 'app_state_provider.dart';
 import 'currency_provider.dart';
 
 class RetireSimulatorProvider with ChangeNotifier {
+  static const String _krwBaselineCurrency = '₩';
+  static const double _krwCashBaseline = 1000000; // 100만 원
+  static const double _krwMonthlyBaseline = 5000000; // 500만 원
+
   // UX: 현금 + 보유 자산(수량). 시뮬레이션은 평가금액 합 → allocation으로 변환.
-  double _cash = 1000000; // 기본 100만 원
-  double _monthlyWithdrawal = 1000000; // 기본 월 100만 원
+  double _cash = _krwCashBaseline;
+  double _monthlyWithdrawal = _krwMonthlyBaseline;
   int _simulationYears = 5;
   String _selectedScenario = 'neutral'; // 'positive', 'neutral', 'negative'
   double _inflationRate = 0.03; // 연간 인플레이션율 3% (기본값)
-  String? _lastCurrencySymbol; // 마지막 통화 기호 (통화 변경 감지용)
+  String? _valuesCurrencySymbol; // _cash·_monthlyWithdrawal 이 표현된 통화
   final List<RetireHolding> _holdings = [];
   final List<Asset> _assets = []; // 시뮬레이션용 (allocation 포트폴리오)
   double _initialAsset = 1000000;
   final Map<String, double> _cagrCache = {}; // assetId -> CAGR 캐시
   final Map<String, bool> _loadingCagr = {}; // assetId -> 로딩 상태
   final Map<String, int> _cagrRetryCount = {}; // assetId -> 재시도 횟수
-  /// 내 자산에서 가져온 포트폴리오면 prefs 현금/보유를 덮어쓰지 않음
+  /// 내 자산에서 가져온 일회성 세션(탭 상태와 분리)
   bool _portfolioFromMyAssets = false;
 
   RetireSimulatorProvider() {
@@ -49,71 +52,127 @@ class RetireSimulatorProvider with ChangeNotifier {
 
   bool get isLoadingAnyPrice => _holdings.any((h) => h.isLoadingPrice);
 
+  bool get isLoadingAnyCagr =>
+      _assets.any(
+        (a) =>
+            a.assetId != 'cash' &&
+            a.annualReturn == null &&
+            _loadingCagr[a.assetId] == true,
+      );
+
   bool get canRunSimulation =>
       _assets.isNotEmpty &&
       _initialAsset > 0 &&
       allCagrLoaded &&
       !isLoadingAnyPrice;
 
-  // SharedPreferences 키
-  static const String _keyCash = 'retire_cash';
-  static const String _keyInitialAsset = 'retire_initial_asset';
-  static const String _keyMonthlyWithdrawal = 'retire_monthly_withdrawal';
-  static const String _keySimulationYears = 'retire_simulation_years';
-  static const String _keyHasSetup = 'retire_has_setup';
-
-  // 저장된 설정이 있는지 확인
-  Future<bool> hasSavedSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_keyHasSetup) ?? false;
+  Future<void> _applyBaselineDefaults(String currencySymbol) async {
+    final baselines = await baselineAmountsForCurrency(currencySymbol);
+    _cash = baselines.cash;
+    _monthlyWithdrawal = baselines.monthly;
+    _simulationYears = 5;
+    _selectedScenario = 'neutral';
+    _inflationRate = 0.03;
+    _valuesCurrencySymbol = currencySymbol;
   }
 
-  // 설정 저장
-  Future<void> saveSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    // 내 자산 기반 세션에서는 은퇴 탭용 현금 저장값을 건드리지 않음
-    if (!_portfolioFromMyAssets) {
-      await prefs.setDouble(_keyCash, _cash);
-      await prefs.setDouble(_keyInitialAsset, _initialAsset);
-    }
-    await prefs.setDouble(_keyMonthlyWithdrawal, _monthlyWithdrawal);
-    await prefs.setInt(_keySimulationYears, _simulationYears);
-    await prefs.setBool(_keyHasSetup, true);
+  /// 은퇴 시뮬레이션 탭 진입 시: 모든 입력을 기본값으로 초기화합니다 (저장/복원 없음).
+  Future<void> prepareSession(String currencySymbol) async {
+    if (_portfolioFromMyAssets) return;
+
+    _portfolioFromMyAssets = false;
+    _holdings.clear();
+    _assets.clear();
+    await _applyBaselineDefaults(currencySymbol);
+    _rebuildSimulationAssets();
+    notifyListeners();
   }
 
-  // 설정 로드
-  Future<void> loadSettings({bool restorePortfolio = true}) async {
-    if (restorePortfolio) {
-      _portfolioFromMyAssets = false;
-    }
-    final prefs = await SharedPreferences.getInstance();
-    final hasSetup = prefs.getBool(_keyHasSetup) ?? false;
-
-    if (hasSetup) {
-      final savedCash = prefs.getDouble(_keyCash);
-      final savedInitialAsset = prefs.getDouble(_keyInitialAsset);
-      final savedMonthlyWithdrawal = prefs.getDouble(_keyMonthlyWithdrawal);
-      final savedSimulationYears = prefs.getInt(_keySimulationYears);
-
-      if (restorePortfolio && !_portfolioFromMyAssets) {
-        if (savedCash != null) {
-          _cash = savedCash;
-        } else if (savedInitialAsset != null) {
-          // 구버전: initialAsset만 있던 경우 현금으로 이전
-          _cash = savedInitialAsset;
-        }
-      }
-      if (savedMonthlyWithdrawal != null) {
-        _monthlyWithdrawal = savedMonthlyWithdrawal;
-      }
-      if (savedSimulationYears != null) {
-        _simulationYears = savedSimulationYears;
-      }
-
-      _rebuildSimulationAssets();
-      notifyListeners();
-    }
+  /// 내 자산 → 은퇴 시뮬 일회성 화면을 닫을 때 탭용 상태로 되돌립니다.
+  Future<void> endMyAssetsSession(String currencySymbol) async {
+    _portfolioFromMyAssets = false;
+    await prepareSession(currencySymbol);
   }
+
+  Future<double> _convertAmount(
+    double amount,
+    String fromCurrency,
+    String toCurrency,
+  ) async {
+    if (fromCurrency == toCurrency) return amount;
+    await CurrencyConverter.shared.waitUntilReady();
+    final converted = await CurrencyConverter.shared.convert(
+      amount,
+      fromCurrency,
+      toCurrency,
+    );
+    return _roundForCurrency(converted, toCurrency);
+  }
+
+  double _roundForCurrency(double value, String currencySymbol) {
+    if (currencySymbol == '₩' || currencySymbol == '¥') {
+      return value.roundToDouble();
+    }
+    if (currencySymbol == 'CN¥') {
+      return (value * 10).round() / 10;
+    }
+    return (value * 100).round() / 100;
+  }
+
+  Future<({double cash, double monthly})> baselineAmountsForCurrency(
+    String currencySymbol,
+  ) async {
+    final cash = await _convertAmount(
+      _krwCashBaseline,
+      _krwBaselineCurrency,
+      currencySymbol,
+    );
+    final monthly = await _convertAmount(
+      _krwMonthlyBaseline,
+      _krwBaselineCurrency,
+      currencySymbol,
+    );
+    return (cash: cash, monthly: monthly);
+  }
+
+  /// 표시 통화가 바뀌면 현금·월 인출·보유 단가를 환율로 변환합니다.
+  Future<void> applyCurrencyChange(String newCurrencySymbol) async {
+    final fromCurrency = _valuesCurrencySymbol ?? _krwBaselineCurrency;
+    if (fromCurrency == newCurrencySymbol &&
+        _valuesCurrencySymbol == newCurrencySymbol) {
+      return;
+    }
+
+    if (fromCurrency != newCurrencySymbol) {
+      _cash = await _convertAmount(_cash, fromCurrency, newCurrencySymbol);
+      _monthlyWithdrawal = await _convertAmount(
+        _monthlyWithdrawal,
+        fromCurrency,
+        newCurrencySymbol,
+      );
+
+      for (var i = 0; i < _holdings.length; i++) {
+        final holding = _holdings[i];
+        final price = holding.currentPrice;
+        if (price == null) continue;
+        _holdings[i] = holding.copyWith(
+          currentPrice: await _convertAmount(
+            price,
+            fromCurrency,
+            newCurrencySymbol,
+          ),
+        );
+      }
+    }
+
+    _valuesCurrencySymbol = newCurrencySymbol;
+    _rebuildSimulationAssets();
+    notifyListeners();
+  }
+
+  @Deprecated('Use applyCurrencyChange')
+  Future<void> updateCurrencyDefaults(String currencySymbol) =>
+      applyCurrencyChange(currencySymbol);
 
   void setCash(double value) {
     _cash = value.clamp(0, double.infinity);
@@ -217,6 +276,7 @@ class RetireSimulatorProvider with ChangeNotifier {
       );
     }
 
+    _valuesCurrencySymbol = targetCurrency;
     _rebuildSimulationAssets();
     notifyListeners();
   }
@@ -239,7 +299,20 @@ class RetireSimulatorProvider with ChangeNotifier {
     );
     _rebuildSimulationAssets();
     notifyListeners();
-    await _loadPriceForHolding(assetId);
+    await _loadPriceForHolding(assetId, type: assetType);
+  }
+
+  int _holdingIndex(
+    String assetId, {
+    String? symbol,
+    String? type,
+  }) {
+    return _holdings.indexWhere((h) {
+      if (h.assetId != assetId) return false;
+      if (symbol != null && h.symbol != symbol) return false;
+      if (type != null && h.assetType != type) return false;
+      return true;
+    });
   }
 
   void updateHoldingQuantity(String assetId, double quantity) {
@@ -263,9 +336,7 @@ class RetireSimulatorProvider with ChangeNotifier {
     String? symbol,
     String? type,
   }) async {
-    final index = _holdings.indexWhere(
-      (h) => h.assetId == assetId && h.symbol == symbol && h.assetType == type,
-    );
+    final index = _holdingIndex(assetId, symbol: symbol, type: type);
     if (index < 0) return;
 
     _holdings[index] = _holdings[index].copyWith(isLoadingPrice: true);
@@ -280,37 +351,37 @@ class RetireSimulatorProvider with ChangeNotifier {
       );
 
       if (price != null && price.isFinite && price > 0) {
-        final idxForFx = _holdings.indexWhere(
-          (h) => h.assetId == assetId && h.symbol == symbol && h.assetType == type,
-        );
-        if (idxForFx < 0) return;
-        final holding = _holdings[idxForFx];
-        final targetCurrency = CurrencyProvider.shared.getCurrencySymbol();
-        await CurrencyConverter.shared.waitUntilReady();
-        price = await CurrencyConverter.shared.convert(
-          price,
-          holding.sourceCurrency,
-          targetCurrency,
-        );
+        final idxForFx = _holdingIndex(assetId, symbol: symbol, type: type);
+        if (idxForFx >= 0) {
+          final holding = _holdings[idxForFx];
+          final targetCurrency = CurrencyProvider.shared.getCurrencySymbol();
+          await CurrencyConverter.shared.waitUntilReady();
+          price = await CurrencyConverter.shared.convert(
+            price,
+            holding.sourceCurrency,
+            targetCurrency,
+          );
+        }
       }
 
-      final idx = _holdings.indexWhere(
-        (h) => h.assetId == assetId && h.symbol == symbol && h.assetType == type,
-      );
-      if (idx < 0) return;
-      _holdings[idx] = _holdings[idx].copyWith(
-        currentPrice: (price != null && price.isFinite && price > 0) ? price : null,
-        isLoadingPrice: false,
-      );
-    } catch (e) {
-      debugPrint('Failed to load holding price for $assetId: $e');
-      final idx = _holdings.indexWhere(
-        (h) => h.assetId == assetId && h.symbol == symbol && h.assetType == type,
-      );
+      final idx = _holdingIndex(assetId, symbol: symbol, type: type);
       if (idx >= 0) {
         _holdings[idx] = _holdings[idx].copyWith(
+          currentPrice:
+              (price != null && price.isFinite && price > 0) ? price : null,
           isLoadingPrice: false,
         );
+      }
+    } catch (e) {
+      debugPrint('Failed to load holding price for $assetId: $e');
+      final idx = _holdingIndex(assetId, symbol: symbol, type: type);
+      if (idx >= 0) {
+        _holdings[idx] = _holdings[idx].copyWith(isLoadingPrice: false);
+      }
+    } finally {
+      final idx = _holdingIndex(assetId, symbol: symbol, type: type);
+      if (idx >= 0 && _holdings[idx].isLoadingPrice) {
+        _holdings[idx] = _holdings[idx].copyWith(isLoadingPrice: false);
       }
     }
 
@@ -386,50 +457,6 @@ class RetireSimulatorProvider with ChangeNotifier {
     final clamped = value.clamp(0.0, 0.1);
     _inflationRate = (clamped * 1000).round() / 1000;
     notifyListeners();
-  }
-
-  // 통화 변경 시 기본값 재설정
-  void updateCurrencyDefaults(String currencySymbol) {
-    // 통화가 변경되지 않았으면 무시
-    if (_lastCurrencySymbol == currencySymbol) {
-      return;
-    }
-
-    const krwCash = 1000000.0;
-    const krwMonthly = 1000000.0;
-
-    final defaultValues = {
-      '\$': {'cash': 1000.0, 'monthly': 1000.0},
-      '¥': {'cash': 150000.0, 'monthly': 150000.0},
-      'CN¥': {'cash': 7000.0, 'monthly': 7000.0},
-      '₩': {'cash': krwCash, 'monthly': krwMonthly},
-    };
-
-    bool isDefaultValue = false;
-    if (_lastCurrencySymbol != null &&
-        defaultValues.containsKey(_lastCurrencySymbol)) {
-      final prev = defaultValues[_lastCurrencySymbol]!;
-      isDefaultValue =
-          (_cash == prev['cash'] &&
-          _monthlyWithdrawal == prev['monthly'] &&
-          _holdings.isEmpty);
-    } else {
-      isDefaultValue =
-          (_cash == krwCash &&
-          _monthlyWithdrawal == krwMonthly &&
-          _holdings.isEmpty);
-    }
-
-    if (isDefaultValue && defaultValues.containsKey(currencySymbol)) {
-      final next = defaultValues[currencySymbol]!;
-      _cash = next['cash']!;
-      _monthlyWithdrawal = next['monthly']!;
-      _rebuildSimulationAssets();
-      _lastCurrencySymbol = currencySymbol;
-      notifyListeners();
-    } else {
-      _lastCurrencySymbol = currencySymbol;
-    }
   }
 
   void addAsset(String assetId) {
@@ -716,10 +743,19 @@ class RetireSimulatorProvider with ChangeNotifier {
         await _loadCagrForAsset(assetId, isRetry: true);
         return;
       } else {
-        // 최대 재시도 횟수 초과 시 null 유지
-        debugPrint('CAGR 로드 최종 실패 ($assetId): 재시도 횟수 초과. 에러: $e');
-        _cagrRetryCount[assetId] = 0; // 재시도 카운트 리셋
-        // 에러 발생 시 로딩 상태를 명시적으로 false로 설정
+        // 최대 재시도 횟수 초과 시 0% 수익률로 폴백 (시뮬레이션 진행 가능)
+        const fallbackCagr = 0.0;
+        debugPrint(
+          'CAGR 로드 최종 실패 ($assetId): 재시도 횟수 초과. 0%로 폴백. 에러: $e',
+        );
+        _cagrCache[assetId] = fallbackCagr;
+        final assetIndex = _assets.indexWhere((a) => a.assetId == assetId);
+        if (assetIndex >= 0) {
+          _assets[assetIndex] = _assets[assetIndex].copyWith(
+            annualReturn: fallbackCagr,
+          );
+        }
+        _cagrRetryCount[assetId] = 0;
         _loadingCagr[assetId] = false;
       }
     } finally {
@@ -756,13 +792,23 @@ class RetireSimulatorProvider with ChangeNotifier {
   // 시뮬레이션 실행 (선택한 시나리오만)
   Map<String, dynamic> runSimulation() {
     if (_assets.isEmpty || !allCagrLoaded) {
-      return {'total': <double>[], 'assets': <String, List<double>>{}};
+      return {
+        'total': <double>[],
+        'assets': <String, List<double>>{},
+        'withdrawals': <double>[],
+        'totalWithdrawn': 0.0,
+      };
     }
 
     // 비중 정규화
     final totalAlloc = totalAllocation;
     if (totalAlloc <= 0) {
-      return {'total': <double>[], 'assets': <String, List<double>>{}};
+      return {
+        'total': <double>[],
+        'assets': <String, List<double>>{},
+        'withdrawals': <double>[],
+        'totalWithdrawn': 0.0,
+      };
     }
 
     final normalizedAssets = _assets.map((asset) {
@@ -816,6 +862,8 @@ class RetireSimulatorProvider with ChangeNotifier {
     // 인플레이션 적용을 위한 현재 월 인출액 (매년 갱신)
     double currentMonthlyWithdrawal = _monthlyWithdrawal;
     int currentYear = 0;
+    double totalWithdrawnAccumulated = 0.0;
+    final withdrawalPath = <double>[0.0];
 
     for (int month = 0; month < months; month++) {
       double totalValue = 0.0;
@@ -844,25 +892,23 @@ class RetireSimulatorProvider with ChangeNotifier {
 
       // 2단계: 월 인출액 차감 (수익률 적용 후 인출액 차감)
       // 계산: 자산가치 = 자산가치 - 월인출액 (인플레이션 적용된 금액)
-      if (totalValue > 0 && totalValue >= currentMonthlyWithdrawal) {
-        // 각 자산의 현재 비중에 따라 월 인출액 분배
+      double actualWithdrawal = 0.0;
+      if (totalValue > 0) {
+        actualWithdrawal = totalValue >= currentMonthlyWithdrawal
+            ? currentMonthlyWithdrawal
+            : totalValue;
         for (int i = 0; i < normalizedAssets.length; i++) {
           final assetRatio = assetValues[i] / totalValue;
-          final withdrawalAmount = currentMonthlyWithdrawal * assetRatio;
-          // 각 자산에서 비중에 맞게 인출액 차감
+          final withdrawalAmount = actualWithdrawal * assetRatio;
           assetValues[i] = (assetValues[i] - withdrawalAmount).clamp(
             0.0,
             double.infinity,
           );
         }
-        totalValue -= currentMonthlyWithdrawal;
-      } else if (totalValue < currentMonthlyWithdrawal) {
-        // 자산이 부족하면 0으로
-        totalValue = 0.0;
-        for (int i = 0; i < assetValues.length; i++) {
-          assetValues[i] = 0.0;
-        }
+        totalValue -= actualWithdrawal;
+        totalWithdrawnAccumulated += actualWithdrawal;
       }
+      withdrawalPath.add(actualWithdrawal);
 
       // 각 자산별 가치 기록
       for (int i = 0; i < normalizedAssets.length; i++) {
@@ -873,42 +919,37 @@ class RetireSimulatorProvider with ChangeNotifier {
       // 디버그: 매년 말 로그
       if ((month + 1) % 12 == 0) {
         final year = (month + 1) ~/ 12;
-        // 인플레이션 적용된 총 인출액 계산
-        double totalWithdrawn = 0.0;
-        for (int y = 0; y < year; y++) {
-          final yearWithdrawal =
-              _monthlyWithdrawal * pow(1 + _inflationRate, y) * 12;
-          totalWithdrawn += yearWithdrawal;
-        }
-        final netReturn = totalValue + totalWithdrawn - initialTotal;
+        final netReturn = totalValue + totalWithdrawnAccumulated - initialTotal;
         debugPrint(
-          '${year}년 후: 자산 ${(totalValue / 100000000).toStringAsFixed(2)}억, 인출 누적 ${(totalWithdrawn / 100000000).toStringAsFixed(2)}억, 순수익 ${(netReturn / 100000000).toStringAsFixed(2)}억',
+          '${year}년 후: 자산 ${(totalValue / 100000000).toStringAsFixed(2)}억, 인출 누적 ${(totalWithdrawnAccumulated / 100000000).toStringAsFixed(2)}억, 순수익 ${(netReturn / 100000000).toStringAsFixed(2)}억',
         );
       }
     }
 
     // 디버그: 최종 결과
     final finalAsset = totalPath.last;
-    // 인플레이션 적용된 총 인출액 계산
-    double totalWithdrawn = 0.0;
-    for (int year = 0; year < _simulationYears; year++) {
-      final yearWithdrawal =
-          _monthlyWithdrawal * pow(1 + _inflationRate, year) * 12;
-      totalWithdrawn += yearWithdrawal;
-    }
     debugPrint('=== 시뮬레이션 완료 ===');
     debugPrint('최종 자산: ${(finalAsset / 100000000).toStringAsFixed(2)}억');
     debugPrint(
-      '총 인출액 (인플레이션 적용): ${(totalWithdrawn / 100000000).toStringAsFixed(2)}억',
+      '총 인출액 (실제): ${(totalWithdrawnAccumulated / 100000000).toStringAsFixed(2)}억',
     );
 
-    return {'total': totalPath, 'assets': assetPaths};
+    return {
+      'total': totalPath,
+      'assets': assetPaths,
+      'withdrawals': withdrawalPath,
+      'totalWithdrawn': totalWithdrawnAccumulated,
+    };
   }
 
   // 결과 요약 계산
-  Map<String, dynamic> getSimulationSummary() {
-    final simulationResults = runSimulation();
-    final totalPath = simulationResults['total'] as List<double>? ?? [];
+  Map<String, dynamic> getSimulationSummary([
+    Map<String, dynamic>? simulationResults,
+  ]) {
+    final simulationResultsResolved =
+        simulationResults ?? runSimulation();
+    final totalPath =
+        simulationResultsResolved['total'] as List<double>? ?? [];
 
     if (totalPath.isEmpty) {
       return {
@@ -920,17 +961,13 @@ class RetireSimulatorProvider with ChangeNotifier {
     }
 
     final finalAsset = totalPath.last;
-    // 인플레이션 적용된 총 인출액 계산
-    double totalWithdrawn = 0.0;
-    for (int year = 0; year < _simulationYears; year++) {
-      final yearWithdrawal =
-          _monthlyWithdrawal * pow(1 + _inflationRate, year) * 12;
-      totalWithdrawn += yearWithdrawal;
-    }
+    final totalWithdrawn =
+        simulationResultsResolved['totalWithdrawn'] as double? ?? 0.0;
     // 총 수익 = 최종 자산 + 총 인출액 - 초기 자산
     // 누적 수익률 = 총 수익 / 초기 자산
     final totalReturn = finalAsset + totalWithdrawn - _initialAsset;
-    final cumulativeReturn = totalReturn / _initialAsset;
+    final cumulativeReturn =
+        _initialAsset > 0 ? totalReturn / _initialAsset : 0.0;
 
     return {
       'finalAsset': finalAsset,

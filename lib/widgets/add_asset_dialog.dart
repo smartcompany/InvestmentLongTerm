@@ -113,6 +113,8 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
   Future<void> _submit() async {
     if (!_canSubmitStep1) return;
 
+    final l10n = AppLocalizations.of(context)!;
+
     setState(() {
       _isLoading = true;
     });
@@ -153,7 +155,7 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
             });
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('현재 가격을 가져올 수 없습니다. 다시 시도해주세요.'),
+                content: Text(l10n.priceFetchFailed),
                 backgroundColor: Colors.red,
               ),
             );
@@ -168,7 +170,7 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
             });
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('유효한 현재 가격을 가져올 수 없습니다.'),
+                content: Text(l10n.invalidCurrentPrice),
                 backgroundColor: Colors.red,
               ),
             );
@@ -198,7 +200,7 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
         });
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('자산 추가 중 오류가 발생했습니다. 다시 시도해주세요.'),
+            content: Text(l10n.addAssetSubmitFailed),
             backgroundColor: Colors.red,
           ),
         );
@@ -272,7 +274,7 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '자산 선택',
+          l10n.selectAssetsTitle,
           style: TextStyle(
             color: AppColors.textSecondary,
             fontSize: 16,
@@ -685,7 +687,7 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          _buildStepIndicator(0, '자산 선택'),
+                          _buildStepIndicator(0, l10n.selectAssetsTitle),
                           Container(
                             width: 40,
                             height: 2,
@@ -693,7 +695,7 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
                                 ? AppColors.primary
                                 : AppColors.border,
                           ),
-                          _buildStepIndicator(1, '정보 입력'),
+                          _buildStepIndicator(1, l10n.addAssetStepEnterInfo),
                         ],
                       ),
                       SizedBox(height: 24),
@@ -724,7 +726,7 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
                                       });
                                     },
                               child: Text(
-                                '이전',
+                                l10n.previous,
                                 style: TextStyle(
                                   color: AppColors.textSecondary,
                                 ),
@@ -773,7 +775,7 @@ class _AddAssetDialogState extends State<AddAssetDialog> {
                                   ),
                                 ),
                                 child: Text(
-                                  _currentStep == 0 ? '다음' : l10n.confirm,
+                                  _currentStep == 0 ? l10n.next : l10n.confirm,
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,

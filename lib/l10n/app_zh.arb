@@ -232,6 +232,23 @@
   },
   "retireInlineEditHint": "点按蓝色框即可修改金额",
   "retireFormSubtitle": "填写现金与持仓，并设置每月支出",
+  "retireFromMyAssetsSubtitle": "根据您的资产模拟退休可行性",
+  "retireHoldingQuantity": "数量 {qty}",
+  "@retireHoldingQuantity": {
+    "placeholders": {
+      "qty": {
+        "type": "String"
+      }
+    }
+  },
+  "simulationYearsValue": "{years}年",
+  "@simulationYearsValue": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  },
   "retireCashLabel": "持有现金",
   "retireHoldingsLabel": "持有资产",
   "retireHoldingsEmpty": "还没有添加资产，可添加股票、加密货币等",
@@ -288,6 +305,13 @@
   "deleteAsset": "删除资产",
   "deleteAssetConfirm": "确定要删除此资产吗？",
   "cancel": "取消",
+  "addAssetStepEnterInfo": "填写信息",
+  "previous": "上一步",
+  "next": "下一步",
+  "done": "完成",
+  "priceFetchFailed": "无法获取当前价格，请重试。",
+  "invalidCurrentPrice": "无法获取有效的当前价格。",
+  "addAssetSubmitFailed": "添加资产时出错，请重试。",
   "noPriceData": "无价格数据",
   "quantity": "数量",
   "annualInterestRate": "年利率",

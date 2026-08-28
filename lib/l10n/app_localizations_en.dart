@@ -582,6 +582,20 @@ class AppLocalizationsEn extends AppLocalizations {
       'Enter your cash and holdings, then set monthly spending';
 
   @override
+  String get retireFromMyAssetsSubtitle =>
+      'Simulate retirement feasibility based on your assets';
+
+  @override
+  String retireHoldingQuantity(String qty) {
+    return 'Qty $qty';
+  }
+
+  @override
+  String simulationYearsValue(int years) {
+    return '$years years';
+  }
+
+  @override
   String get retireCashLabel => 'Cash on hand';
 
   @override
@@ -755,6 +769,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cancel => 'Cancel';
+
+  @override
+  String get addAssetStepEnterInfo => 'Enter details';
+
+  @override
+  String get previous => 'Previous';
+
+  @override
+  String get next => 'Next';
+
+  @override
+  String get done => 'Done';
+
+  @override
+  String get priceFetchFailed =>
+      'Could not fetch the current price. Please try again.';
+
+  @override
+  String get invalidCurrentPrice => 'Could not fetch a valid current price.';
+
+  @override
+  String get addAssetSubmitFailed =>
+      'Something went wrong while adding the asset. Please try again.';
 
   @override
   String get noPriceData => 'No price data available';

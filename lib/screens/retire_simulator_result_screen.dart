@@ -75,9 +75,10 @@ class _RetireSimulatorResultScreenState
         );
 
         final results = provider.runSimulation();
-        final summary = provider.getSimulationSummary();
+        final summary = provider.getSimulationSummary(results);
 
         final totalPath = results['total'] as List<double>? ?? [];
+        final withdrawalPath = results['withdrawals'] as List<double>? ?? [];
         final assetPaths =
             results['assets'] as Map<String, List<double>>? ?? {};
 
@@ -323,6 +324,7 @@ class _RetireSimulatorResultScreenState
                     provider,
                     totalSpots,
                     assetSpotsList,
+                    withdrawalPath,
                     currencyFormat,
                     l10n,
                   ),
@@ -348,6 +350,7 @@ class _RetireSimulatorResultScreenState
                   _buildMonthlyDetails(
                     provider,
                     totalPath,
+                    withdrawalPath,
                     currencyFormat,
                     l10n,
                   ),
@@ -478,20 +481,16 @@ class _RetireSimulatorResultScreenState
     RetireSimulatorProvider provider,
     List<FlSpot> totalSpots,
     List<Map<String, dynamic>> assetSpotsList,
+    List<double> withdrawalPath,
     NumberFormat currencyFormat,
     AppLocalizations l10n,
   ) {
-    // 누적 인출액 라인 생성 (월별로 누적, 인플레이션 적용)
+    // 누적 인출액 라인 생성 (실제 인출액 기준)
     final withdrawalSpots = <FlSpot>[];
     double cumulativeWithdrawal = 0.0;
     for (int i = 0; i < totalSpots.length; i++) {
-      if (i > 0) {
-        // 인플레이션 적용된 월 인출액 계산
-        final year = (i - 1) ~/ 12;
-        final monthlyWithdrawalWithInflation =
-            provider.monthlyWithdrawal *
-            math.pow(1 + provider.inflationRate, year);
-        cumulativeWithdrawal += monthlyWithdrawalWithInflation;
+      if (i > 0 && i < withdrawalPath.length) {
+        cumulativeWithdrawal += withdrawalPath[i];
       }
       final year = i / 12.0;
       withdrawalSpots.add(FlSpot(year, cumulativeWithdrawal));
@@ -639,7 +638,12 @@ class _RetireSimulatorResultScreenState
                 lineBarsData: lineBarsData,
                 lineTouchData: LineTouchData(
                   touchTooltipData: LineTouchTooltipData(
-                    getTooltipColor: (touchedSpot) => AppColors.navyDark,
+                    getTooltipColor: (touchedSpot) => AppColors.chartTooltipBg,
+                    tooltipBorderRadius: BorderRadius.circular(8),
+                    tooltipBorder: const BorderSide(
+                      color: AppColors.border,
+                      width: 1,
+                    ),
                     tooltipPadding: const EdgeInsets.all(12),
                     tooltipMargin: 16,
                     maxContentWidth: 220,
@@ -1129,6 +1133,7 @@ class _RetireSimulatorResultScreenState
   Widget _buildMonthlyDetails(
     RetireSimulatorProvider provider,
     List<double> totalPath,
+    List<double> withdrawalPath,
     NumberFormat currencyFormat,
     AppLocalizations l10n,
   ) {
@@ -1201,10 +1206,8 @@ class _RetireSimulatorResultScreenState
                     ? totalPath[index - 1]
                     : provider.initialAsset;
                 final assetChange = currentAsset - previousAsset;
-                // 인플레이션 적용된 월 인출액 계산
-                final monthlyWithdrawal = month > 0
-                    ? provider.monthlyWithdrawal *
-                          math.pow(1 + provider.inflationRate, year)
+                final monthlyWithdrawal = month > 0 && month < withdrawalPath.length
+                    ? withdrawalPath[month]
                     : 0.0;
 
                 // 모든 월 표시
@@ -1276,7 +1279,7 @@ class _RetireSimulatorResultScreenState
                                 ),
                               ],
                             ),
-                            if (month > 0) ...[
+                            if (month > 0 && monthlyWithdrawal > 0) ...[
                               SizedBox(height: 4),
                               Row(
                                 mainAxisAlignment:

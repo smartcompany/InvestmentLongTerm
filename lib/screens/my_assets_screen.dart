@@ -860,10 +860,15 @@ class _MyAssetsScreenState extends State<MyAssetsScreen> {
     );
 
     if (!mounted) return;
-    Navigator.of(context).push(
+    await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => const RetireSimulatorScreen(fromMyAssets: true),
       ),
+    );
+
+    if (!mounted) return;
+    await retireProvider.endMyAssetsSession(
+      CurrencyProvider.shared.getCurrencySymbol(),
     );
   }
 

@@ -232,6 +232,23 @@
   },
   "retireInlineEditHint": "青い枠をタップすると金額を変更できます",
   "retireFormSubtitle": "現金と保有資産を入力し、毎月の支出を設定しましょう",
+  "retireFromMyAssetsSubtitle": "保有資産をもとに退職の可能性をシミュレーションしましょう",
+  "retireHoldingQuantity": "数量 {qty}",
+  "@retireHoldingQuantity": {
+    "placeholders": {
+      "qty": {
+        "type": "String"
+      }
+    }
+  },
+  "simulationYearsValue": "{years}年",
+  "@simulationYearsValue": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  },
   "retireCashLabel": "保有現金",
   "retireHoldingsLabel": "保有資産",
   "retireHoldingsEmpty": "まだ資産がありません。株式や暗号資産などを追加してください",
@@ -288,6 +305,13 @@
   "deleteAsset": "資産削除",
   "deleteAssetConfirm": "この資産を削除しますか？",
   "cancel": "キャンセル",
+  "addAssetStepEnterInfo": "情報入力",
+  "previous": "戻る",
+  "next": "次へ",
+  "done": "完了",
+  "priceFetchFailed": "現在価格を取得できませんでした。もう一度お試しください。",
+  "invalidCurrentPrice": "有効な現在価格を取得できませんでした。",
+  "addAssetSubmitFailed": "資産の追加中にエラーが発生しました。もう一度お試しください。",
   "noPriceData": "価格データがありません",
   "quantity": "数量",
   "annualInterestRate": "年利率",

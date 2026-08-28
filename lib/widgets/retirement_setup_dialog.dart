@@ -97,7 +97,6 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
       provider.setInitialAsset(initialAsset);
       provider.setMonthlyWithdrawal(monthlyWithdrawal);
       provider.setSimulationYears(_selectedYears);
-      await provider.saveSettings();
 
       if (mounted) {
         Navigator.of(context).pop();
@@ -229,7 +228,7 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          '매월 인출 금액',
+          l10n.monthlyWithdrawalAmount,
           style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 24,
@@ -288,7 +287,7 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          '시뮬레이션 기간',
+          l10n.simulationDuration,
           style: TextStyle(
             color: AppColors.textPrimary,
             fontSize: 24,
@@ -320,7 +319,7 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
                         border: Border.all(color: AppColors.border, width: 1),
                       ),
                 child: Text(
-                  '$years${l10n.year}',
+                  l10n.simulationYearsValue(years),
                   style: TextStyle(
                     color: isSelected ? Colors.white : AppColors.textPrimary,
                     fontSize: 18,
@@ -385,7 +384,7 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
                           });
                         },
                         child: Text(
-                          '이전',
+                          l10n.previous,
                           style: TextStyle(color: AppColors.textSecondary),
                         ),
                       )
@@ -416,7 +415,7 @@ class _RetirementSetupDialogState extends State<RetirementSetupDialog>
                         ),
                       ),
                       child: Text(
-                        _currentStep < 2 ? '다음' : '완료',
+                        _currentStep < 2 ? l10n.next : l10n.done,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,

@@ -73,6 +73,8 @@ class _RetireChartRevealScreenState extends State<RetireChartRevealScreen> {
     final assetPaths =
         results['assets'] as Map<String, List<double>>? ?? {};
 
+    final withdrawalPath = results['withdrawals'] as List<double>? ?? [];
+
     if (totalPath.isEmpty) {
       _goToResult();
       return;
@@ -137,11 +139,8 @@ class _RetireChartRevealScreenState extends State<RetireChartRevealScreen> {
     final withdrawFull = <RacePoint>[];
     var cumulative = 0.0;
     for (var i = 0; i < totalPath.length; i++) {
-      if (i > 0) {
-        final year = (i - 1) ~/ 12;
-        cumulative +=
-            provider.monthlyWithdrawal *
-            math.pow(1 + provider.inflationRate, year);
+      if (i > 0 && i < withdrawalPath.length) {
+        cumulative += withdrawalPath[i];
       }
       withdrawFull.add(RacePoint(i.toDouble(), cumulative));
     }
