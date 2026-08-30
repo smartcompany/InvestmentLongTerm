@@ -36,6 +36,17 @@ platform :ios do
 
     increment_build_number(xcodeproj: "Runner.xcodeproj")
 
+    # Push Notifications capability (App Store Connect API — Apple ID 2FA 불필요)
+    bundle_id = Spaceship::ConnectAPI::BundleId.find(APP_IDENTIFIER)
+    UI.user_error!("Bundle ID not found: #{APP_IDENTIFIER}") if bundle_id.nil?
+
+    push_type = Spaceship::ConnectAPI::BundleIdCapability::Type::PUSH_NOTIFICATIONS
+    push_enabled = bundle_id.get_capabilities.any? { |cap| cap.is_type?(push_type) }
+    unless push_enabled
+      bundle_id.create_capability(push_type)
+      UI.success("Enabled Push Notifications on #{APP_IDENTIFIER}")
+    end
+
     # App Store 배포 프로비저닝 프로필 (archive 단계 Development 프로필 오류 방지)
     get_provisioning_profile(
       app_identifier: APP_IDENTIFIER,

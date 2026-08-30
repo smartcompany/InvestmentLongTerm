@@ -1,2 +1,3 @@
 CFBundleDisplayName = "My Assets AI";
 CFBundleName = "My Assets AI";
+"NSPhotoLibraryUsageDescription" = "コンテンツの共有や画像選択のために、フォトライブラリへのアクセスが必要です。";

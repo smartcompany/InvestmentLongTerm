@@ -21,7 +21,7 @@
 		<key>CFBundleSignature</key>
 		<string>????</string>
 		<key>CFBundleVersion</key>
-		<string>47</string>
+		<string>51</string>
 		<key>LSRequiresIPhoneOS</key>
 		<true/>
 		<key>UIDeviceFamily</key>
@@ -77,6 +77,8 @@
 		</array>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
 		<false/>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Photo library access is used when you share content or select images from your library.</string>
 		<key>UIBackgroundModes</key>
 		<array>
 			<string>fetch</string>

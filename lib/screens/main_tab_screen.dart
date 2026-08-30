@@ -180,6 +180,15 @@ class _MainTabScreenState extends State<MainTabScreen> {
     required int index,
   }) {
     final isSelected = _currentIndex == index;
+    const labelStyle = TextStyle(
+      fontSize: 10,
+      fontWeight: FontWeight.w600,
+      height: 1.15,
+    );
+    // 긴 영문 라벨도 항상 2줄로 고정 (선택 시 bold로 인한 줄바꿈 변화 방지)
+    const labelMaxWidth = 68.0;
+    const labelHeight = 24.0;
+
     return Expanded(
       child: Material(
         color: Colors.transparent,
@@ -210,16 +219,15 @@ class _MainTabScreenState extends State<MainTabScreen> {
                   size: 22,
                 ),
                 const SizedBox(height: 2),
-                Flexible(
+                SizedBox(
+                  width: labelMaxWidth,
+                  height: labelHeight,
                   child: Text(
                     label,
-                    style: TextStyle(
+                    style: labelStyle.copyWith(
                       color: isSelected
                           ? AppColors.primary
                           : AppColors.textSecondary,
-                      fontSize: 10,
-                      fontWeight:
-                          isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                     textAlign: TextAlign.center,
                     maxLines: 2,

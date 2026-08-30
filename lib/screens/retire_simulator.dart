@@ -162,12 +162,17 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
                   backgroundColor: AppColors.bg,
                   elevation: 0,
                   scrolledUnderElevation: 0,
+                  centerTitle: true,
                   leading: IconButton(
                     icon: const Icon(
                       Icons.arrow_back_ios_new,
                       color: AppColors.textPrimary,
                     ),
                     onPressed: () => Navigator.of(context).maybePop(),
+                  ),
+                  title: Text(
+                    l10n.retirementSimulation,
+                    style: AppTextStyles.appBarTitle,
                   ),
                 )
               : null,
@@ -180,14 +185,16 @@ class _RetireSimulatorScreenState extends State<RetireSimulatorScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      l10n.retirementSimulation,
-                      style: AppTextStyles.homeMainQuestion.copyWith(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w800,
+                    if (!widget.fromMyAssets) ...[
+                      Text(
+                        l10n.retirementSimulation,
+                        style: AppTextStyles.homeMainQuestion.copyWith(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 8),
+                      const SizedBox(height: 8),
+                    ],
                     Text(
                       widget.fromMyAssets
                           ? l10n.retireFromMyAssetsSubtitle

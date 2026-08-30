@@ -15,6 +15,14 @@ class RetireSimulatorProvider with ChangeNotifier {
   static const double _krwCashBaseline = 1000000; // 100만 원
   static const double _krwMonthlyBaseline = 5000000; // 500만 원
 
+  /// 통화별 기본 현금·월 지출 (원화 기준 개념을 각 통화에 맞게 반올림)
+  static const Map<String, ({double cash, double monthly})> _baselineByCurrency = {
+    '₩': (cash: 1000000, monthly: 5000000),
+    '\$': (cash: 800, monthly: 4000),
+    '¥': (cash: 100000, monthly: 500000),
+    'CN¥': (cash: 5000, monthly: 25000),
+  };
+
   // UX: 현금 + 보유 자산(수량). 시뮬레이션은 평가금액 합 → allocation으로 변환.
   double _cash = _krwCashBaseline;
   double _monthlyWithdrawal = _krwMonthlyBaseline;
@@ -67,7 +75,7 @@ class RetireSimulatorProvider with ChangeNotifier {
       !isLoadingAnyPrice;
 
   Future<void> _applyBaselineDefaults(String currencySymbol) async {
-    final baselines = await baselineAmountsForCurrency(currencySymbol);
+    final baselines = baselineAmountsForCurrency(currencySymbol);
     _cash = baselines.cash;
     _monthlyWithdrawal = baselines.monthly;
     _simulationYears = 5;
@@ -119,23 +127,20 @@ class RetireSimulatorProvider with ChangeNotifier {
     return (value * 100).round() / 100;
   }
 
-  Future<({double cash, double monthly})> baselineAmountsForCurrency(
+  ({double cash, double monthly}) baselineAmountsForCurrency(
     String currencySymbol,
-  ) async {
-    final cash = await _convertAmount(
-      _krwCashBaseline,
-      _krwBaselineCurrency,
-      currencySymbol,
-    );
-    final monthly = await _convertAmount(
-      _krwMonthlyBaseline,
-      _krwBaselineCurrency,
-      currencySymbol,
-    );
-    return (cash: cash, monthly: monthly);
+  ) {
+    return _baselineByCurrency[currencySymbol] ??
+        _baselineByCurrency[_krwBaselineCurrency]!;
   }
 
-  /// 표시 통화가 바뀌면 현금·월 인출·보유 단가를 환율로 변환합니다.
+  bool _isAtBaselineForCurrency(String currencySymbol) {
+    final baseline = baselineAmountsForCurrency(currencySymbol);
+    return _cash == baseline.cash && _monthlyWithdrawal == baseline.monthly;
+  }
+
+  /// 표시 통화가 바뀌면 현금·월 인출·보유 단가를 변환합니다.
+  /// 기본값 상태면 환율 변환 대신 해당 통화의 기본값을 사용합니다.
   Future<void> applyCurrencyChange(String newCurrencySymbol) async {
     final fromCurrency = _valuesCurrencySymbol ?? _krwBaselineCurrency;
     if (fromCurrency == newCurrencySymbol &&
@@ -144,12 +149,18 @@ class RetireSimulatorProvider with ChangeNotifier {
     }
 
     if (fromCurrency != newCurrencySymbol) {
-      _cash = await _convertAmount(_cash, fromCurrency, newCurrencySymbol);
-      _monthlyWithdrawal = await _convertAmount(
-        _monthlyWithdrawal,
-        fromCurrency,
-        newCurrencySymbol,
-      );
+      if (_isAtBaselineForCurrency(fromCurrency)) {
+        final baselines = baselineAmountsForCurrency(newCurrencySymbol);
+        _cash = baselines.cash;
+        _monthlyWithdrawal = baselines.monthly;
+      } else {
+        _cash = await _convertAmount(_cash, fromCurrency, newCurrencySymbol);
+        _monthlyWithdrawal = await _convertAmount(
+          _monthlyWithdrawal,
+          fromCurrency,
+          newCurrencySymbol,
+        );
+      }
 
       for (var i = 0; i < _holdings.length; i++) {
         final holding = _holdings[i];
