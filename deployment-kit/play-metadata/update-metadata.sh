@@ -36,7 +36,8 @@ if [[ ! -d "$SCRIPT_DIR/node_modules/googleapis" ]]; then
 fi
 
 if [[ "${1:-}" == "--dry-run" ]] || [[ "${1:-}" == "--help" ]] || [[ "${1:-}" == "-h" ]]; then
-  exec node "$SCRIPT_DIR/update-metadata.mjs" "$@"
+  node "$SCRIPT_DIR/update-metadata.mjs" "$@"
+  exit $?
 fi
 
 if [[ -z "${PLAY_SERVICE_ACCOUNT_JSON:-}" ]]; then

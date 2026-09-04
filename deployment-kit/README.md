@@ -16,6 +16,8 @@ deployment-kit/
     ├── build_ios.sh
     ├── upload_ios_metadata.sh
     ├── upload_android_metadata.sh
+    ├── upload_android_aab.sh
+    ├── upload_android_screenshots.sh
     ├── release_all.sh
     ├── release_ios_all.sh
     └── release_android_all.sh

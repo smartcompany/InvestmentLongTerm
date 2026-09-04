@@ -23,6 +23,10 @@ import {
   requirePlayEnv,
   withEdit,
 } from './lib/play.mjs';
+import {
+  defaultVerifyLocales,
+  verifyPlayStoreState,
+} from './lib/verify.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -32,6 +36,7 @@ const ALL_FIELDS = [...LISTING_FIELDS, 'details'];
 function parseArgs(argv) {
   const args = {
     dryRun: false,
+    verify: false,
     listingsFile: path.join(__dirname, 'listings.mjs'),
     only: new Set(ALL_FIELDS),
     help: false,
@@ -39,6 +44,7 @@ function parseArgs(argv) {
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--dry-run') args.dryRun = true;
+    else if (a === '--verify') args.verify = true;
     else if (a === '--listings') args.listingsFile = path.resolve(argv[++i]);
     else if (a === '--only') {
       args.only = new Set(
@@ -79,6 +85,7 @@ async function main() {
 
 Options:
   --dry-run              Preview only
+  --verify               After upload, print live Play Console listing + screenshot counts
   --listings FILE        Default: ./listings.mjs
   --only title,shortDescription,fullDescription,details
 
@@ -169,6 +176,15 @@ Fields:
 
   console.log('\nDone — changes committed.');
   printPrivacyPolicyReminder(storeConfig.privacyUrl);
+
+  if (args.verify) {
+    await verifyPlayStoreState({
+      androidpublisher,
+      packageName,
+      locales: defaultVerifyLocales(),
+      listingsFile: args.listingsFile,
+    });
+  }
 }
 
 main().catch((err) => {
