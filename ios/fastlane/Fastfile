@@ -121,3 +121,20 @@ platform :ios do
     end
   end
 end
+
+  desc "Upload an already-built IPA"
+  lane :upload_ipa do
+    upload_to_app_store(
+      ipa: "Runner.ipa",
+      skip_metadata: true,
+      skip_screenshots: true,
+      skip_app_version_update: true,
+      precheck_include_in_app_purchases: false,
+      force: true,
+      submission_information: {
+        export_compliance: {
+          uses_non_exempt_encryption: false
+        }
+      }
+    )
+  end

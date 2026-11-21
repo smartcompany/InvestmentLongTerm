@@ -2,20 +2,27 @@ import Flutter
 import UIKit
 
 @main
-@objc class AppDelegate: FlutterAppDelegate {
+@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    let controller = window?.rootViewController as! FlutterViewController
+    // APNs registration for FCM
+    application.registerForRemoteNotifications()
+    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+
+  func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
+    GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+
     let iCloudChannel = FlutterMethodChannel(
       name: "com.smartcompany.longterminvestment/icloud",
-      binaryMessenger: controller.binaryMessenger
+      binaryMessenger: engineBridge.applicationRegistrar.messenger()
     )
-    
+
     iCloudChannel.setMethodCallHandler { (call, result) in
       let keyValueStore = NSUbiquitousKeyValueStore.default
-      
+
       if call.method == "setICloudValue" {
         // iCloud Key-Value Storage에 값 저장 (자동 동기화)
         if let args = call.arguments as? [String: Any],
@@ -40,10 +47,5 @@ import UIKit
         result(FlutterMethodNotImplemented)
       }
     }
-    
-    GeneratedPluginRegistrant.register(with: self)
-    // APNs registration for FCM
-    application.registerForRemoteNotifications()
-    return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }
